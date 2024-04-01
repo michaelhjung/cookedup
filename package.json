@@ -1,0 +1,48 @@
+{
+  "name": "cookedup",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Michael Jung",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "eslint --fix . --ext .js,.jsx,.ts,.tsx",
+    "prettier": "prettier --config .prettierrc --write .",
+    "clean": "rm -r .next & rm -r out & rm .DS_Store"
+  },
+  "dependencies": {
+    "next": "14.1.4",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-next": "14.1.4",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.2.2",
+    "postcss": "^8",
+    "prettier": "^3.2.5",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,jsx,ts,tsx}": [
+      "npm run prettier",
+      "npm run lint:fix"
+    ]
+  }
+}
