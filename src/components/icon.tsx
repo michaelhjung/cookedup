@@ -1,11 +1,11 @@
 import React from "react";
 
 import BowlIcon from "@public/icons/bowl.svg";
+import ConvoBubbleIcon from "@public/icons/convo-bubble.svg";
 import GithubIcon from "@public/icons/github.svg";
 import HeartIcon from "@public/icons/heart.svg";
 import LinkArrowIcon from "@public/icons/link-arrow.svg";
 import LinkedinIcon from "@public/icons/linkedin.svg";
-import ConvoBubbleIcon from "@public/icons/convo-bubble.svg";
 import OrigamiAirplaneIcon from "@public/icons/origami-airplane.svg";
 import VeggiesIcon from "@public/icons/veggies.svg";
 

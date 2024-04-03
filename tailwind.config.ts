@@ -16,6 +16,10 @@ const config: Config = {
         "pastel-yellow": "#FFF9A7",
       },
       keyframes: {
+        throb: {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.15)" },
+        },
         "toss-bowl": {
           "0%, 100%": { transform: "rotate(0deg) translateY(0)" },
           "35%": { transform: "rotate(-12deg) translateX(-5px)" },
@@ -36,6 +40,7 @@ const config: Config = {
       },
       animation: {
         bowl: "toss-bowl 1.75s ease-in-out infinite",
+        throb: "throb 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         veggies: "toss-bowl-contents 1.75s ease-in-out infinite",
       },
     },

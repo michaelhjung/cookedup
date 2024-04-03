@@ -9,7 +9,7 @@
 <br />
 <br />
 
-Cook up ideas for your next meal based on ingredients you already have at home!
+Cook up ideas for your next meal based on ingredients already on hand!
 
 [Github](https://github.com/michaelhjung/cookedup) &nbsp;•&nbsp;
 **[Live Site](https://www.cookedup.app)**
