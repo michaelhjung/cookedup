@@ -1,9 +1,30 @@
+import Footer from "@/components/footer";
 import Icon from "@/components/icon";
 
 const Homepage = () => (
-  <div className="flex flex-col justify-center items-center">
-    <Icon className="text-8xl animate-veggies -mb-16" type="veggies" />
-    <Icon className="text-8xl text-pastel-brown animate-bowl" type="bowl" />
+  <div className="h-screen flex flex-col justify-between items-center p-4 sm:p-12 md:p-18 lg:p-24">
+    <section className="flex flex-col justify-center items-center">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+        <span className="font-bold">cooked</span>
+        <span>up</span>
+        <Icon type="chefhat" />
+      </h1>
+      <p className="text-xs md:text-sm">
+        Find recipes based on ingredients on hand!
+      </p>
+    </section>
+
+    <main className="flex flex-col items-center">
+      <section className="h-full">
+        <h2>Search</h2>
+      </section>
+
+      <section>
+        <h2>Recipes</h2>
+      </section>
+    </main>
+
+    <Footer />
   </div>
 );
 

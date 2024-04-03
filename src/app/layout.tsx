@@ -1,9 +1,10 @@
+/* eslint-disable camelcase */
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import React from "react";
 import "@/app/globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const montserrat = Montserrat({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Cooked Up!",
@@ -26,7 +27,7 @@ const RootLayout = ({
         sizes="any"
       />
     </head>
-    <body className={inter.className}>{children}</body>
+    <body className={montserrat.className}>{children}</body>
   </html>
 );
 
