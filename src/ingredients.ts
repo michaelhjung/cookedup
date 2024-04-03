@@ -35190,6 +35190,4 @@ export const INGREDIENTS: Ingredient[] = [
 ];
 
 export const getByCategory = (categoryString: category) =>
-  INGREDIENTS.filter((ingredient) =>
-    ingredient.categories.includes(categoryString),
-  );
+  INGREDIENTS.filter((ingredient) => ingredient.categories.includes(categoryString));

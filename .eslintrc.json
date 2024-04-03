@@ -1,10 +1,5 @@
 {
-  "extends": [
-    "eslint:recommended",
-    "airbnb",
-    "next/core-web-vitals",
-    "prettier"
-  ],
+  "extends": ["eslint:recommended", "airbnb", "next/core-web-vitals", "prettier"],
   "rules": {
     "func-names": "off",
     "jsx-a11y/control-has-associated-label": "off",
@@ -43,14 +38,8 @@
       }
     ],
     "no-use-before-define": "off",
-    "react/function-component-definition": [
-      "error",
-      { "namedComponents": "arrow-function" }
-    ],
-    "react/jsx-filename-extension": [
-      1,
-      { "extensions": [".js", ".jsx", ".ts", ".tsx"] }
-    ],
+    "react/function-component-definition": ["error", { "namedComponents": "arrow-function" }],
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
     "react/no-array-index-key": "off",
     "react/no-unescaped-entities": "off",
     "react/prop-types": "off",
