@@ -11,11 +11,16 @@ const config: Config = {
       colors: {
         cinerous: "#92817A",
         "pastel-brown": "#E3CDB3",
+        "pastel-blue": "#B3D4EE",
         "pastel-green": "#84CACF",
         "pastel-orange": "#FAB4AF",
         "pastel-yellow": "#FFF9A7",
       },
       keyframes: {
+        "bounce-higher": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
         throb: {
           "0%, 100%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.15)" },
@@ -39,6 +44,7 @@ const config: Config = {
         },
       },
       animation: {
+        "bounce-higher": "bounce-higher 1s infinite",
         bowl: "toss-bowl 1.75s ease-in-out infinite",
         throb: "throb 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         veggies: "toss-bowl-contents 1.75s ease-in-out infinite",
