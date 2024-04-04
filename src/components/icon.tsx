@@ -2,11 +2,14 @@ import React from "react";
 
 import BowlIcon from "@public/icons/bowl.svg";
 import ConvoBubbleIcon from "@public/icons/convo-bubble.svg";
+import ForkAndSpoonIcon from "@public/icons/fork-and-spoon.svg";
 import GithubIcon from "@public/icons/github.svg";
 import HeartIcon from "@public/icons/heart.svg";
+import IngredientsIcon from "@public/icons/ingedients.svg";
 import LinkArrowIcon from "@public/icons/link-arrow.svg";
 import LinkedinIcon from "@public/icons/linkedin.svg";
 import OrigamiAirplaneIcon from "@public/icons/origami-airplane.svg";
+import ResetIcon from "@public/icons/reset.svg";
 import SearchIcon from "@public/icons/search.svg";
 import VeggiesIcon from "@public/icons/veggies.svg";
 
@@ -21,16 +24,22 @@ const Icon: React.FC<IconProps> = ({ type, className }) => {
   switch (type.trim().toLowerCase()) {
     case "bowl":
       return <BowlIcon className={iconClasses} />;
-    case "convobubble":
+    case "convo-bubble":
       return <ConvoBubbleIcon className={iconClasses} />;
+    case "fork-and-spoon":
+      return <ForkAndSpoonIcon className={iconClasses} />;
     case "github":
       return <GithubIcon className={iconClasses} />;
     case "heart":
       return <HeartIcon className={iconClasses} />;
+    case "ingredients":
+      return <IngredientsIcon className={iconClasses} />;
     case "linkarrow":
       return <LinkArrowIcon className={iconClasses} />;
     case "linkedin":
       return <LinkedinIcon className={iconClasses} />;
+    case "reset":
+      return <ResetIcon className={iconClasses} />;
     case "send":
       return <OrigamiAirplaneIcon className={iconClasses} />;
     case "search":

@@ -1,77 +1,98 @@
 /* eslint-disable import/prefer-default-export */
-const CATEGORY_BAKING = "baking";
-const CATEGORY_BEVERAGES = "beverages";
-const CATEGORY_BREAD = "bread";
-const CATEGORY_CHEESES = "cheese";
-const CATEGORY_CONDIMENTS = "condiments";
-const CATEGORY_DAIRY_AND_EGGS = "dairy & eggs";
-const CATEGORY_FROZEN_FOOD = "frozen food";
-const CATEGORY_FRUITS = "fruits";
-const CATEGORY_GRAINS = "grains";
-const CATEGORY_HERBS_AND_SPICES = "herbs & spices";
-const CATEGORY_INTERNATIONAL = "international";
-const CATEGORY_LEGUMES = "legumes";
-const CATEGORY_MEATS = "meats";
-const CATEGORY_NUTS_AND_SEEDS = "nuts & seeds";
-const CATEGORY_OILS_AND_FATS = "oils & fats";
-const CATEGORY_PANTRY_ESSENTIALS = "pantry essentials";
-const CATEGORY_PASTA = "pasta";
-const CATEGORY_SEAFOOD = "seafood";
-const CATEGORY_SOUPS_AND_BROTHS = "soups & broths";
-const CATEGORY_SWEETS = "sweets";
-const CATEGORY_TEA_AND_COFFEE = "tea & coffee";
-const CATEGORY_VEGGIES = "vegetables";
+const ALCOHOL = "alcohol";
+const BAKING = "baking";
+const BEVERAGES = "beverages";
+const BREAD = "bread";
+const CEREALS = "cereals";
+const CHEESES = "cheeses";
+const CONDIMENTS = "condiments";
+const DAIRY_AND_EGGS = "dairy & eggs";
+const DRESSINGS = "dressings";
+const FROZEN_FOOD = "frozen food";
+const FRUITS = "fruits";
+const GRAINS = "grains";
+const HERBS_AND_SPICES = "herbs & spices";
+const INTERNATIONAL = "international";
+const LEGUMES = "legumes";
+const MISCELLANEOUS = "miscellaneous";
+const MEATS = "meats";
+const NOODLES = "noodles";
+const NUTS_AND_SEEDS = "nuts & seeds";
+const OILS_AND_FATS = "oils & fats";
+const PANTRY_ESSENTIALS = "pantry essentials";
+const PASTA = "pasta";
+const SAUCES = "sauces";
+const SEAFOOD = "seafood";
+const SNACKS = "snacks";
+const SOUPS_AND_BROTHS = "soups & broths";
+const SWEETS = "sweets";
+const TEA_AND_COFFEE = "tea & coffee";
+const VEGGIES = "vegetables";
 
 export type category =
-  | typeof CATEGORY_BAKING
-  | typeof CATEGORY_BEVERAGES
-  | typeof CATEGORY_BREAD
-  | typeof CATEGORY_CHEESES
-  | typeof CATEGORY_CONDIMENTS
-  | typeof CATEGORY_DAIRY_AND_EGGS
-  | typeof CATEGORY_FROZEN_FOOD
-  | typeof CATEGORY_FRUITS
-  | typeof CATEGORY_GRAINS
-  | typeof CATEGORY_HERBS_AND_SPICES
-  | typeof CATEGORY_INTERNATIONAL
-  | typeof CATEGORY_LEGUMES
-  | typeof CATEGORY_MEATS
-  | typeof CATEGORY_NUTS_AND_SEEDS
-  | typeof CATEGORY_OILS_AND_FATS
-  | typeof CATEGORY_PANTRY_ESSENTIALS
-  | typeof CATEGORY_PASTA
-  | typeof CATEGORY_SEAFOOD
-  | typeof CATEGORY_SOUPS_AND_BROTHS
-  | typeof CATEGORY_SWEETS
-  | typeof CATEGORY_TEA_AND_COFFEE
-  | typeof CATEGORY_VEGGIES;
+  | typeof ALCOHOL
+  | typeof BAKING
+  | typeof BEVERAGES
+  | typeof BREAD
+  | typeof CEREALS
+  | typeof CHEESES
+  | typeof CONDIMENTS
+  | typeof DAIRY_AND_EGGS
+  | typeof DRESSINGS
+  | typeof FROZEN_FOOD
+  | typeof FRUITS
+  | typeof GRAINS
+  | typeof HERBS_AND_SPICES
+  | typeof INTERNATIONAL
+  | typeof LEGUMES
+  | typeof MEATS
+  | typeof MISCELLANEOUS
+  | typeof NOODLES
+  | typeof NUTS_AND_SEEDS
+  | typeof OILS_AND_FATS
+  | typeof PANTRY_ESSENTIALS
+  | typeof PASTA
+  | typeof SAUCES
+  | typeof SEAFOOD
+  | typeof SNACKS
+  | typeof SOUPS_AND_BROTHS
+  | typeof SWEETS
+  | typeof TEA_AND_COFFEE
+  | typeof VEGGIES;
 
 export interface Ingredient {
   name: string;
-  categories: category[];
+  categories: category[] | [];
 }
 
 export const Categories = {
-  BAKING: CATEGORY_BAKING,
-  BEVERAGES: CATEGORY_BEVERAGES,
-  BREAD: CATEGORY_BREAD,
-  CHEESES: CATEGORY_CHEESES,
-  CONDIMENTS: CATEGORY_CONDIMENTS,
-  DAIRY_AND_EGGS: CATEGORY_DAIRY_AND_EGGS,
-  FROZEN_FOOD: CATEGORY_FROZEN_FOOD,
-  FRUITS: CATEGORY_FRUITS,
-  GRAINS: CATEGORY_GRAINS,
-  HERBS_AND_SPICES: CATEGORY_HERBS_AND_SPICES,
-  INTERNATIONAL: CATEGORY_INTERNATIONAL,
-  LEGUMES: CATEGORY_LEGUMES,
-  MEATS: CATEGORY_MEATS,
-  NUTS_AND_SEEDS: CATEGORY_NUTS_AND_SEEDS,
-  OILS_AND_FATS: CATEGORY_OILS_AND_FATS,
-  PANTRY_ESSENTIALS: CATEGORY_PANTRY_ESSENTIALS,
-  PASTA: CATEGORY_PASTA,
-  SEAFOOD: CATEGORY_SEAFOOD,
-  SOUPS_AND_BROTHS: CATEGORY_SOUPS_AND_BROTHS,
-  SWEETS: CATEGORY_SWEETS,
-  TEA_AND_COFFEE: CATEGORY_TEA_AND_COFFEE,
-  VEGGIES: CATEGORY_VEGGIES,
+  ALCOHOL,
+  BAKING,
+  BEVERAGES,
+  BREAD,
+  CEREALS,
+  CHEESES,
+  CONDIMENTS,
+  DAIRY_AND_EGGS,
+  DRESSINGS,
+  FROZEN_FOOD,
+  FRUITS,
+  GRAINS,
+  HERBS_AND_SPICES,
+  INTERNATIONAL,
+  LEGUMES,
+  MEATS,
+  MISCELLANEOUS,
+  NOODLES,
+  NUTS_AND_SEEDS,
+  OILS_AND_FATS,
+  PANTRY_ESSENTIALS,
+  PASTA,
+  SAUCES,
+  SEAFOOD,
+  SNACKS,
+  SOUPS_AND_BROTHS,
+  SWEETS,
+  TEA_AND_COFFEE,
+  VEGGIES,
 };
