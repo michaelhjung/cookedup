@@ -4,8 +4,9 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Ingredient } from "@/config";
 import { INGREDIENTS } from "@/ingredients";
 import { debounce } from "@/utils";
-import EllipsisLoader from "./loaders/ellipsis";
-import Icon from "./icon";
+import EllipsisLoader from "@/components/loaders/ellipsis";
+import Icon from "@/components/icon";
+import Tooltip from "../tooltip";
 
 const DEFAULT_INGREDIENTS_LIST = {
   all: INGREDIENTS,
@@ -28,7 +29,6 @@ const Search = () => {
 
   const filterIngredients = useCallback(
     (searchValue: string) => {
-      setIsLoadingIngredientsList(true);
       const formattedSearchValue = searchValue.trim().toUpperCase();
       const filteredIngredientsList = ingredients.all.filter((ingredient) =>
         ingredient.name.toUpperCase().includes(formattedSearchValue),
@@ -37,6 +37,7 @@ const Search = () => {
         ...prev,
         filtered: filteredIngredientsList,
       }));
+
       setIsLoadingIngredientsList(false);
     },
     [ingredients.all],
@@ -119,22 +120,40 @@ const Search = () => {
   return (
     <section className="lg:w-1/3 h-full max-h-full flex flex-col items-center">
       <div className="flex flex-col items-center">
+        <Icon type="ingredients" className="text-2xl sm:text-5xl mb-4" />
+
         <div ref={searchWrapperRef} className="flex flex-col items-center relative">
-          <input
-            className="w-32 focus:w-40 sm:w-40 sm:focus:w-52 h-10 sm:h-12 md:h-14 pl-6 pr-12 py-4 text-xs sm:text-sm md:text-base border-2 rounded-full outline-none focus:border-pastel-blue duration-300 ease-in-out"
-            type="text"
-            value={searchInput}
-            placeholder="Search"
-            onChange={handleSearchInputChange}
-            onFocus={handleSearchFocusAndClick}
-          />
-          <Icon
-            type="search"
-            className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-2xl pointer-events-none"
-          />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="relative">
+              <input
+                className="w-32 focus:w-40 sm:w-40 sm:focus:w-52 h-10 sm:h-12 md:h-14 pl-6 pr-12 py-4 text-xs sm:text-sm md:text-base border-2 rounded-full outline-none focus:border-pastel-blue duration-300 ease-in-out"
+                type="text"
+                value={searchInput}
+                placeholder="Search"
+                onChange={handleSearchInputChange}
+                onFocus={handleSearchFocusAndClick}
+              />
+              <Icon
+                type="search"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-2xl pointer-events-none"
+              />
+            </div>
+
+            {selectedIngredients.length > 0 && (
+              <Tooltip text="Clear selected ingredients">
+                <button
+                  type="button"
+                  className="cursor-pointer text-4xl text-red-300 hover:text-red-500"
+                  onClick={() => setSelectedIngredients([])}
+                >
+                  <Icon type="reset" />
+                </button>
+              </Tooltip>
+            )}
+          </div>
 
           {showIngredientsList && (
-            <div className="w-80 sm:w-96 h-48 sm:h-80 absolute top-full mt-1 bg-pastel-brown/30 backdrop-blur-lg p-4 border-2 rounded-lg overflow-auto">
+            <div className="w-80 sm:w-96 h-48 sm:h-80 absolute top-full mt-1 text-sm bg-pastel-brown/30 backdrop-blur-lg p-4 border-2 rounded-lg overflow-auto">
               {ingredients.filtered.length === 0 && <div>No matching ingredients found.</div>}
 
               {isLoadingIngredientsList && <EllipsisLoader />}
@@ -148,7 +167,7 @@ const Search = () => {
                       ingredientRefs.current[index] = el;
                     }}
                     role="button"
-                    className="cursor-pointer p-1 text-sm outline-none hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35 rounded-lg"
+                    className="cursor-pointer p-1 outline-none hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35 rounded-lg lowercase"
                     onClick={() => {
                       if (selectedIngredients.some((ingred) => ingred.name === ingredient.name))
                         return;
@@ -166,7 +185,7 @@ const Search = () => {
       </div>
 
       <div className="h-4/5 flex flex-col items-center mt-4">
-        <h2 className="font-semibold">Selected Ingredients:</h2>
+        <h2 className="text-sm sm:text-base font-semibold">Selected Ingredients:</h2>
         <div className="flex flex-wrap justify-center gap-2 my-2 overflow-auto">
           {selectedIngredients.map((ingredient, index) => (
             <button
@@ -177,7 +196,7 @@ const Search = () => {
                 setSelectedIngredients((prev) => prev.filter((ingred) => ingred !== ingredient))
               }
             >
-              <span className="text-blue-800 group-hover:text-red-400 font-semibold uppercase">
+              <span className="text-blue-800 group-hover:text-red-400 font-semibold lowercase">
                 {ingredient.name}
               </span>
               <span className="ml-2 text-blue-500 group-hover:text-red-400 group-hover:font-semibold text-xl">
