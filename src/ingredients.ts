@@ -39,10 +39,6 @@ import {
 
 export const INGREDIENTS: Ingredient[] = [
   {
-    name: "7-up",
-    categories: [],
-  },
-  {
     name: "abalone",
     categories: [],
   },

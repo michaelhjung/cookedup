@@ -6,14 +6,25 @@ import { INGREDIENTS } from "@/ingredients";
 import { debounce } from "@/utils";
 import EllipsisLoader from "@/components/loaders/ellipsis";
 import Icon from "@/components/icon";
-import Tooltip from "../tooltip";
+import Tooltip from "@/components/tooltip";
+import { RecipeData } from "@/interfaces/edamam";
 
 const DEFAULT_INGREDIENTS_LIST = {
   all: INGREDIENTS,
   filtered: INGREDIENTS,
 };
 
-const Search = () => {
+interface SearchProps {
+  setRecipesData: React.Dispatch<React.SetStateAction<RecipeData | null>>;
+  setIsLoadingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
+  setErrorFetchingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Search: React.FC<SearchProps> = ({
+  setRecipesData,
+  setIsLoadingRecipes,
+  setErrorFetchingRecipes,
+}) => {
   const [ingredients, setIngredients] = useState<{
     all: Ingredient[] | [];
     filtered: Ingredient[] | [];
@@ -25,6 +36,7 @@ const Search = () => {
   const [_focusedIngredientIndex, setFocusedIngredientIndex] = useState<number>(0);
 
   const searchWrapperRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const ingredientRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const filterIngredients = useCallback(
@@ -91,6 +103,8 @@ const Search = () => {
       case " ":
         if (selectedIngredients.some((ingred) => ingred.name === ingredient.name)) return;
         setSelectedIngredients((prev) => [...prev, ingredient]);
+        searchInputRef.current?.focus();
+        setSearchInput("");
         break;
       case "ArrowUp":
       case "ArrowLeft":
@@ -117,15 +131,45 @@ const Search = () => {
     }
   };
 
+  const handleSearchRecipes = async (selectedIngreds: Ingredient[]) => {
+    const ingredientsQuery = selectedIngreds.map((ingr) => ingr.name).join(",");
+    setIsLoadingRecipes(true);
+    const edamamResponse = await fetch(`/api/edamam?ingredients=${ingredientsQuery}`);
+    setIsLoadingRecipes(false);
+
+    if (!edamamResponse.ok) {
+      setRecipesData(null);
+      setErrorFetchingRecipes(true);
+      return;
+    }
+
+    setErrorFetchingRecipes(false);
+    const edamamData = await edamamResponse.json();
+    setRecipesData(edamamData);
+  };
+
   return (
-    <section className="lg:w-1/3 h-full max-h-full flex flex-col items-center">
+    <section className="lg:w-1/3 h-full max-h-full flex flex-col items-center border-0 lg:border-2 lg:rounded-lg lg:border-gray-200/70 lg:p-4">
       <div className="flex flex-col items-center">
-        <Icon type="ingredients" className="text-2xl sm:text-5xl mb-4" />
+        <Icon type="ingredients" className="text-2xl sm:text-5xl text-pastel-blue mb-4" />
 
         <div ref={searchWrapperRef} className="flex flex-col items-center relative">
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-4">
+            {selectedIngredients.length > 0 && (
+              <Tooltip text="Clear selected ingredients">
+                <button
+                  type="button"
+                  className="cursor-pointer text-3xl md:text-5xl text-gray-400 hover:text-red-400"
+                  onClick={() => setSelectedIngredients([])}
+                >
+                  <Icon type="reset" />
+                </button>
+              </Tooltip>
+            )}
+
             <div className="relative">
               <input
+                ref={searchInputRef}
                 className="w-32 focus:w-40 sm:w-40 sm:focus:w-52 h-10 sm:h-12 md:h-14 pl-6 pr-12 py-4 text-xs sm:text-sm md:text-base border-2 rounded-full outline-none focus:border-pastel-blue duration-300 ease-in-out"
                 type="text"
                 value={searchInput}
@@ -140,20 +184,20 @@ const Search = () => {
             </div>
 
             {selectedIngredients.length > 0 && (
-              <Tooltip text="Clear selected ingredients">
+              <Tooltip text="Submit recipe search">
                 <button
                   type="button"
-                  className="cursor-pointer text-4xl text-red-300 hover:text-red-500"
-                  onClick={() => setSelectedIngredients([])}
+                  className="cursor-pointer px-1 text-3xl md:text-5xl saturate-0 hover:saturate-100"
+                  onClick={() => handleSearchRecipes(selectedIngredients)}
                 >
-                  <Icon type="reset" />
+                  <Icon type="recipe-book" />
                 </button>
               </Tooltip>
             )}
           </div>
 
           {showIngredientsList && (
-            <div className="w-80 sm:w-96 h-48 sm:h-80 absolute top-full mt-1 text-sm bg-pastel-brown/30 backdrop-blur-lg p-4 border-2 rounded-lg overflow-auto">
+            <div className="w-80 sm:w-96 h-48 sm:h-80 absolute top-full p-4 mt-1 text-sm bg-pastel-brown/25 backdrop-blur-lg rounded-lg overflow-auto">
               {ingredients.filtered.length === 0 && <div>No matching ingredients found.</div>}
 
               {isLoadingIngredientsList && <EllipsisLoader />}
@@ -167,11 +211,17 @@ const Search = () => {
                       ingredientRefs.current[index] = el;
                     }}
                     role="button"
-                    className="cursor-pointer p-1 outline-none hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35 rounded-lg lowercase"
+                    className={`p-1 outline-none rounded-lg lowercase ${
+                      selectedIngredients.some((ingred) => ingred.name === ingredient.name)
+                        ? "text-gray-400 italic cursor-default"
+                        : "cursor-pointer hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35"
+                    }`}
                     onClick={() => {
                       if (selectedIngredients.some((ingred) => ingred.name === ingredient.name))
                         return;
                       setSelectedIngredients((prev) => [...prev, ingredient]);
+                      searchInputRef.current?.focus();
+                      setSearchInput("");
                     }}
                     onKeyDown={(e) => handleIngredientsListKeyDown(e, ingredient)}
                     tabIndex={0}
@@ -185,7 +235,7 @@ const Search = () => {
       </div>
 
       <div className="h-4/5 flex flex-col items-center mt-4">
-        <h2 className="text-sm sm:text-base font-semibold">Selected Ingredients:</h2>
+        <h2 className="text-sm sm:text-base">Selected Ingredients:</h2>
         <div className="flex flex-wrap justify-center gap-2 my-2 overflow-auto">
           {selectedIngredients.map((ingredient, index) => (
             <button
