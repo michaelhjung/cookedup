@@ -9,6 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        bittersweet: "#F56960",
         cinerous: "#92817A",
         "pastel-brown": "#E3CDB3",
         "pastel-blue": "#B3D4EE",
