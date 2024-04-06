@@ -13,7 +13,7 @@ const Footer = () => {
           <span>by</span>
           <a
             className="font-bold text-slate-800 hover:text-pastel-green"
-            href="https://www.linkedin.com/in/michael-h-jung/"
+            href="https://www.michaelhjung.com"
             target="_blank"
             rel="noopener noreferrer"
           >
