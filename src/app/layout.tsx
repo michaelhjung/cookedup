@@ -19,7 +19,7 @@ const RootLayout = ({
   <html lang="en">
     <head>
       <link rel="icon" href="/favicon.ico" sizes="any" />
-      <link rel="apple-touch-icon" href="/apple-icon.png" type="image/.png" sizes="any" />
+      <link rel="apple-touch-icon" href="/apple-touch-icon.png" type="image/.png" sizes="any" />
     </head>
     <body className={montserrat.className}>{children}</body>
   </html>
