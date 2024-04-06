@@ -98,7 +98,6 @@ const Search: React.FC<SearchProps> = ({
   };
 
   const handleSearchInputKeyDown = (e: React.KeyboardEvent) => {
-    e.preventDefault();
     switch (e.key) {
       case "Enter": {
         if (!ingredients.filtered.length) return;
