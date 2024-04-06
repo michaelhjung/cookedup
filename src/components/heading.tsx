@@ -7,7 +7,7 @@ const Heading = () => (
       <span className="text-pastel-brown">up</span>
       <Icon type="chefhat" />
     </h1>
-    <p className="text-xs md:text-sm">Find recipes based on ingredients on hand!</p>
+    <p className="text-xs sm:text-sm md:text-base">Find recipes based on ingredients on hand!</p>
   </section>
 );
 

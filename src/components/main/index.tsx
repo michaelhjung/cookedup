@@ -20,8 +20,11 @@ const Main = () => {
 
       <Recipes
         recipesData={recipesData}
+        setRecipesData={setRecipesData}
         isLoadingRecipes={isLoadingRecipes}
+        setIsLoadingRecipes={setIsLoadingRecipes}
         errorFetchingRecipes={errorFetchingRecipes}
+        setErrorFetchingRecipes={setErrorFetchingRecipes}
       />
     </main>
   );

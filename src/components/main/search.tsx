@@ -85,6 +85,7 @@ const Search: React.FC<SearchProps> = ({
   }, [searchInput, ingredients.all, filterIngredients]);
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!showIngredientsList) setShowIngredientsList(true);
     const { value } = e.currentTarget;
     setSearchInput(value);
   };
@@ -96,15 +97,44 @@ const Search: React.FC<SearchProps> = ({
     setShowIngredientsList(true);
   };
 
+  const handleSearchInputKeyDown = (e: React.KeyboardEvent) => {
+    e.preventDefault();
+    switch (e.key) {
+      case "Enter": {
+        if (!ingredients.filtered.length) return;
+
+        const ingredientToAdd = ingredients.filtered[0];
+        handleSelectIngredient(ingredientToAdd);
+        break;
+      }
+      case "ArrowUp":
+      case "ArrowLeft": {
+        const lastIndexInList = ingredients.filtered.length - 1;
+
+        setFocusedIngredientIndex(lastIndexInList);
+        ingredientRefs?.current[lastIndexInList]?.focus();
+        break;
+      }
+      case "ArrowDown":
+      case "ArrowRight":
+      case "Tab":
+        ingredientRefs?.current[0]?.focus();
+        break;
+      case "Escape":
+        setShowIngredientsList(false);
+        setFocusedIngredientIndex(0);
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleIngredientsListKeyDown = (e: React.KeyboardEvent, ingredient: Ingredient) => {
     e.preventDefault();
     switch (e.key) {
       case "Enter":
       case " ":
-        if (selectedIngredients.some((ingred) => ingred.name === ingredient.name)) return;
-        setSelectedIngredients((prev) => [...prev, ingredient]);
-        searchInputRef.current?.focus();
-        setSearchInput("");
+        handleSelectIngredient(ingredient);
         break;
       case "ArrowUp":
       case "ArrowLeft":
@@ -131,6 +161,13 @@ const Search: React.FC<SearchProps> = ({
     }
   };
 
+  const handleSelectIngredient = (ingredient: Ingredient) => {
+    if (selectedIngredients.some((ingred) => ingred.name === ingredient.name)) return;
+    setSelectedIngredients((prev) => [...prev, ingredient]);
+    searchInputRef.current?.focus();
+    setSearchInput("");
+  };
+
   const handleSearchRecipes = async (selectedIngreds: Ingredient[]) => {
     const ingredientsQuery = selectedIngreds.map((ingr) => ingr.name).join(",");
     setIsLoadingRecipes(true);
@@ -149,7 +186,7 @@ const Search: React.FC<SearchProps> = ({
   };
 
   return (
-    <section className="lg:w-1/3 h-full max-h-full flex flex-col items-center border-0 lg:border-2 lg:rounded-lg lg:border-gray-200/70 lg:p-4">
+    <section className="lg:w-1/3 h-1/3 lg:h-full max-h-full flex flex-col items-center border-0 lg:border-2 lg:rounded-lg lg:border-gray-200/70 lg:p-4">
       <div className="flex flex-col items-center">
         <Icon type="ingredients" className="text-2xl sm:text-5xl text-pastel-blue mb-4" />
 
@@ -159,7 +196,7 @@ const Search: React.FC<SearchProps> = ({
               <Tooltip text="Clear selected ingredients">
                 <button
                   type="button"
-                  className="cursor-pointer text-3xl md:text-5xl text-gray-400 hover:text-red-400"
+                  className="cursor-pointer text-3xl sm:text-4xl md:text-5xl text-gray-400 hover:text-red-400"
                   onClick={() => setSelectedIngredients([])}
                 >
                   <Icon type="reset" />
@@ -176,6 +213,7 @@ const Search: React.FC<SearchProps> = ({
                 placeholder="Search"
                 onChange={handleSearchInputChange}
                 onFocus={handleSearchFocusAndClick}
+                onKeyDown={handleSearchInputKeyDown}
               />
               <Icon
                 type="search"
@@ -187,7 +225,7 @@ const Search: React.FC<SearchProps> = ({
               <Tooltip text="Submit recipe search">
                 <button
                   type="button"
-                  className="cursor-pointer px-1 text-3xl md:text-5xl saturate-0 hover:saturate-100"
+                  className="cursor-pointer px-1 text-3xl sm:text-4xl md:text-5xl saturate-0 hover:saturate-100"
                   onClick={() => handleSearchRecipes(selectedIngredients)}
                 >
                   <Icon type="recipe-book" />
@@ -197,7 +235,7 @@ const Search: React.FC<SearchProps> = ({
           </div>
 
           {showIngredientsList && (
-            <div className="w-80 sm:w-96 h-48 sm:h-80 absolute top-full p-4 mt-1 text-sm bg-pastel-brown/25 backdrop-blur-lg rounded-lg overflow-auto">
+            <div className="z-10 w-80 lg:w-64 xl:w-72 2xl:w-96 h-40 sm:h-80 absolute top-full p-4 mt-1 text-sm bg-pastel-brown/25 backdrop-blur-lg rounded-lg overflow-auto">
               {ingredients.filtered.length === 0 && <div>No matching ingredients found.</div>}
 
               {isLoadingIngredientsList && <EllipsisLoader />}
@@ -216,13 +254,7 @@ const Search: React.FC<SearchProps> = ({
                         ? "text-gray-400 italic cursor-default"
                         : "cursor-pointer hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35"
                     }`}
-                    onClick={() => {
-                      if (selectedIngredients.some((ingred) => ingred.name === ingredient.name))
-                        return;
-                      setSelectedIngredients((prev) => [...prev, ingredient]);
-                      searchInputRef.current?.focus();
-                      setSearchInput("");
-                    }}
+                    onClick={() => handleSelectIngredient(ingredient)}
                     onKeyDown={(e) => handleIngredientsListKeyDown(e, ingredient)}
                     tabIndex={0}
                   >
@@ -234,8 +266,8 @@ const Search: React.FC<SearchProps> = ({
         </div>
       </div>
 
-      <div className="h-4/5 flex flex-col items-center mt-4">
-        <h2 className="text-sm sm:text-base">Selected Ingredients:</h2>
+      <div className="h-2/5 sm:h-3/5 lg:h-4/5 flex flex-col items-center mt-4">
+        <h2 className="text-xs sm:text-sm md:text-base">Selected Ingredients:</h2>
         <div className="flex flex-wrap justify-center gap-2 my-2 overflow-auto">
           {selectedIngredients.map((ingredient, index) => (
             <button
