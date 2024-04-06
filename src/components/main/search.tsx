@@ -100,10 +100,9 @@ const Search: React.FC<SearchProps> = ({
   const handleSearchInputKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
       case "Enter": {
-        if (!ingredients.filtered.length) return;
-
-        const ingredientToAdd = ingredients.filtered[0];
-        handleSelectIngredient(ingredientToAdd);
+        const searchInputValue = searchInput.trim().toLowerCase();
+        const formattedSearchInputValue: Ingredient = { name: searchInputValue, categories: [] };
+        if (searchInputValue) handleSelectIngredient(formattedSearchInputValue);
         break;
       }
       case "ArrowUp":
@@ -116,7 +115,7 @@ const Search: React.FC<SearchProps> = ({
       }
       case "ArrowDown":
       case "ArrowRight":
-      case "Tab":
+        setFocusedIngredientIndex(0);
         ingredientRefs?.current[0]?.focus();
         break;
       case "Escape":
@@ -129,7 +128,6 @@ const Search: React.FC<SearchProps> = ({
   };
 
   const handleIngredientsListKeyDown = (e: React.KeyboardEvent, ingredient: Ingredient) => {
-    e.preventDefault();
     switch (e.key) {
       case "Enter":
       case " ":

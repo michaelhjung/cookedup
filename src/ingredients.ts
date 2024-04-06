@@ -1855,6 +1855,10 @@ export const INGREDIENTS: Ingredient[] = [
     categories: [],
   },
   {
+    name: "pork belly",
+    categories: [],
+  },
+  {
     name: "pork butt",
     categories: [],
   },
