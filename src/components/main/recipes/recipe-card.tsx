@@ -51,10 +51,15 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ hit }) => {
             )}
           </p>
 
-          <span className="font-semibold text-xs md:text-base">Ingredients:</span>
+          <span className="font-semibold text-xs md:text-base">
+            Ingredients:
+          </span>
           <ul className="text-[0.7rem] md:text-sm">
             {recipe.ingredientLines.map((ingr, index) => (
-              <li key={index} className="list-disc ml-5">
+              <li
+                key={index}
+                className="list-disc ml-5"
+              >
                 {ingr}
               </li>
             ))}
