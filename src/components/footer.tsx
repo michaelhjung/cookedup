@@ -9,7 +9,10 @@ const Footer = () => {
       <div className="flex flex-col items-center text-slate-800 text-xs sm:text-sm">
         <p className="flex items-center gap-1 whitespace-nowrap">
           <span>Designed for you with</span>
-          <Icon type="heart" className={heartClasses} />
+          <Icon
+            type="heart"
+            className={heartClasses}
+          />
           <span>by</span>
           <a
             className="font-bold text-slate-800 hover:text-pastel-green"

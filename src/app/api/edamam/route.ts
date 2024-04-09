@@ -8,9 +8,14 @@ const getEdamamApiUrl = (ingredientsQuery: string) =>
 
 export async function GET(req: NextRequest, _res: NextResponse) {
   const ingredients = req.nextUrl.searchParams.get("ingredients");
-  if (!ingredients) return NextResponse.json({ message: "At least one ingredient is required." });
+  if (!ingredients)
+    return NextResponse.json({
+      message: "At least one ingredient is required.",
+    });
 
-  const ingredientsQuery = Array.isArray(ingredients) ? ingredients.join(",") : ingredients;
+  const ingredientsQuery = Array.isArray(ingredients)
+    ? ingredients.join(",")
+    : ingredients;
 
   try {
     const response = await fetch(getEdamamApiUrl(ingredientsQuery));

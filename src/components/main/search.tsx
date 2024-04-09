@@ -30,10 +30,14 @@ const Search: React.FC<SearchProps> = ({
     filtered: Ingredient[] | [];
   }>(DEFAULT_INGREDIENTS_LIST);
   const [showIngredientsList, setShowIngredientsList] = useState(false);
-  const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[] | []>([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<
+    Ingredient[] | []
+  >([]);
   const [searchInput, setSearchInput] = useState("");
-  const [isLoadingIngredientsList, setIsLoadingIngredientsList] = useState(false);
-  const [_focusedIngredientIndex, setFocusedIngredientIndex] = useState<number>(0);
+  const [isLoadingIngredientsList, setIsLoadingIngredientsList] =
+    useState(false);
+  const [_focusedIngredientIndex, setFocusedIngredientIndex] =
+    useState<number>(0);
 
   const searchWrapperRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -57,7 +61,10 @@ const Search: React.FC<SearchProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target as Node)) {
+      if (
+        searchWrapperRef.current &&
+        !searchWrapperRef.current.contains(e.target as Node)
+      ) {
         setShowIngredientsList(false);
         setFocusedIngredientIndex(0);
       }
@@ -91,7 +98,9 @@ const Search: React.FC<SearchProps> = ({
   };
 
   const handleSearchFocusAndClick = (
-    e: React.FocusEvent<HTMLInputElement> | React.MouseEvent<HTMLInputElement, MouseEvent>,
+    e:
+      | React.FocusEvent<HTMLInputElement>
+      | React.MouseEvent<HTMLInputElement, MouseEvent>,
   ) => {
     handleSearchInputChange(e as React.ChangeEvent<HTMLInputElement>);
     setShowIngredientsList(true);
@@ -101,7 +110,10 @@ const Search: React.FC<SearchProps> = ({
     switch (e.key) {
       case "Enter": {
         const searchInputValue = searchInput.trim().toLowerCase();
-        const formattedSearchInputValue: Ingredient = { name: searchInputValue, categories: [] };
+        const formattedSearchInputValue: Ingredient = {
+          name: searchInputValue,
+          categories: [],
+        };
         if (searchInputValue) handleSelectIngredient(formattedSearchInputValue);
         break;
       }
@@ -127,7 +139,10 @@ const Search: React.FC<SearchProps> = ({
     }
   };
 
-  const handleIngredientsListKeyDown = (e: React.KeyboardEvent, ingredient: Ingredient) => {
+  const handleIngredientsListKeyDown = (
+    e: React.KeyboardEvent,
+    ingredient: Ingredient,
+  ) => {
     switch (e.key) {
       case "Enter":
       case " ":
@@ -136,7 +151,8 @@ const Search: React.FC<SearchProps> = ({
       case "ArrowUp":
       case "ArrowLeft":
         setFocusedIngredientIndex((prevIndex) => {
-          const nextIndex = prevIndex === 0 ? ingredients.filtered.length - 1 : prevIndex - 1;
+          const nextIndex =
+            prevIndex === 0 ? ingredients.filtered.length - 1 : prevIndex - 1;
           ingredientRefs.current[nextIndex]?.focus();
           return nextIndex;
         });
@@ -144,7 +160,8 @@ const Search: React.FC<SearchProps> = ({
       case "ArrowDown":
       case "ArrowRight":
         setFocusedIngredientIndex((prevIndex) => {
-          const nextIndex = prevIndex + 1 === ingredients.filtered.length ? 0 : prevIndex + 1;
+          const nextIndex =
+            prevIndex + 1 === ingredients.filtered.length ? 0 : prevIndex + 1;
           ingredientRefs.current[nextIndex]?.focus();
           return nextIndex;
         });
@@ -159,7 +176,8 @@ const Search: React.FC<SearchProps> = ({
   };
 
   const handleSelectIngredient = (ingredient: Ingredient) => {
-    if (selectedIngredients.some((ingred) => ingred.name === ingredient.name)) return;
+    if (selectedIngredients.some((ingred) => ingred.name === ingredient.name))
+      return;
     setSelectedIngredients((prev) => [...prev, ingredient]);
     searchInputRef.current?.focus();
     setSearchInput("");
@@ -168,7 +186,9 @@ const Search: React.FC<SearchProps> = ({
   const handleSearchRecipes = async (selectedIngreds: Ingredient[]) => {
     const ingredientsQuery = selectedIngreds.map((ingr) => ingr.name).join(",");
     setIsLoadingRecipes(true);
-    const edamamResponse = await fetch(`/api/edamam?ingredients=${ingredientsQuery}`);
+    const edamamResponse = await fetch(
+      `/api/edamam?ingredients=${ingredientsQuery}`,
+    );
     setIsLoadingRecipes(false);
 
     if (!edamamResponse.ok) {
@@ -185,9 +205,15 @@ const Search: React.FC<SearchProps> = ({
   return (
     <section className="lg:w-1/3 h-1/3 lg:h-full max-h-full flex flex-col items-center border-0 lg:border-2 lg:rounded-lg lg:border-gray-200/70 lg:p-4">
       <div className="flex flex-col items-center">
-        <Icon type="ingredients" className="text-2xl sm:text-5xl text-pastel-blue mb-4" />
+        <Icon
+          type="ingredients"
+          className="text-2xl sm:text-5xl text-pastel-blue mb-4"
+        />
 
-        <div ref={searchWrapperRef} className="flex flex-col items-center relative">
+        <div
+          ref={searchWrapperRef}
+          className="flex flex-col items-center relative"
+        >
           <div className="flex items-center gap-4">
             {selectedIngredients.length > 0 && (
               <Tooltip text="Clear selected ingredients">
@@ -233,7 +259,9 @@ const Search: React.FC<SearchProps> = ({
 
           {showIngredientsList && (
             <div className="z-10 w-80 lg:w-64 xl:w-72 2xl:w-96 h-40 sm:h-80 absolute top-full p-4 mt-1 text-sm bg-pastel-brown/25 backdrop-blur-lg rounded-lg overflow-auto">
-              {ingredients.filtered.length === 0 && <div>No matching ingredients found.</div>}
+              {ingredients.filtered.length === 0 && (
+                <div>No matching ingredients found.</div>
+              )}
 
               {isLoadingIngredientsList && <EllipsisLoader />}
 
@@ -247,12 +275,16 @@ const Search: React.FC<SearchProps> = ({
                     }}
                     role="button"
                     className={`p-1 outline-none rounded-lg lowercase ${
-                      selectedIngredients.some((ingred) => ingred.name === ingredient.name)
+                      selectedIngredients.some(
+                        (ingred) => ingred.name === ingredient.name,
+                      )
                         ? "text-gray-400 italic cursor-default"
                         : "cursor-pointer hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35"
                     }`}
                     onClick={() => handleSelectIngredient(ingredient)}
-                    onKeyDown={(e) => handleIngredientsListKeyDown(e, ingredient)}
+                    onKeyDown={(e) =>
+                      handleIngredientsListKeyDown(e, ingredient)
+                    }
                     tabIndex={0}
                   >
                     {ingredient.name}
@@ -264,7 +296,9 @@ const Search: React.FC<SearchProps> = ({
       </div>
 
       <div className="h-2/5 sm:h-3/5 lg:h-4/5 flex flex-col items-center mt-4">
-        <h2 className="text-xs sm:text-sm md:text-base">Selected Ingredients:</h2>
+        <h2 className="text-xs sm:text-sm md:text-base">
+          Selected Ingredients:
+        </h2>
         <div className="flex flex-wrap justify-center gap-2 my-2 overflow-auto">
           {selectedIngredients.map((ingredient, index) => (
             <button
@@ -272,7 +306,9 @@ const Search: React.FC<SearchProps> = ({
               type="button"
               className="flex items-center px-2 py-1 bg-blue-100 text-xs rounded group"
               onClick={() =>
-                setSelectedIngredients((prev) => prev.filter((ingred) => ingred !== ingredient))
+                setSelectedIngredients((prev) =>
+                  prev.filter((ingred) => ingred !== ingredient),
+                )
               }
             >
               <span className="text-blue-800 group-hover:text-red-400 font-semibold lowercase">

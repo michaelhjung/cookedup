@@ -33,9 +33,11 @@ const Recipes: React.FC<RecipesProps> = ({
     try {
       setIsLoadingRecipes(true);
       const nextRecipesPageResponse = await fetch(nextLink);
-      if (!nextRecipesPageResponse.ok) throw new Error("No aditional recipes found.");
+      if (!nextRecipesPageResponse.ok)
+        throw new Error("No aditional recipes found.");
 
-      const nextRecipesPageData: RecipeData = await nextRecipesPageResponse.json();
+      const nextRecipesPageData: RecipeData =
+        await nextRecipesPageResponse.json();
       setRecipesData((prev) => {
         if (!prev) return null;
 
@@ -60,12 +62,17 @@ const Recipes: React.FC<RecipesProps> = ({
   return (
     <section className="h-full flex flex-col items-center lg:w-2/3 lg:p-4 overflow-auto">
       <div>
-        <Icon type="fork-and-spoon" className="text-2xl sm:text-5xl text-cinerous mb-4" />
+        <Icon
+          type="fork-and-spoon"
+          className="text-2xl sm:text-5xl text-cinerous mb-4"
+        />
       </div>
 
       <div className="w-full flex flex-col justify-center items-center">
         {!recipesData?.from && (
-          <p className="text-xs sm:text-sm md:text-base">Select ingredients to find recipes!</p>
+          <p className="text-xs sm:text-sm md:text-base">
+            Select ingredients to find recipes!
+          </p>
         )}
 
         {recipesData?.from && recipesData.count === 0 && (
@@ -76,7 +83,8 @@ const Recipes: React.FC<RecipesProps> = ({
               className="rounded w-24 h-24 md:w-40 md:h-40 xl:w-48 xl:h-48"
             />
             <p className="text-center">
-              No recipes found for those combination of ingredients. Try out some other ingredients!
+              No recipes found for those combination of ingredients. Try out
+              some other ingredients!
             </p>
           </div>
         )}
@@ -90,7 +98,10 @@ const Recipes: React.FC<RecipesProps> = ({
 
             <div className="overflow-auto">
               {recipesData.hits.map((hit: Hit, index: number) => (
-                <RecipeCard key={index} hit={hit} />
+                <RecipeCard
+                  key={index}
+                  hit={hit}
+                />
               ))}
             </div>
           </>
@@ -106,19 +117,22 @@ const Recipes: React.FC<RecipesProps> = ({
 
       {errorFetchingRecipes && (
         <p className="text-xs md:text-sm text-red-500 mt-5">
-          Oops! There was an error when searching up recipes... Please try again at another time.
+          Oops! There was an error when searching up recipes... Please try again
+          at another time.
         </p>
       )}
 
-      {!isLoadingRecipes && !errorFetchingRecipes && recipesData?._links?.next?.href && (
-        <button
-          type="button"
-          className="px-4 md:px-6 py-2 md:py-3 my-10 text-[0.7rem] md:text-sm text-cinerous bg-pastel-brown/25 rounded-full"
-          onClick={loadMoreRecipes}
-        >
-          Load more recipes
-        </button>
-      )}
+      {!isLoadingRecipes &&
+        !errorFetchingRecipes &&
+        recipesData?._links?.next?.href && (
+          <button
+            type="button"
+            className="px-4 md:px-6 py-2 md:py-3 my-10 text-[0.7rem] md:text-sm text-cinerous bg-pastel-brown/25 rounded-full"
+            onClick={loadMoreRecipes}
+          >
+            Load more recipes
+          </button>
+        )}
     </section>
   );
 };
