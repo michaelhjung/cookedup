@@ -5,7 +5,7 @@ const Footer = () => {
   const heartClasses = "text-base animate-pulse hover:animate-throb";
 
   return (
-    <footer className="flex flex-col justify-center items-center gap-6 mt-4 backdrop-blur-md">
+    <footer className="flex flex-col justify-center items-center mt-4 backdrop-blur-md">
       <div className="flex flex-col items-center text-slate-800 text-xs sm:text-sm">
         <p className="flex items-center gap-1 whitespace-nowrap">
           <span>Designed for you with</span>
@@ -23,7 +23,7 @@ const Footer = () => {
             Michael Jung
           </a>
         </p>
-        <span className="mt-2 text-[0.6rem] sm:text-xs">
+        <span className="mt-1 text-[0.6rem] sm:text-xs opacity-50">
           Copyright &copy; 2024 Michael Jung. All rights reserved.
         </span>
       </div>
