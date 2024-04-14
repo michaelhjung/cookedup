@@ -203,23 +203,23 @@ const Search: React.FC<SearchProps> = ({
   };
 
   return (
-    <section className="lg:w-1/3 h-1/3 lg:h-full max-h-full flex flex-col items-center border-0 lg:border-2 lg:rounded-lg lg:border-gray-200/70 lg:p-4">
+    <section className="flex h-1/3 max-h-full flex-col items-center border-0 lg:h-full lg:w-1/3 lg:rounded-lg lg:border-2 lg:border-gray-200/70 lg:p-4">
       <div className="flex flex-col items-center">
         <Icon
           type="ingredients"
-          className="text-2xl sm:text-5xl text-pastel-blue mb-4"
+          className="mb-4 text-2xl text-pastel-blue sm:text-5xl"
         />
 
         <div
           ref={searchWrapperRef}
-          className="flex flex-col items-center relative"
+          className="relative flex flex-col items-center"
         >
           <div className="flex items-center gap-4">
             {selectedIngredients.length > 0 && (
               <Tooltip text="Clear selected ingredients">
                 <button
                   type="button"
-                  className="cursor-pointer text-3xl sm:text-4xl md:text-5xl text-gray-400 hover:text-red-400"
+                  className="cursor-pointer text-3xl text-gray-400 hover:text-red-400 sm:text-4xl md:text-5xl"
                   onClick={() => setSelectedIngredients([])}
                 >
                   <Icon type="reset" />
@@ -230,7 +230,7 @@ const Search: React.FC<SearchProps> = ({
             <div className="relative">
               <input
                 ref={searchInputRef}
-                className="w-32 focus:w-40 sm:w-40 sm:focus:w-52 h-10 sm:h-12 md:h-14 pl-6 pr-12 py-4 text-xs sm:text-sm md:text-base border-2 rounded-full outline-none focus:border-pastel-blue duration-300 ease-in-out"
+                className="h-10 w-32 rounded-full border-2 py-4 pl-6 pr-12 text-xs outline-none duration-300 ease-in-out focus:w-40 focus:border-pastel-blue sm:h-12 sm:w-40 sm:text-sm sm:focus:w-52 md:h-14 md:text-base"
                 type="text"
                 value={searchInput}
                 placeholder="Search"
@@ -240,7 +240,7 @@ const Search: React.FC<SearchProps> = ({
               />
               <Icon
                 type="search"
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-2xl pointer-events-none"
+                className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-gray-400"
               />
             </div>
 
@@ -248,7 +248,7 @@ const Search: React.FC<SearchProps> = ({
               <Tooltip text="Submit recipe search">
                 <button
                   type="button"
-                  className="cursor-pointer px-1 text-3xl sm:text-4xl md:text-5xl saturate-0 hover:saturate-100"
+                  className="cursor-pointer px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl"
                   onClick={() => handleSearchRecipes(selectedIngredients)}
                 >
                   <Icon type="recipe-book" />
@@ -258,7 +258,7 @@ const Search: React.FC<SearchProps> = ({
           </div>
 
           {showIngredientsList && (
-            <div className="z-10 w-80 lg:w-64 xl:w-72 2xl:w-96 h-40 sm:h-80 absolute top-full p-4 mt-1 text-sm bg-pastel-brown/25 backdrop-blur-lg rounded-lg overflow-auto">
+            <div className="absolute top-full z-10 mt-1 h-40 w-80 overflow-auto rounded-lg bg-pastel-brown/25 p-4 text-sm backdrop-blur-lg sm:h-80 lg:w-64 xl:w-72 2xl:w-96">
               {ingredients.filtered.length === 0 && (
                 <div>No matching ingredients found.</div>
               )}
@@ -274,11 +274,11 @@ const Search: React.FC<SearchProps> = ({
                       ingredientRefs.current[index] = el;
                     }}
                     role="button"
-                    className={`p-1 outline-none rounded-lg lowercase ${
+                    className={`rounded-lg p-1 lowercase outline-none ${
                       selectedIngredients.some(
                         (ingred) => ingred.name === ingredient.name,
                       )
-                        ? "text-gray-400 italic cursor-default"
+                        ? "cursor-default italic text-gray-400"
                         : "cursor-pointer hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35"
                     }`}
                     onClick={() => handleSelectIngredient(ingredient)}
@@ -295,26 +295,26 @@ const Search: React.FC<SearchProps> = ({
         </div>
       </div>
 
-      <div className="h-2/5 sm:h-3/5 lg:h-4/5 flex flex-col items-center mt-4">
+      <div className="mt-4 flex h-2/5 flex-col items-center sm:h-3/5 lg:h-4/5">
         <h2 className="text-xs sm:text-sm md:text-base">
           Selected Ingredients:
         </h2>
-        <div className="flex flex-wrap justify-center gap-2 my-2 overflow-auto">
+        <div className="my-2 flex flex-wrap justify-center gap-2 overflow-auto">
           {selectedIngredients.map((ingredient, index) => (
             <button
               key={index}
               type="button"
-              className="flex items-center px-2 py-1 bg-blue-100 text-xs rounded group"
+              className="group flex items-center rounded bg-blue-100 px-2 py-1 text-xs"
               onClick={() =>
                 setSelectedIngredients((prev) =>
                   prev.filter((ingred) => ingred !== ingredient),
                 )
               }
             >
-              <span className="text-blue-800 group-hover:text-red-400 font-semibold lowercase">
+              <span className="font-semibold lowercase text-blue-800 group-hover:text-red-400">
                 {ingredient.name}
               </span>
-              <span className="ml-2 text-blue-500 group-hover:text-red-400 group-hover:font-semibold text-xl">
+              <span className="ml-2 text-xl text-blue-500 group-hover:font-semibold group-hover:text-red-400">
                 ×
               </span>
             </button>
