@@ -16,14 +16,14 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ hit }) => {
         href={recipe.url}
         rel="noopener noreferrer"
         target="_blank"
-        className="relative flex gap-8 p-4 rounded cursor-pointer hover:bg-slate-100 group"
+        className="group relative flex cursor-pointer gap-8 rounded p-4 hover:bg-slate-100"
       >
         <Icon
           type="link-arrow"
-          className="absolute top-4 right-4 md:top-2 md:right-2 text-xl md:text-3xl text-pastel-orange group-hover:text-bittersweet group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ease-in-out"
+          className="absolute right-4 top-4 text-xl text-pastel-orange transition-transform ease-in-out group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-bittersweet md:right-2 md:top-2 md:text-3xl"
         />
         <div className="flex flex-col items-center text-xs md:text-sm">
-          <div className="w-24 md:w-36 h-24 md:h-36">
+          <div className="size-24 md:size-36">
             <Image
               src={recipe.images.SMALL.url}
               width={150}
@@ -32,7 +32,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ hit }) => {
               className="rounded object-cover"
             />
           </div>
-          <div className="max-w-24 md:max-w-36 flex flex-col items-center text-center mt-2">
+          <div className="mt-2 flex max-w-24 flex-col items-center text-center md:max-w-36">
             <p className="font-semibold">{recipe.label}</p>
             <p>({recipe.calories.toFixed(0)} calories)</p>
             <div className="mt-1">
@@ -51,14 +51,14 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ hit }) => {
             )}
           </p>
 
-          <span className="font-semibold text-xs md:text-base">
+          <span className="text-xs font-semibold md:text-base">
             Ingredients:
           </span>
           <ul className="text-[0.7rem] md:text-sm">
             {recipe.ingredientLines.map((ingr, index) => (
               <li
                 key={index}
-                className="list-disc ml-5"
+                className="ml-5 list-disc"
               >
                 {ingr}
               </li>

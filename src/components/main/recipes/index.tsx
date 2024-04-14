@@ -60,15 +60,15 @@ const Recipes: React.FC<RecipesProps> = ({
   };
 
   return (
-    <section className="h-full flex flex-col items-center lg:w-2/3 lg:p-4 overflow-auto">
+    <section className="flex h-full flex-col items-center overflow-auto lg:w-2/3 lg:p-4">
       <div>
         <Icon
           type="fork-and-spoon"
-          className="text-2xl sm:text-5xl text-cinerous mb-4"
+          className="mb-4 text-2xl text-cinerous sm:text-5xl"
         />
       </div>
 
-      <div className="w-full flex flex-col justify-center items-center">
+      <div className="flex w-full flex-col items-center justify-center">
         {!recipesData?.from && (
           <p className="text-xs sm:text-sm md:text-base">
             Select ingredients to find recipes!
@@ -76,11 +76,11 @@ const Recipes: React.FC<RecipesProps> = ({
         )}
 
         {recipesData?.from && recipesData.count === 0 && (
-          <div className="flex flex-col items-center gap-2 text-xs sm:text-sm md:text-base my-4">
+          <div className="my-4 flex flex-col items-center gap-2 text-xs sm:text-sm md:text-base">
             <Image
               src={chefConfusedImg}
               alt="chef confused"
-              className="rounded w-24 h-24 md:w-40 md:h-40 xl:w-48 xl:h-48"
+              className="size-24 rounded md:size-40 xl:size-48"
             />
             <p className="text-center">
               No recipes found for those combination of ingredients. Try out
@@ -91,7 +91,7 @@ const Recipes: React.FC<RecipesProps> = ({
 
         {recipesData?.from && recipesData.count > 0 && (
           <>
-            <p className="text-xs sm:text-sm md:text-base mb-4">
+            <p className="mb-4 text-xs sm:text-sm md:text-base">
               Found <span className="font-bold">{recipesData.count}</span>{" "}
               {recipesData.count > 1 ? "recipes" : "recipe"}!
             </p>
@@ -109,14 +109,14 @@ const Recipes: React.FC<RecipesProps> = ({
       </div>
 
       {isLoadingRecipes && (
-        <div className="flex flex-col items-center mt-5">
+        <div className="mt-5 flex flex-col items-center">
           <Bowl />
           <p className="text-xs md:text-sm">Looking up some recipes...</p>
         </div>
       )}
 
       {errorFetchingRecipes && (
-        <p className="text-xs md:text-sm text-red-500 mt-5">
+        <p className="mt-5 text-xs text-red-500 md:text-sm">
           Oops! There was an error when searching up recipes... Please try again
           at another time.
         </p>
@@ -127,7 +127,7 @@ const Recipes: React.FC<RecipesProps> = ({
         recipesData?._links?.next?.href && (
           <button
             type="button"
-            className="px-4 md:px-6 py-2 md:py-3 my-10 text-[0.7rem] md:text-sm text-cinerous bg-pastel-brown/25 rounded-full"
+            className="my-10 rounded-full bg-pastel-brown/25 px-4 py-2 text-[0.7rem] text-cinerous md:px-6 md:py-3 md:text-sm"
             onClick={loadMoreRecipes}
           >
             Load more recipes

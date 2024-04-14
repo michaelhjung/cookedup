@@ -11,7 +11,7 @@ const Main = () => {
   const [errorFetchingRecipes, setErrorFetchingRecipes] = useState(false);
 
   return (
-    <main className="w-full h-full flex flex-col lg:flex-row flex-grow-0 lg:justify-between items-center mt-4 overflow-auto">
+    <main className="mt-4 flex size-full grow-0 flex-col items-center overflow-auto lg:flex-row lg:justify-between">
       <Search
         setRecipesData={setRecipesData}
         setIsLoadingRecipes={setIsLoadingRecipes}
