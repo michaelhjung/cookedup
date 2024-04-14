@@ -2,7 +2,7 @@ import Image from "next/image";
 import chefBulb from "@public/imgs/chef-bulb.png";
 
 const Heading = () => (
-  <section className="flex flex-col justify-center items-center">
+  <section className="flex flex-col items-center justify-center">
     <Image
       src={chefBulb}
       alt="chef lightbulb"

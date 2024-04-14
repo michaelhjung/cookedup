@@ -2,23 +2,23 @@
 
 const EllipsisLoader = () => (
   <div
-    className="flex justify-center my-5"
+    className="my-5 flex justify-center"
     id="ellipsis-container"
   >
     <div
-      className="flex justify-between w-12"
+      className="flex w-12 justify-between"
       id="ellipsis-animation"
     >
       <span
-        className="w-2 h-2 inline-block border border-gray-400 bg-white rounded-full animate-bounce-higher"
+        className="inline-block size-2 animate-bounce-higher rounded-full border border-gray-400 bg-white"
         style={{ animationDelay: "0s" }}
       ></span>
       <span
-        className="w-2 h-2 inline-block border border-gray-400 bg-white rounded-full animate-bounce-higher"
+        className="inline-block size-2 animate-bounce-higher rounded-full border border-gray-400 bg-white"
         style={{ animationDelay: "0.2s" }}
       ></span>
       <span
-        className="w-2 h-2 inline-block border border-gray-400 bg-white rounded-full animate-bounce-higher"
+        className="inline-block size-2 animate-bounce-higher rounded-full border border-gray-400 bg-white"
         style={{ animationDelay: "0.4s" }}
       ></span>
     </div>

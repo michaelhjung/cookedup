@@ -12,11 +12,11 @@ const Tooltip: React.FC<TooltipProps> = ({ children, text }) => {
     <div
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
-      className="flex justify-center items-center relative"
+      className="relative flex items-center justify-center"
     >
       {children}
       {isVisible && (
-        <div className="tooltip-container absolute bottom-full px-2 py-1 text-xs text-white bg-slate-600 rounded">
+        <div className="tooltip-container absolute bottom-full rounded bg-slate-600 px-2 py-1 text-xs text-white">
           {text}
         </div>
       )}

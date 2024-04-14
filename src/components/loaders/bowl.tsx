@@ -3,11 +3,11 @@ import Icon from "@/components/icon";
 const Bowl = () => (
   <>
     <Icon
-      className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl animate-veggies -mb-6 sm:-mb-10 md:-mb-12 lg:-mb-16"
+      className="-mb-6 animate-veggies text-4xl sm:-mb-10 sm:text-6xl md:-mb-12 md:text-7xl lg:-mb-16 lg:text-8xl"
       type="veggies"
     />
     <Icon
-      className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-pastel-brown animate-bowl"
+      className="animate-bowl text-4xl text-pastel-brown sm:text-6xl md:text-7xl lg:text-8xl"
       type="bowl"
     />
   </>
