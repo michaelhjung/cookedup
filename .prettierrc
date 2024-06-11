@@ -2,8 +2,8 @@
   "bracketSpacing": true,
   "printWidth": 80,
   "semi": true,
-  "singleQuote": false,
   "singleAttributePerLine": true,
+  "singleQuote": false,
   "tabWidth": 2,
   "trailingComma": "all"
 }

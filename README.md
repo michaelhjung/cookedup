@@ -2,11 +2,6 @@
 
 <img src="./public/imgs/chef-bulb.png" alt="logo" width="150" />
 
-<br>
-
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
-<br />
 <br />
 
 Cook up ideas for your next meal based on ingredients already on hand!
