@@ -6,6 +6,12 @@
 
 Cook up ideas for your next meal based on ingredients already on hand!
 
+<!--
+  TODO:
+
+  Add a random meal picker (for eating out and for cooking)
+-->
+
 [Github](https://github.com/michaelhjung/cookedup) &nbsp;•&nbsp;
 **[Live Site](https://www.cookedup.app)**
 
