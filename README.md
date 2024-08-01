@@ -8,8 +8,10 @@ Cook up ideas for your next meal based on ingredients already on hand!
 
 <!--
   TODO:
-
-  Add a random meal picker (for eating out and for cooking)
+  • FEATURES
+    • User Accounts
+    • Random meal picker (for eating out and for cooking)
+    • Meal planner calendar
 -->
 
 [Github](https://github.com/michaelhjung/cookedup) &nbsp;•&nbsp;
