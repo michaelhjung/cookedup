@@ -1,5 +1,6 @@
 import Image from "next/image";
 import chefBulb from "@public/imgs/chef-bulb.png";
+import AuthButton from "@/components/auth-button";
 
 const Heading = () => (
   <section className="flex flex-col items-center justify-center">
@@ -12,6 +13,9 @@ const Heading = () => (
       <span className="font-bold text-pastel-green">cooked</span>
       <span className="text-pastel-brown">up</span>
     </h1>
+
+    <AuthButton />
+
     <p className="text-xs sm:text-sm md:text-base">
       Find recipes based on ingredients on hand!
     </p>
