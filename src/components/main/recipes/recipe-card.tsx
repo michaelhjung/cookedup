@@ -44,11 +44,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ hit }) => {
         <div>
           <p className="text-xs md:text-base">
             <span className="font-semibold">Est. cook time: </span>
-            {recipe.totalTime > 0 ? (
+            {recipe.totalTime > 0 ?
               <span>{recipe.totalTime} minutes</span>
-            ) : (
-              <span>Unable to determine</span>
-            )}
+            : <span>Unable to determine</span>}
           </p>
 
           <span className="text-xs font-semibold md:text-base">

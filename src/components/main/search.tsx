@@ -275,11 +275,13 @@ const Search: React.FC<SearchProps> = ({
                     }}
                     role="button"
                     className={`rounded-lg p-1 lowercase outline-none ${
-                      selectedIngredients.some(
-                        (ingred) => ingred.name === ingredient.name,
-                      )
-                        ? "cursor-default italic text-gray-400"
-                        : "cursor-pointer hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35"
+                      (
+                        selectedIngredients.some(
+                          (ingred) => ingred.name === ingredient.name,
+                        )
+                      ) ?
+                        "cursor-default italic text-gray-400"
+                      : "cursor-pointer hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35"
                     }`}
                     onClick={() => handleSelectIngredient(ingredient)}
                     onKeyDown={(e) =>
