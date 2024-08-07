@@ -4,6 +4,8 @@ import AuthButton from "@/components/auth-button";
 
 const Heading = () => (
   <section className="flex flex-col items-center justify-center">
+    <AuthButton />
+
     <Image
       src={chefBulb}
       alt="chef lightbulb"
@@ -13,8 +15,6 @@ const Heading = () => (
       <span className="font-bold text-pastel-green">cooked</span>
       <span className="text-pastel-brown">up</span>
     </h1>
-
-    <AuthButton />
 
     <p className="text-xs sm:text-sm md:text-base">
       Find recipes based on ingredients on hand!

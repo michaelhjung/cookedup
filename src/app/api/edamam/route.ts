@@ -13,9 +13,8 @@ export async function GET(req: NextRequest, _res: NextResponse) {
       message: "At least one ingredient is required.",
     });
 
-  const ingredientsQuery = Array.isArray(ingredients)
-    ? ingredients.join(",")
-    : ingredients;
+  const ingredientsQuery =
+    Array.isArray(ingredients) ? ingredients.join(",") : ingredients;
 
   try {
     const response = await fetch(getEdamamApiUrl(ingredientsQuery));

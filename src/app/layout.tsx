@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import React from "react";
 import "@/app/globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -31,7 +32,9 @@ const RootLayout = ({
         sizes="any"
       />
     </head>
-    <body className={montserrat.className}>{children}</body>
+    <body className={montserrat.className}>
+      <AuthProvider>{children}</AuthProvider>
+    </body>
   </html>
 );
 
