@@ -22,6 +22,7 @@ const AuthButton = () => {
       email,
       options: {
         shouldCreateUser: true,
+        emailRedirectTo: window.location.origin,
       },
     });
 
@@ -81,7 +82,7 @@ const AuthButton = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mb-2 w-full rounded border p-2"
+                className="mb-2 w-full rounded border p-2 outline-none duration-300 ease-in-out focus:border-pastel-blue"
                 placeholder="Enter your email"
                 required
               />
@@ -90,7 +91,7 @@ const AuthButton = () => {
                 disabled={loading}
                 className="rounded bg-pastel-green px-4 py-2 text-white"
               >
-                {loading ? "Sending..." : "Login/Signup"}
+                {loading ? "Sending..." : "Login / Signup"}
               </button>
               {message && <p className="mt-2 text-sm">{message}</p>}
             </form>
