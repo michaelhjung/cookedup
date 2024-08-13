@@ -27,6 +27,61 @@
       }
     ],
     "import/no-unresolved": "error",
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          ["parent", "sibling", "index"],
+          "object",
+          "type"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "@public/**",
+            "group": "internal"
+          },
+          {
+            "pattern": "@config",
+            "group": "internal"
+          },
+          {
+            "pattern": "@ingredients",
+            "group": "internal"
+          },
+          {
+            "pattern": "@app/**",
+            "group": "internal"
+          },
+          {
+            "pattern": "@components/**",
+            "group": "internal"
+          },
+          {
+            "pattern": "@context/**",
+            "group": "internal"
+          },
+          {
+            "pattern": "@interfaces/**",
+            "group": "internal"
+          },
+          {
+            "pattern": "@utils/**",
+            "group": "internal"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["builtin", "external"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "orderImportKind": "asc",
+          "caseInsensitive": false
+        },
+        "warnOnUnassignedImports": true
+      }
+    ],
     "import/prefer-default-export": "off",
     "no-await-in-loop": "off",
     "no-console": ["warn", { "allow": ["error", "warn"] }],
