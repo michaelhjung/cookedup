@@ -1,9 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 import React from "react";
-import { Hit, RecipeData } from "@/interfaces/edamam";
-import Icon from "@/components/icon";
-import Bowl from "@/components/loaders/bowl";
-import RecipeCard from "@/components/main/recipes/recipe-card";
+import { Hit, RecipeData } from "@interfaces/edamam";
+import Icon from "@components/icon";
+import Bowl from "@components/loaders/bowl";
+import RecipeCard from "@components/main/recipes/recipe-card";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
 import Image from "next/image";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import Icon from "@/components/icon";
+import Icon from "@components/icon";
 
 const Footer = () => {
   const heartClasses = "text-base animate-pulse hover:animate-throb";
