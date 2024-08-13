@@ -1,8 +1,8 @@
 import React from "react";
 
 import BowlIcon from "@public/icons/bowl.svg";
-import ConvoBubbleIcon from "@public/icons/convo-bubble.svg";
 import CloseIcon from "@public/icons/close.svg";
+import ConvoBubbleIcon from "@public/icons/convo-bubble.svg";
 import ForkAndSpoonIcon from "@public/icons/fork-and-spoon.svg";
 import GithubIcon from "@public/icons/github.svg";
 import HeartIcon from "@public/icons/heart.svg";

@@ -8,6 +8,7 @@ import React, {
   useState,
   ReactNode,
 } from "react";
+
 import { supabase } from "@utils/supabase";
 
 interface AuthContextType {

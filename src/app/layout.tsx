@@ -1,9 +1,11 @@
 /* eslint-disable camelcase */
-import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import React from "react";
+
 import "@app/globals.css";
 import { AuthProvider } from "@context/AuthContext";
+
+import type { Metadata } from "next";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 

@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+
+import Icon from "@components/icon";
+import EllipsisLoader from "@components/loaders/ellipsis";
+import Tooltip from "@components/tooltip";
 import { Ingredient } from "@config";
 import { INGREDIENTS } from "@ingredients";
-import { debounce } from "@utils/index";
-import EllipsisLoader from "@components/loaders/ellipsis";
-import Icon from "@components/icon";
-import Tooltip from "@components/tooltip";
 import { RecipeData } from "@interfaces/edamam";
+import { debounce } from "@utils/index";
 
 const DEFAULT_INGREDIENTS_LIST = {
   all: INGREDIENTS,

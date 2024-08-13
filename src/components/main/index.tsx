@@ -1,8 +1,9 @@
 "use client";
 
-import Search from "@components/main/search";
-import Recipes from "@components/main/recipes";
 import { useState } from "react";
+
+import Recipes from "@components/main/recipes";
+import Search from "@components/main/search";
 import { RecipeData } from "@interfaces/edamam";
 
 const Main = () => {

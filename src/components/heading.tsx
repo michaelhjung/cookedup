@@ -1,6 +1,7 @@
 import Image from "next/image";
-import chefBulb from "@public/imgs/chef-bulb.png";
+
 import AuthButton from "@components/auth-button";
+import chefBulb from "@public/imgs/chef-bulb.png";
 
 const Heading = () => (
   <section className="flex flex-col items-center justify-center">
