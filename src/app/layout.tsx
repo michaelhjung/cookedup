@@ -2,8 +2,8 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import React from "react";
-import "@/app/globals.css";
-import { AuthProvider } from "@/context/AuthContext";
+import "@app/globals.css";
+import { AuthProvider } from "@context/AuthContext";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 

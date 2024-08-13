@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { supabase } from "@utils/supabase";
-import { useAuth } from "@/context/AuthContext";
-import Icon from "@/components/icon";
+import { useAuth } from "@context/AuthContext";
+import Icon from "@components/icon";
 
 const AuthButton = () => {
   const { user, loading: authLoading, signOut } = useAuth();

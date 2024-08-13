@@ -1,9 +1,9 @@
 "use client";
 
-import Search from "@/components/main/search";
-import Recipes from "@/components/main/recipes";
+import Search from "@components/main/search";
+import Recipes from "@components/main/recipes";
 import { useState } from "react";
-import { RecipeData } from "@/interfaces/edamam";
+import { RecipeData } from "@interfaces/edamam";
 
 const Main = () => {
   const [recipesData, setRecipesData] = useState<RecipeData | null>(null);

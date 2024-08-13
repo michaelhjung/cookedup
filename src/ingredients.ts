@@ -3,7 +3,7 @@ import {
   // category,
   // Categories,
   Ingredient,
-} from "@/config";
+} from "@config";
 
 // const {
 //   ALOCHOL,
