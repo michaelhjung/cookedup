@@ -261,7 +261,10 @@ const Search: React.FC<SearchProps> = ({
           {showIngredientsList && (
             <div className="absolute top-full z-10 mt-1 h-40 w-80 overflow-auto rounded-lg bg-pastel-brown/25 p-4 text-sm backdrop-blur-lg sm:h-80 lg:w-64 xl:w-72 2xl:w-96">
               {ingredients.filtered.length === 0 && (
-                <div>No matching ingredients found.</div>
+                <div>
+                  No matching ingredients found. Press enter to add this custom
+                  ingredient to your list.
+                </div>
               )}
 
               {isLoadingIngredientsList && <EllipsisLoader />}
