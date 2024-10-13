@@ -69,7 +69,7 @@ const StarIcon: React.FC<StarIconProps> = ({
         .eq("data->recipe->>url", data.recipe.url); // Match based on the recipe URL
 
       if (error) {
-        console.error("Error while removing recipe:", error);
+        console.error("Supabase error object:", error);
         throw new Error(error.message || "An unknown error occurred.");
       }
 
