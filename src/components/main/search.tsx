@@ -7,7 +7,7 @@ import EllipsisLoader from "@components/loaders/ellipsis";
 import Tooltip from "@components/tooltip";
 import { Ingredient } from "@config";
 import { INGREDIENTS } from "@ingredients";
-import { RecipeData } from "@interfaces/edamam";
+import { Hit, RecipeData } from "@interfaces/edamam";
 import { debounce } from "@utils/index";
 
 const DEFAULT_INGREDIENTS_LIST = {
@@ -16,12 +16,16 @@ const DEFAULT_INGREDIENTS_LIST = {
 };
 
 interface SearchProps {
+  user: any;
+  savedRecipes: Hit[];
   setRecipesData: React.Dispatch<React.SetStateAction<RecipeData | null>>;
   setIsLoadingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
   setErrorFetchingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Search: React.FC<SearchProps> = ({
+  user,
+  savedRecipes,
   setRecipesData,
   setIsLoadingRecipes,
   setErrorFetchingRecipes,
@@ -79,7 +83,7 @@ const Search: React.FC<SearchProps> = ({
   }, [searchWrapperRef]);
 
   useEffect(() => {
-    const debouncedFilter = debounce(filterIngredients, 750);
+    const debouncedFilter = debounce(filterIngredients, 300);
 
     if (searchInput.trim()) {
       setIsLoadingIngredientsList(true);
@@ -203,6 +207,30 @@ const Search: React.FC<SearchProps> = ({
     setRecipesData(edamamData);
   };
 
+  const handleViewSavedRecipes = async () => {
+    if (!user) {
+      alert("You need to be logged in to view saved recipes.");
+      return;
+    }
+
+    try {
+      setIsLoadingRecipes(true);
+      setRecipesData({
+        from: 1,
+        to: 1,
+        count: savedRecipes.length,
+        _links: undefined,
+        hits: savedRecipes,
+      });
+      setIsLoadingRecipes(false);
+      setErrorFetchingRecipes(false);
+    } catch (err) {
+      console.error("An error occurred while fetching saved recipes:", err);
+      setIsLoadingRecipes(false);
+      setErrorFetchingRecipes(true);
+    }
+  };
+
   return (
     <section className="flex h-1/3 max-h-full flex-col items-center border-0 lg:h-full lg:w-1/3 lg:rounded-lg lg:border-2 lg:border-gray-200/70 lg:p-4">
       <div className="flex flex-col items-center">
@@ -256,6 +284,20 @@ const Search: React.FC<SearchProps> = ({
                 </button>
               </Tooltip>
             )}
+
+            <Tooltip
+              text={
+                user ? "View saved recipes" : "Log in to view saved recipes"
+              }
+            >
+              <button
+                type="button"
+                className={`${user ? "cursor-pointer" : "cursor-not-allowed"} px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl`}
+                onClick={user ? handleViewSavedRecipes : undefined}
+              >
+                <Icon type={user ? "star-filled" : "star-outline"} />
+              </button>
+            </Tooltip>
           </div>
 
           {showIngredientsList && (

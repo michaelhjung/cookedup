@@ -14,47 +14,139 @@ import OrigamiAirplaneIcon from "@public/icons/origami-airplane.svg";
 import RecipeBookIcon from "@public/icons/recipe-book.svg";
 import ResetIcon from "@public/icons/reset.svg";
 import SearchIcon from "@public/icons/search.svg";
+import StarFilledIcon from "@public/icons/star-filled.svg";
+import StarOutlineIcon from "@public/icons/star-outline.svg";
 import VeggiesIcon from "@public/icons/veggies.svg";
 
 interface IconProps {
   type: string;
   className?: string;
+  onClick?: () => void;
 }
 
-const Icon: React.FC<IconProps> = ({ type, className }) => {
+const Icon: React.FC<IconProps> = ({ type, className, onClick }) => {
   const iconClasses = className || "";
 
   switch (type.trim().toLowerCase()) {
     case "bowl":
-      return <BowlIcon className={iconClasses} />;
+      return (
+        <BowlIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "convo-bubble":
-      return <ConvoBubbleIcon className={iconClasses} />;
+      return (
+        <ConvoBubbleIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "close":
-      return <CloseIcon className={iconClasses} />;
+      return (
+        <CloseIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "fork-and-spoon":
-      return <ForkAndSpoonIcon className={iconClasses} />;
+      return (
+        <ForkAndSpoonIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "github":
-      return <GithubIcon className={iconClasses} />;
+      return (
+        <GithubIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "heart":
-      return <HeartIcon className={iconClasses} />;
+      return (
+        <HeartIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "ingredients":
-      return <IngredientsIcon className={iconClasses} />;
+      return (
+        <IngredientsIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "link-arrow":
-      return <LinkArrowIcon className={iconClasses} />;
+      return (
+        <LinkArrowIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "linkedin":
-      return <LinkedinIcon className={iconClasses} />;
+      return (
+        <LinkedinIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "login":
-      return <Login className={iconClasses} />;
+      return (
+        <Login
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "recipe-book":
-      return <RecipeBookIcon className={iconClasses} />;
+      return (
+        <RecipeBookIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "reset":
-      return <ResetIcon className={iconClasses} />;
+      return (
+        <ResetIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "send":
-      return <OrigamiAirplaneIcon className={iconClasses} />;
+      return (
+        <OrigamiAirplaneIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "search":
-      return <SearchIcon className={iconClasses} />;
+      return (
+        <SearchIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
+    case "star-filled":
+      return (
+        <StarFilledIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
+    case "star-outline":
+      return (
+        <StarOutlineIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     case "veggies":
-      return <VeggiesIcon className={iconClasses} />;
+      return (
+        <VeggiesIcon
+          className={iconClasses}
+          onClick={onClick}
+        />
+      );
     default:
       return null;
   }
