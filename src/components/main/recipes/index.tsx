@@ -1,12 +1,15 @@
 /* eslint-disable no-underscore-dangle */
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import Icon from "@components/icon";
 import Bowl from "@components/loaders/bowl";
 import RecipeCard from "@components/main/recipes/recipe-card";
+import StarIcon from "@components/main/recipes/star-icon";
+import { useAuth } from "@context/AuthContext";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
+import { supabase } from "@utils/supabase";
 
 interface RecipesProps {
   recipesData: any;
@@ -25,6 +28,36 @@ const Recipes: React.FC<RecipesProps> = ({
   errorFetchingRecipes,
   setErrorFetchingRecipes,
 }) => {
+  const { user } = useAuth();
+  const [savedRecipes, setSavedRecipes] = useState<Hit[]>([]);
+
+  useEffect(() => {
+    const fetchSavedRecipes = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("recipes")
+        .select("data")
+        .eq("user_id", user.id)
+        .eq("type", "starred");
+
+      if (error || !data?.length) {
+        console.error(
+          "Error fetching saved recipes:",
+          error || "no saved recipes found",
+        );
+        return;
+      }
+
+      {
+        const savedHits = data.map((item: any) => item.data);
+        setSavedRecipes(savedHits);
+      }
+    };
+
+    fetchSavedRecipes();
+  }, [user]);
+
   const loadMoreRecipes = async () => {
     if (!recipesData) return;
 
@@ -97,12 +130,21 @@ const Recipes: React.FC<RecipesProps> = ({
               {recipesData.count > 1 ? "recipes" : "recipe"}!
             </p>
 
-            <div className="overflow-auto">
+            <div className="overflow-visible">
               {recipesData.hits.map((hit: Hit, index: number) => (
-                <RecipeCard
+                <div
                   key={index}
-                  hit={hit}
-                />
+                  className="flex items-center gap-2"
+                >
+                  <StarIcon
+                    hit={hit}
+                    user={user}
+                    savedRecipes={savedRecipes}
+                    setSavedRecipes={setSavedRecipes}
+                  />
+
+                  <RecipeCard hit={hit} />
+                </div>
               ))}
             </div>
           </>
