@@ -5,10 +5,14 @@ import React from "react";
 import Icon from "@components/icon";
 import Bowl from "@components/loaders/bowl";
 import RecipeCard from "@components/main/recipes/recipe-card";
+import StarIcon from "@components/main/recipes/star-icon";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
 
 interface RecipesProps {
+  user: any;
+  savedRecipes: Hit[];
+  setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
   recipesData: any;
   setRecipesData: React.Dispatch<React.SetStateAction<RecipeData | null>>;
   isLoadingRecipes: boolean;
@@ -18,6 +22,9 @@ interface RecipesProps {
 }
 
 const Recipes: React.FC<RecipesProps> = ({
+  user,
+  savedRecipes,
+  setSavedRecipes,
   recipesData,
   setRecipesData,
   isLoadingRecipes,
@@ -72,7 +79,7 @@ const Recipes: React.FC<RecipesProps> = ({
       <div className="flex w-full flex-col items-center justify-center">
         {!recipesData?.from && (
           <p className="text-xs sm:text-sm md:text-base">
-            Select ingredients to find recipes!
+            Enter ingredients with the search bar to find recipes!
           </p>
         )}
 
@@ -97,12 +104,21 @@ const Recipes: React.FC<RecipesProps> = ({
               {recipesData.count > 1 ? "recipes" : "recipe"}!
             </p>
 
-            <div className="overflow-auto">
+            <div className="overflow-visible">
               {recipesData.hits.map((hit: Hit, index: number) => (
-                <RecipeCard
+                <div
                   key={index}
-                  hit={hit}
-                />
+                  className="flex items-center gap-2"
+                >
+                  <StarIcon
+                    hit={hit}
+                    user={user}
+                    savedRecipes={savedRecipes}
+                    setSavedRecipes={setSavedRecipes}
+                  />
+
+                  <RecipeCard hit={hit} />
+                </div>
               ))}
             </div>
           </>

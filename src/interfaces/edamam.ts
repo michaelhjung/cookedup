@@ -2,12 +2,12 @@ export interface RecipeData {
   from: number;
   to: number;
   count: number;
-  _links: Links;
+  _links?: Links;
   hits: Hit[];
 }
 
 export interface Links {
-  next: {
+  next?: {
     href: string;
     title: string;
   };
