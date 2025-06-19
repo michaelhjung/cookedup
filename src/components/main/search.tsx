@@ -256,22 +256,28 @@ const Search: React.FC<SearchProps> = ({
               </Tooltip>
             )}
 
-            <div className="relative">
-              <input
-                ref={searchInputRef}
-                className="h-10 w-32 rounded-full border-2 py-4 pl-6 pr-12 text-xs outline-none duration-300 ease-in-out focus:w-40 focus:border-pastel-blue sm:h-12 sm:w-40 sm:text-sm sm:focus:w-52 md:h-14 md:text-base"
-                type="text"
-                value={searchInput}
-                placeholder="Search"
-                onChange={handleSearchInputChange}
-                onFocus={handleSearchFocusAndClick}
-                onKeyDown={handleSearchInputKeyDown}
-              />
-              <Icon
-                type="search"
-                className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-gray-400"
-              />
-            </div>
+            <Tooltip
+              text="Select from the list below or type a custom ingredient and press enter"
+              isVisible={showIngredientsList}
+              delay={150}
+            >
+              <div className="relative">
+                <input
+                  ref={searchInputRef}
+                  className="h-10 w-32 rounded-full border-2 py-4 pl-6 pr-12 text-xs outline-none duration-300 ease-in-out focus:w-40 focus:border-pastel-blue sm:h-12 sm:w-40 sm:text-sm sm:focus:w-52 md:h-14 md:text-base"
+                  type="text"
+                  value={searchInput}
+                  placeholder="Search"
+                  onChange={handleSearchInputChange}
+                  onFocus={handleSearchFocusAndClick}
+                  onKeyDown={handleSearchInputKeyDown}
+                />
+                <Icon
+                  type="search"
+                  className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-gray-400"
+                />
+              </div>
+            </Tooltip>
 
             {selectedIngredients.length > 0 && (
               <Tooltip text="Submit recipe search">
