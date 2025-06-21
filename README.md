@@ -6,14 +6,6 @@
 
 Cook up ideas for your next meal based on ingredients already on hand!
 
-<!--
-  TODO:
-  • FEATURES
-    • User Accounts
-    • Random meal picker (for eating out and for cooking)
-    • Meal planner calendar
--->
-
 [Github](https://github.com/michaelhjung/cookedup) &nbsp;•&nbsp;
 **[Live Site](https://www.cookedup.app)**
 
@@ -22,6 +14,6 @@ Cook up ideas for your next meal based on ingredients already on hand!
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
-Copyright © 2024 Michael Jung. All rights reserved.
+Copyright © 2024-2025 Michael Jung. All rights reserved.
 
 </div>
