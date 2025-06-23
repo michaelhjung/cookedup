@@ -1,6 +1,6 @@
 <div align="center" id="readme-header">
 
-<img src="./public/imgs/chef-bulb.png" alt="logo" width="150" />
+<img src="./public/logo.png" alt="logo" width="150" />
 
 <br />
 
