@@ -19,7 +19,7 @@ const Footer = () => {
             className="font-bold text-slate-800 hover:text-pastel-green"
             href="https://www.michaelhjung.com"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener"
           >
             Michael Jung
           </a>
