@@ -14,6 +14,8 @@ Cook up ideas for your next meal based on ingredients already on hand!
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
+This project is **not open source**. The source code may not be copied, modified, or distributed without permission.
+
 Copyright © 2024-2025 Michael Jung. All rights reserved.
 
 </div>

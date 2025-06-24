@@ -2,7 +2,6 @@
   "name": "cookedup",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
   "author": "Michael Jung",
   "scripts": {
     "dev": "next dev",
