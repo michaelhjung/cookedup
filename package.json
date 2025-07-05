@@ -2,39 +2,38 @@
   "name": "cookedup",
   "version": "0.1.0",
   "private": true,
-  "author": "Michael Jung",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
     "start": "next start",
+    "format": "prettier --config .prettierrc --write .",
     "lint": "next lint",
-    "lint:fix": "eslint --fix . --ext .js,.jsx,.ts,.tsx",
-    "prettier": "prettier --config .prettierrc --write .",
-    "clean": "rm -r .next & rm -r out & rm .DS_Store"
+    "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "clean": "rm -rf dist .DS_Store .eslintcache",
+    "prepare": "node .husky/install.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.3",
     "next": "15.3.5",
-    "react": "^19",
-    "react-dom": "^19"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
     "@svgr/webpack": "^8.1.0",
-    "@types/node": "^24",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "^10.4.21",
     "eslint": "^9",
-    "eslint-config-airbnb": "^19.0.4",
     "eslint-config-next": "15.3.5",
     "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-tailwindcss": "^3.18.0",
+    "eslint-plugin-import": "^2.32.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
-    "postcss": "^8",
     "prettier": "^3.6.2",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^4",
     "typescript": "^5"
   },
   "husky": {
@@ -44,7 +43,7 @@
   },
   "lint-staged": {
     "*.{js,mjs,cjs,jsx,ts,tsx}": [
-      "npm run prettier",
+      "npm run format",
       "npm run lint:fix"
     ]
   }

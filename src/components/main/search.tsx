@@ -1,12 +1,13 @@
 "use client";
 
+import { User } from "@supabase/supabase-js";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
+import { Ingredient } from "@/config";
+import { INGREDIENTS } from "@/ingredients";
 import Icon from "@components/icon";
 import EllipsisLoader from "@components/loaders/ellipsis";
 import Tooltip from "@components/tooltip";
-import { Ingredient } from "@config";
-import { INGREDIENTS } from "@ingredients";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import { debounce } from "@utils/index";
 
@@ -16,7 +17,7 @@ const DEFAULT_INGREDIENTS_LIST = {
 };
 
 interface SearchProps {
-  user: any;
+  user: User;
   savedRecipes: Hit[];
   setRecipesData: React.Dispatch<React.SetStateAction<RecipeData | null>>;
   setIsLoadingRecipes: React.Dispatch<React.SetStateAction<boolean>>;

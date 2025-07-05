@@ -48,7 +48,7 @@ const Main = () => {
       }
 
       {
-        const userSavedRecipes = data.map((item: any) => item.data);
+        const userSavedRecipes = data.map((item) => item.data);
         setSavedRecipes(userSavedRecipes);
       }
     };

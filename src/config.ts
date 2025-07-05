@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 const ALCOHOL = "alcohol";
 const BAKING = "baking";
 const BEVERAGES = "beverages";
