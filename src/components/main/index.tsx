@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 
-import Recipes from "@components/main/recipes";
-import Search from "@components/main/search";
+import Recipes from "@components/main/Recipes";
+import Search from "@components/main/Search";
 import { useAuth } from "@context/AuthContext";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import { supabase } from "@utils/supabase";

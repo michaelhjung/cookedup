@@ -58,6 +58,10 @@ const eslintConfig = [
               group: "internal",
             },
             {
+              pattern: "@styles/**",
+              group: "internal",
+            },
+            {
               pattern: "@utils/**",
               group: "internal",
             },

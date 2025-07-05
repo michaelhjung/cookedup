@@ -1,26 +1,52 @@
-import Image from "next/image";
+"use client";
 
-import AuthButton from "@components/auth-button";
+import Image from "next/image";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+
+import AuthButton from "@/components/AuthButton";
 import chefBulb from "@public/logo.png";
 
-const Heading = () => (
-  <section className="flex flex-col items-center justify-center">
-    <AuthButton />
+const Heading = () => {
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-    <Image
-      src={chefBulb}
-      alt="chef lightbulb"
-      className="w-8 md:w-12 xl:w-16"
-    />
-    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
-      <span className="font-bold text-pastel-green">cooked</span>
-      <span className="text-pastel-brown">up</span>
-    </h1>
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-    <p className="text-xs sm:text-sm md:text-base">
-      Find recipes based on ingredients on hand!
-    </p>
-  </section>
-);
+  const isDark = resolvedTheme === "dark";
+
+  return (
+    <section className="flex flex-col items-center justify-center gap-2">
+      <AuthButton />
+
+      <button
+        onClick={() => setTheme(isDark ? "light" : "dark")}
+        aria-label="Toggle Theme"
+        className="transition-transform hover:scale-110 focus:outline-none"
+      >
+        <Image
+          src={chefBulb}
+          alt="chef lightbulb"
+          className={`w-8 md:w-12 xl:w-16 transition-all ${
+            mounted && isDark ?
+              "brightness-125 drop-shadow-[0_0_20px_rgba(255,255,180,0.75)]"
+            : ""
+          }`}
+        />
+      </button>
+
+      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+        <span className="font-bold text-pastel-green">cooked</span>
+        <span className="text-pastel-brown">up</span>
+      </h1>
+
+      <p className="text-xs sm:text-sm md:text-base text-center">
+        Find recipes based on ingredients on hand!
+      </p>
+    </section>
+  );
+};
 
 export default Heading;

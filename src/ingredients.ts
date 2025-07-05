@@ -1,8 +1,4 @@
-import {
-  // category,
-  // Categories,
-  Ingredient,
-} from "@config";
+import { Ingredient } from "@/config";
 
 // const {
 //   ALOCHOL,

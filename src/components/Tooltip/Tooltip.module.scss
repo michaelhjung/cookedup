@@ -1,10 +1,4 @@
-@import "tailwindcss";
-
-* {
-  box-sizing: border-box;
-}
-
-.tooltip-container::after {
+.tooltipContainer::after {
   content: "";
   position: absolute;
   top: 100%;
@@ -13,15 +7,4 @@
   border-width: 5px;
   border-style: solid;
   border-color: #4b5563 transparent transparent transparent;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-span,
-p {
-  color: #777;
 }

@@ -1,5 +1,5 @@
-import Footer from "@components/footer";
-import Heading from "@components/heading";
+import Footer from "@components/Footer";
+import Heading from "@components/Heading";
 import Main from "@components/main";
 
 const Homepage = () => (

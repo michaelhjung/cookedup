@@ -2,13 +2,13 @@ import { User } from "@supabase/supabase-js";
 import React from "react";
 
 import Icon from "@components/icon";
-import Tooltip from "@components/tooltip";
+import Tooltip from "@components/Tooltip/Tooltip";
 import { Hit } from "@interfaces/edamam";
 import { supabase } from "@utils/supabase";
 
 interface StarIconProps {
   hit: Hit;
-  user: User;
+  user: User | null;
   savedRecipes: Hit[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
 }
