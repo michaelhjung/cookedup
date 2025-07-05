@@ -2,15 +2,11 @@ import React from "react";
 
 import BowlIcon from "@public/icons/bowl.svg";
 import CloseIcon from "@public/icons/close.svg";
-import ConvoBubbleIcon from "@public/icons/convo-bubble.svg";
 import ForkAndSpoonIcon from "@public/icons/fork-and-spoon.svg";
 import GithubIcon from "@public/icons/github.svg";
-import HeartIcon from "@public/icons/heart.svg";
 import IngredientsIcon from "@public/icons/ingedients.svg";
 import LinkArrowIcon from "@public/icons/link-arrow.svg";
-import LinkedinIcon from "@public/icons/linkedin.svg";
 import Login from "@public/icons/login.svg";
-import OrigamiAirplaneIcon from "@public/icons/origami-airplane.svg";
 import RecipeBookIcon from "@public/icons/recipe-book.svg";
 import ResetIcon from "@public/icons/reset.svg";
 import SearchIcon from "@public/icons/search.svg";
@@ -31,13 +27,6 @@ const Icon: React.FC<IconProps> = ({ type, className, onClick }) => {
     case "bowl":
       return (
         <BowlIcon
-          className={iconClasses}
-          onClick={onClick}
-        />
-      );
-    case "convo-bubble":
-      return (
-        <ConvoBubbleIcon
           className={iconClasses}
           onClick={onClick}
         />
@@ -63,13 +52,6 @@ const Icon: React.FC<IconProps> = ({ type, className, onClick }) => {
           onClick={onClick}
         />
       );
-    case "heart":
-      return (
-        <HeartIcon
-          className={iconClasses}
-          onClick={onClick}
-        />
-      );
     case "ingredients":
       return (
         <IngredientsIcon
@@ -80,13 +62,6 @@ const Icon: React.FC<IconProps> = ({ type, className, onClick }) => {
     case "link-arrow":
       return (
         <LinkArrowIcon
-          className={iconClasses}
-          onClick={onClick}
-        />
-      );
-    case "linkedin":
-      return (
-        <LinkedinIcon
           className={iconClasses}
           onClick={onClick}
         />
@@ -108,13 +83,6 @@ const Icon: React.FC<IconProps> = ({ type, className, onClick }) => {
     case "reset":
       return (
         <ResetIcon
-          className={iconClasses}
-          onClick={onClick}
-        />
-      );
-    case "send":
-      return (
-        <OrigamiAirplaneIcon
           className={iconClasses}
           onClick={onClick}
         />

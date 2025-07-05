@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React from "react";
 
-import Icon from "@components/icon";
+import Icon from "@components/Icon";
 import { Hit } from "@interfaces/edamam";
 
 interface RecipeCardProps {

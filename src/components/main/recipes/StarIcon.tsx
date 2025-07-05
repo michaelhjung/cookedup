@@ -1,7 +1,7 @@
 import { User } from "@supabase/supabase-js";
 import React from "react";
 
-import Icon from "@components/icon";
+import Icon from "@components/Icon";
 import Tooltip from "@components/Tooltip/Tooltip";
 import { Hit } from "@interfaces/edamam";
 import { supabase } from "@utils/supabase";
