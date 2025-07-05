@@ -1,2 +1,7 @@
-node_modules
-out
+build/*
+dist/*
+public/*
+node_modules/*
+package.json
+package-lock.json
+*.log

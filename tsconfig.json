@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -18,13 +19,12 @@
       }
     ],
     "paths": {
-      "@public/*": ["./public/*"],
-      "@config": ["./src/config.ts"],
-      "@ingredients": ["./src/ingredients.ts"],
-      "@app/*": ["./src/app/*"],
+      "@/*": ["./src/*"],
+      "@api/*": ["./src/api/*"],
       "@components/*": ["./src/components/*"],
       "@context/*": ["./src/context/*"],
       "@interfaces/*": ["./src/interfaces/*"],
+      "@public/*": ["./public/*"],
       "@utils/*": ["./src/utils/*"]
     }
   },

@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle */
+import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import React from "react";
 
@@ -10,10 +10,10 @@ import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
 
 interface RecipesProps {
-  user: any;
+  user: User;
   savedRecipes: Hit[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
-  recipesData: any;
+  recipesData: RecipeData | null;
   setRecipesData: React.Dispatch<React.SetStateAction<RecipeData | null>>;
   isLoadingRecipes: boolean;
   setIsLoadingRecipes: React.Dispatch<React.SetStateAction<boolean>>;

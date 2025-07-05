@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { NextRequest, NextResponse } from "next/server";
 
 const { EDAMAM_APP_ID, EDAMAM_API_KEY } = process.env;

@@ -1,5 +1,3 @@
-/* eslint-disable react/self-closing-comp */
-
 const EllipsisLoader = () => (
   <div
     className="my-5 flex justify-center"

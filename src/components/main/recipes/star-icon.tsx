@@ -1,3 +1,4 @@
+import { User } from "@supabase/supabase-js";
 import React from "react";
 
 import Icon from "@components/icon";
@@ -7,7 +8,7 @@ import { supabase } from "@utils/supabase";
 
 interface StarIconProps {
   hit: Hit;
-  user: any;
+  user: User;
   savedRecipes: Hit[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
 }
@@ -22,7 +23,6 @@ const StarIcon: React.FC<StarIconProps> = ({
     (savedHit) => savedHit?.recipe?.url === hit?.recipe?.url,
   );
   const tooltipText =
-    // eslint-disable-next-line no-nested-ternary
     !user ? "Log in to save this recipe"
     : isSaved ? "Click to remove this recipe from your saved list"
     : "Click to save this recipe";
