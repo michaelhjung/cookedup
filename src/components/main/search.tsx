@@ -9,7 +9,7 @@ import React, {
   useState,
 } from "react";
 
-import Icon from "@components/icon";
+import Icon from "@components/Icon";
 import EllipsisLoader from "@components/loaders/Ellipsis";
 import Tooltip from "@components/Tooltip/Tooltip";
 import ingredientsList from "@data/ingredients.json";

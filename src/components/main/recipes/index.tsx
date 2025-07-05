@@ -2,7 +2,7 @@ import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import React from "react";
 
-import Icon from "@components/icon";
+import Icon from "@components/Icon";
 import Bowl from "@components/loaders/Bowl";
 import RecipeCard from "@components/main/Recipes/Recipe-Card";
 import StarIcon from "@components/main/Recipes/StarIcon";

@@ -1,19 +1,13 @@
+import { Heart } from "lucide-react";
 import React from "react";
 
-import Icon from "@components/icon";
-
 const Footer = () => {
-  const heartClasses = "heart text-base animate-pulse";
-
   return (
     <footer className="mt-4 flex flex-col items-center justify-center backdrop-blur-md">
       <div className="flex flex-col items-center text-xs text-slate-800 sm:text-sm">
         <p className="flex items-center gap-1 whitespace-nowrap">
           <span>Built with</span>
-          <Icon
-            type="heart"
-            className={heartClasses}
-          />
+          <Heart className="heart w-5 h-5 text-red-300 hover:text-red-500 transition-colors ease-out duration-300 animate-pulse throb-on-hover" />
           <span>by</span>
           <a
             className="font-bold text-slate-800 hover:text-pastel-green"

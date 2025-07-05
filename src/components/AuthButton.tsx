@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 
-import Icon from "@components/icon";
+import Icon from "@components/Icon";
 import { useAuth } from "@context/AuthContext";
 import { supabase } from "@utils/supabase";
 
