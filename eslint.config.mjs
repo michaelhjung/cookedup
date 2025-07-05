@@ -50,6 +50,10 @@ const eslintConfig = [
               group: "internal",
             },
             {
+              pattern: "@data/**",
+              group: "internal",
+            },
+            {
               pattern: "@interfaces/**",
               group: "internal",
             },

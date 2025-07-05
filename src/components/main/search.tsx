@@ -1,19 +1,24 @@
 "use client";
 
 import { User } from "@supabase/supabase-js";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import { Ingredient } from "@/config";
-import { INGREDIENTS } from "@/ingredients";
 import Icon from "@components/icon";
 import EllipsisLoader from "@components/loaders/Ellipsis";
 import Tooltip from "@components/Tooltip/Tooltip";
+import ingredientsList from "@data/ingredients.json";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import { debounce } from "@utils/index";
 
 const DEFAULT_INGREDIENTS_LIST = {
-  all: INGREDIENTS,
-  filtered: INGREDIENTS,
+  all: ingredientsList,
+  filtered: ingredientsList,
 };
 
 interface SearchProps {
@@ -32,13 +37,13 @@ const Search: React.FC<SearchProps> = ({
   setErrorFetchingRecipes,
 }) => {
   const [ingredients, setIngredients] = useState<{
-    all: Ingredient[] | [];
-    filtered: Ingredient[] | [];
+    all: string[] | [];
+    filtered: string[] | [];
   }>(DEFAULT_INGREDIENTS_LIST);
   const [showIngredientsList, setShowIngredientsList] = useState(false);
-  const [selectedIngredients, setSelectedIngredients] = useState<
-    Ingredient[] | []
-  >([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<string[] | []>(
+    [],
+  );
   const [searchInput, setSearchInput] = useState("");
   const [isLoadingIngredientsList, setIsLoadingIngredientsList] =
     useState(false);
@@ -53,7 +58,7 @@ const Search: React.FC<SearchProps> = ({
     (searchValue: string) => {
       const formattedSearchValue = searchValue.trim().toUpperCase();
       const filteredIngredientsList = ingredients.all.filter((ingredient) =>
-        ingredient.name.toUpperCase().includes(formattedSearchValue),
+        ingredient.toUpperCase().includes(formattedSearchValue),
       );
       setIngredients((prev) => ({
         ...prev,
@@ -63,6 +68,11 @@ const Search: React.FC<SearchProps> = ({
       setIsLoadingIngredientsList(false);
     },
     [ingredients.all],
+  );
+
+  const debouncedFilter = useMemo(
+    () => debounce(filterIngredients, 300),
+    [filterIngredients],
   );
 
   useEffect(() => {
@@ -84,8 +94,6 @@ const Search: React.FC<SearchProps> = ({
   }, [searchWrapperRef]);
 
   useEffect(() => {
-    const debouncedFilter = debounce(filterIngredients, 300);
-
     if (searchInput.trim()) {
       setIsLoadingIngredientsList(true);
       debouncedFilter(searchInput);
@@ -95,7 +103,7 @@ const Search: React.FC<SearchProps> = ({
     }
 
     return () => debouncedFilter.cancel();
-  }, [searchInput, ingredients.all, filterIngredients]);
+  }, [searchInput, debouncedFilter]);
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!showIngredientsList) setShowIngredientsList(true);
@@ -116,11 +124,7 @@ const Search: React.FC<SearchProps> = ({
     switch (e.key) {
       case "Enter": {
         const searchInputValue = searchInput.trim().toLowerCase();
-        const formattedSearchInputValue: Ingredient = {
-          name: searchInputValue,
-          categories: [],
-        };
-        if (searchInputValue) handleSelectIngredient(formattedSearchInputValue);
+        if (searchInputValue) handleSelectIngredient(searchInputValue);
         break;
       }
       case "ArrowUp":
@@ -147,7 +151,7 @@ const Search: React.FC<SearchProps> = ({
 
   const handleIngredientsListKeyDown = (
     e: React.KeyboardEvent,
-    ingredient: Ingredient,
+    ingredient: string,
   ) => {
     switch (e.key) {
       case "Enter":
@@ -181,19 +185,17 @@ const Search: React.FC<SearchProps> = ({
     }
   };
 
-  const handleSelectIngredient = (ingredient: Ingredient) => {
-    if (selectedIngredients.some((ingred) => ingred.name === ingredient.name))
-      return;
+  const handleSelectIngredient = (ingredient: string) => {
+    if (selectedIngredients.some((ingred) => ingred === ingredient)) return;
     setSelectedIngredients((prev) => [...prev, ingredient]);
     searchInputRef.current?.focus();
     setSearchInput("");
   };
 
-  const handleSearchRecipes = async (selectedIngreds: Ingredient[]) => {
-    const ingredientsQuery = selectedIngreds.map((ingr) => ingr.name).join(",");
+  const handleSearchRecipes = async (selectedIngreds: string[]) => {
     setIsLoadingRecipes(true);
     const edamamResponse = await fetch(
-      `/api/edamam?ingredients=${ingredientsQuery}`,
+      `/api/edamam?ingredients=${selectedIngreds.join(",")}`,
     );
     setIsLoadingRecipes(false);
 
@@ -330,7 +332,7 @@ const Search: React.FC<SearchProps> = ({
                     className={`rounded-lg p-1 lowercase outline-none ${
                       (
                         selectedIngredients.some(
-                          (ingred) => ingred.name === ingredient.name,
+                          (ingred) => ingred === ingredient,
                         )
                       ) ?
                         "cursor-default italic text-gray-400"
@@ -342,7 +344,7 @@ const Search: React.FC<SearchProps> = ({
                     }
                     tabIndex={0}
                   >
-                    {ingredient.name}
+                    {ingredient}
                   </div>
                 ))}
             </div>
@@ -367,7 +369,7 @@ const Search: React.FC<SearchProps> = ({
               }
             >
               <span className="font-semibold lowercase text-blue-800 group-hover:text-red-400">
-                {ingredient.name}
+                {ingredient}
               </span>
               <span className="ml-2 text-xl text-blue-500 group-hover:font-semibold group-hover:text-red-400">
                 ×

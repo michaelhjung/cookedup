@@ -3,7 +3,7 @@ import React from "react";
 import Icon from "@components/icon";
 
 const Footer = () => {
-  const heartClasses = "text-base animate-pulse hover:animate-throb";
+  const heartClasses = "heart text-base animate-pulse";
 
   return (
     <footer className="mt-4 flex flex-col items-center justify-center backdrop-blur-md">

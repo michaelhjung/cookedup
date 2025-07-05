@@ -23,6 +23,7 @@
       "@api/*": ["./src/api/*"],
       "@components/*": ["./src/components/*"],
       "@context/*": ["./src/context/*"],
+      "@data/*": ["./src/data/*"],
       "@interfaces/*": ["./src/interfaces/*"],
       "@public/*": ["./public/*"],
       "@styles/*": ["./src/styles/*"],
