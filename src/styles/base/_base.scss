@@ -1,0 +1,32 @@
+@use "../abstracts" as *;
+
+:root {
+  --background-color: #f7f3ef;
+
+  --gray-medium: #{$light-gray-medium};
+  --bittersweet: #{$light-bittersweet};
+  --cinerous: #{$light-cinerous};
+  --pastel-brown: #{$light-pastel-brown};
+  --pastel-blue: #{$light-pastel-blue};
+  --pastel-green: #{$light-pastel-green};
+  --pastel-orange: #{$light-pastel-orange};
+  --pastel-yellow: #{$light-pastel-yellow};
+}
+
+[data-theme="dark"] {
+  --background-color: #1f1e1d;
+
+  --gray-medium: #{$dark-gray-medium};
+  --bittersweet: #{$dark-bittersweet};
+  --cinerous: #{$dark-cinerous};
+  --pastel-brown: #{$dark-pastel-brown};
+  --pastel-blue: #{$dark-pastel-blue};
+  --pastel-green: #{$dark-pastel-green};
+  --pastel-orange: #{$dark-pastel-orange};
+  --pastel-yellow: #{$dark-pastel-yellow};
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--gray-medium);
+}

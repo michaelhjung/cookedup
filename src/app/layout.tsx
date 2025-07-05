@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 
 import { AuthProvider } from "@context/AuthContext";
-
-import "./globals.css";
+import "@styles/tailwind.css";
+/* eslint-disable-next-line import/order */
+import "@styles/main.scss";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -19,7 +21,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
       <head>
         <link
           rel="icon"
@@ -45,7 +50,15 @@ export default function RootLayout({
         />
       </head>
       <body className={montserrat.className}>
-        <AuthProvider>{children}</AuthProvider>
+        <ThemeProvider
+          storageKey="theme"
+          defaultTheme="system"
+          enableSystem={true}
+          enableColorScheme={true}
+          attribute="data-theme"
+        >
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

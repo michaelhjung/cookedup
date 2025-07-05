@@ -1,5 +1,7 @@
 import React, { ReactNode, useEffect, useState } from "react";
 
+import styles from "./Tooltip.module.scss";
+
 interface TooltipProps {
   children: ReactNode;
   text: string;
@@ -40,7 +42,9 @@ const Tooltip: React.FC<TooltipProps> = ({
     >
       {children}
       {visible && (
-        <div className="tooltip-container absolute bottom-full rounded-lg bg-slate-600 px-2 py-1 text-center text-xs text-white">
+        <div
+          className={`${styles.tooltipContainer} absolute bottom-full rounded-lg bg-slate-600 px-2 py-1 text-center text-xs text-white`}
+        >
           {text}
         </div>
       )}

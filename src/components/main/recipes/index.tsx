@@ -3,14 +3,14 @@ import Image from "next/image";
 import React from "react";
 
 import Icon from "@components/icon";
-import Bowl from "@components/loaders/bowl";
-import RecipeCard from "@components/main/recipes/recipe-card";
-import StarIcon from "@components/main/recipes/star-icon";
+import Bowl from "@components/loaders/Bowl";
+import RecipeCard from "@components/main/Recipes/Recipe-Card";
+import StarIcon from "@components/main/Recipes/StarIcon";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
 
 interface RecipesProps {
-  user: User;
+  user: User | null;
   savedRecipes: Hit[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
   recipesData: RecipeData | null;
