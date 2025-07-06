@@ -1,7 +1,7 @@
 import { User } from "@supabase/supabase-js";
+import { Star } from "lucide-react";
 import React from "react";
 
-import Icon from "@components/Icon";
 import Tooltip from "@components/Tooltip/Tooltip";
 import { Hit } from "@interfaces/edamam";
 import { supabase } from "@utils/supabase";
@@ -87,11 +87,12 @@ const StarIcon: React.FC<StarIconProps> = ({
 
   return (
     <Tooltip text={tooltipText}>
-      <Icon
-        type={isSaved ? "star-filled" : "star-outline"}
-        className={
-          user ? "cursor-pointer text-2xl" : "cursor-not-allowed text-2xl"
-        }
+      <Star
+        strokeWidth={1}
+        className={`
+          ${user ? "cursor-pointer text-2xl" : "cursor-not-allowed text-2xl"}
+          ${isSaved ? "fill-yellow-300 stroke-yellow-300" : ""}
+        `}
         onClick={() => (isSaved ? removeRecipe(hit) : saveRecipe(hit))}
       />
     </Tooltip>

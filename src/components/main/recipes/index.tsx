@@ -4,7 +4,7 @@ import React from "react";
 
 import Icon from "@components/Icon";
 import Bowl from "@components/loaders/Bowl";
-import RecipeCard from "@components/main/Recipes/Recipe-Card";
+import RecipeCard from "@components/main/Recipes/RecipeCard";
 import StarIcon from "@components/main/Recipes/StarIcon";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";

@@ -57,7 +57,7 @@ const Main = () => {
   }, [user]);
 
   return (
-    <main className="mt-4 flex size-full grow-0 flex-col items-center overflow-auto lg:flex-row lg:justify-between">
+    <main className="mt-4 flex size-full grow-0 flex-col items-center lg:flex-row lg:justify-between">
       <Search
         user={user}
         savedRecipes={savedRecipes}

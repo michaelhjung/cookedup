@@ -38,7 +38,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     <div
       onMouseEnter={() => !isControlled && setUncontrolledVisible(true)}
       onMouseLeave={() => !isControlled && setUncontrolledVisible(false)}
-      className="relative flex items-center justify-center"
+      className="relative overflow-visible flex items-center justify-center"
     >
       {children}
       {visible && (
