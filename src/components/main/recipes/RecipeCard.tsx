@@ -1,7 +1,7 @@
+import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
-import Icon from "@components/Icon";
 import { Hit } from "@interfaces/edamam";
 
 interface RecipeCardProps {
@@ -17,11 +17,11 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ hit }) => {
         href={recipe.url}
         rel="noopener noreferrer"
         target="_blank"
-        className="group relative flex cursor-pointer gap-8 rounded p-4 hover:bg-slate-100"
+        className="group relative flex cursor-pointer gap-8 rounded p-4 hover:bg-zinc-500/5"
       >
-        <Icon
-          type="link-arrow"
-          className="absolute right-4 top-4 text-xl text-pastel-orange transition-transform ease-in-out group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-bittersweet md:right-2 md:top-2 md:text-3xl"
+        <ArrowUpRight
+          strokeWidth={2}
+          className="absolute right-6 top-6 text-xl text-pastel-orange transition-transform ease-in-out group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-bittersweet md:right-2 md:top-2 md:text-3xl"
         />
         <div className="flex flex-col items-center text-xs md:text-sm">
           <div className="size-24 md:size-36">

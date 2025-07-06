@@ -18,18 +18,18 @@ const Heading = () => {
   const isDark = resolvedTheme === "dark";
 
   return (
-    <section className="flex flex-col items-center justify-center gap-2">
+    <section className="flex flex-col items-center justify-center gap-1">
       <AuthButton />
 
       <button
         onClick={() => setTheme(isDark ? "light" : "dark")}
         aria-label="Toggle Theme"
-        className="transition-transform hover:scale-110 focus:outline-none"
+        className="transition-transform hover:scale-110 focus-visible:outline-none"
       >
         <Image
           src={chefBulb}
           alt="chef lightbulb"
-          className={`w-8 md:w-12 xl:w-16 transition-all ${
+          className={`w-10 sm:w-12 md:w-14 lg:w-16 transition-[filter,box-shadow] ${
             mounted && isDark ?
               "brightness-125 drop-shadow-[0_0_20px_rgba(255,255,180,0.75)]"
             : ""

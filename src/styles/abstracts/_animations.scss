@@ -46,21 +46,3 @@
     transform: rotate(25deg) translateX(-5px) translateY(-12px);
   }
 }
-
-.bounce-higher {
-  animation: bounce-higher 1s infinite;
-}
-
-.heart {
-  &:hover {
-    animation: throb 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-}
-
-.toss-bowl {
-  animation: toss-bowl 1.75s ease-in-out infinite;
-}
-
-.toss-veggies {
-  animation: toss-bowl-contents 1.75s ease-in-out infinite;
-}

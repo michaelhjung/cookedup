@@ -1,6 +1,7 @@
 "use client";
 
 import { User } from "@supabase/supabase-js";
+import { RefreshCcw, SearchIcon, Star } from "lucide-react";
 import React, {
   useCallback,
   useEffect,
@@ -239,22 +240,25 @@ const Search: React.FC<SearchProps> = ({
       <div className="flex flex-col items-center">
         <Icon
           type="ingredients"
-          className="mb-4 text-2xl text-pastel-blue sm:text-5xl"
+          className="w-8 h-8 sm:w-12 sm:h-12 mb-4 text-pastel-blue"
         />
 
         <div
           ref={searchWrapperRef}
           className="relative flex flex-col items-center"
         >
-          <div className="flex items-center gap-4">
+          <div className="max-w-full flex items-center gap-4">
             {selectedIngredients.length > 0 && (
               <Tooltip text="Clear selected ingredients">
                 <button
                   type="button"
-                  className="cursor-pointer text-3xl text-gray-400 hover:text-red-400 sm:text-4xl md:text-5xl"
+                  className="shrink-0 cursor-pointer text-3xl text-gray-400 hover:text-red-400 sm:text-4xl md:text-5xl"
                   onClick={() => setSelectedIngredients([])}
                 >
-                  <Icon type="reset" />
+                  <RefreshCcw
+                    strokeWidth={1.5}
+                    className="w-6 h-6 sm:w-8 sm:h-8 shrink-0"
+                  />
                 </button>
               </Tooltip>
             )}
@@ -264,10 +268,10 @@ const Search: React.FC<SearchProps> = ({
               isVisible={showIngredientsList}
               delay={150}
             >
-              <div className="relative">
+              <div className="relative flex-grow">
                 <input
                   ref={searchInputRef}
-                  className="h-10 w-32 rounded-full border-2 py-4 pl-6 pr-12 text-xs outline-none duration-300 ease-in-out focus:w-40 focus:border-pastel-blue sm:h-12 sm:w-40 sm:text-sm sm:focus:w-52 md:h-14 md:text-base"
+                  className="h-10 max-w-[7.5rem] sm:h-12 md:max-w-[8.5rem] md:h-14 rounded-full border-2 py-4 pl-6 pr-12 text-xs md:text-sm lg:text-base outline-none duration-300 ease-in-out focus:max-w-[10rem] focus:border-[var(--pastel-blue)]"
                   type="text"
                   value={searchInput}
                   placeholder="Search"
@@ -275,8 +279,8 @@ const Search: React.FC<SearchProps> = ({
                   onFocus={handleSearchFocusAndClick}
                   onKeyDown={handleSearchInputKeyDown}
                 />
-                <Icon
-                  type="search"
+                <SearchIcon
+                  strokeWidth={1.5}
                   className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-gray-400"
                 />
               </div>
@@ -286,10 +290,13 @@ const Search: React.FC<SearchProps> = ({
               <Tooltip text="Submit recipe search">
                 <button
                   type="button"
-                  className="cursor-pointer px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl"
+                  className="shrink-0 cursor-pointer px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl"
                   onClick={() => handleSearchRecipes(selectedIngredients)}
                 >
-                  <Icon type="recipe-book" />
+                  <Icon
+                    className="w-8 h-8 sm:w-10 sm:h-10 shrink-0"
+                    type="recipe-book"
+                  />
                 </button>
               </Tooltip>
             )}
@@ -301,10 +308,13 @@ const Search: React.FC<SearchProps> = ({
             >
               <button
                 type="button"
-                className={`${user ? "cursor-pointer" : "cursor-not-allowed"} px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl`}
+                className={`${user ? "cursor-pointer" : "cursor-not-allowed"} shrink-0 px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl`}
                 onClick={user ? handleViewSavedRecipes : undefined}
               >
-                <Icon type={user ? "star-filled" : "star-outline"} />
+                <Star
+                  strokeWidth={1}
+                  className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 ${user ? "fill-yellow-300 stroke-yellow-300" : ""}`}
+                />
               </button>
             </Tooltip>
           </div>
