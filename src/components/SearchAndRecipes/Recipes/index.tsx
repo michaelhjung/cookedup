@@ -1,9 +1,9 @@
-import Bowl from "@components/loaders/Bowl";
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import React from "react";
 
-import Icon from "@/components/Icon2";
+import Icon from "@components/Icon2";
+import Bowl from "@components/loaders/Bowl";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
 

@@ -1,4 +1,4 @@
-import Icon from "@/components/Icon2";
+import Icon from "@components/Icon";
 
 const Bowl = () => (
   <>
