@@ -1,5 +1,3 @@
-/* eslint-disable react/self-closing-comp */
-
 const EllipsisLoader = () => (
   <div
     className="my-5 flex justify-center"
@@ -10,15 +8,15 @@ const EllipsisLoader = () => (
       id="ellipsis-animation"
     >
       <span
-        className="inline-block size-2 animate-bounce-higher rounded-full border border-gray-400 bg-white"
+        className="inline-block size-2 bounce-higher rounded-full border border-gray-400 bg-white"
         style={{ animationDelay: "0s" }}
       ></span>
       <span
-        className="inline-block size-2 animate-bounce-higher rounded-full border border-gray-400 bg-white"
+        className="inline-block size-2 bounce-higher rounded-full border border-gray-400 bg-white"
         style={{ animationDelay: "0.2s" }}
       ></span>
       <span
-        className="inline-block size-2 animate-bounce-higher rounded-full border border-gray-400 bg-white"
+        className="inline-block size-2 bounce-higher rounded-full border border-gray-400 bg-white"
         style={{ animationDelay: "0.4s" }}
       ></span>
     </div>

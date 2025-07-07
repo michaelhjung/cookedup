@@ -1,0 +1,10 @@
+.tooltipContainer::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #4b5563 transparent transparent transparent;
+}
