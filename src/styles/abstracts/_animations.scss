@@ -1,0 +1,48 @@
+@keyframes bounce-higher {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes throb {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes toss-bowl {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  35% {
+    transform: rotate(-12deg) translateX(-5px);
+  }
+  45% {
+    transform: rotate(10deg) translateX(-5px) translateY(-2px);
+  }
+  75% {
+    transform: translateX(0px);
+  }
+}
+
+@keyframes toss-bowl-contents {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: rotate(-7deg) translateX(-5px);
+  }
+  55% {
+    transform: rotate(25deg) translateX(-5px) translateY(-12px);
+  }
+}

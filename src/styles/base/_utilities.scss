@@ -1,0 +1,45 @@
+@use "../abstracts/animations";
+
+@layer utilities {
+  .bounce-higher {
+    animation: bounce-higher 1s infinite;
+  }
+
+  .heart {
+    &:hover {
+      animation: throb 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  }
+
+  .toss-bowl {
+    animation: toss-bowl 1.75s ease-in-out infinite;
+  }
+
+  .toss-veggies {
+    animation: toss-bowl-contents 1.75s ease-in-out infinite;
+  }
+
+  .text-cinerous {
+    color: var(--cinerous);
+  }
+
+  .text-pastel-brown {
+    color: var(--pastel-brown);
+  }
+
+  .text-pastel-blue {
+    color: var(--pastel-blue);
+  }
+
+  .text-pastel-green {
+    color: var(--pastel-green);
+  }
+
+  .text-pastel-orange {
+    color: var(--pastel-orange);
+  }
+
+  .text-yellow {
+    color: var(--pastel-yellow);
+  }
+}
