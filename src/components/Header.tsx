@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-import AuthButton from "@/components/AuthButton2";
+import AuthButton from "@components/AuthButton";
 import chefBulb from "@public/logo.png";
 
 const Header = () => {
