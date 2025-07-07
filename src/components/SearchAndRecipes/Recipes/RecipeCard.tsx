@@ -1,71 +1,126 @@
+import { User } from "@supabase/supabase-js";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
+import StarIcon from "@components/SearchAndRecipes/Recipes/StarIcon";
 import { Hit } from "@interfaces/edamam";
 
 interface RecipeCardProps {
   hit: Hit;
+  user: User | null;
+  savedRecipes: Hit[];
+  setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
 }
 
-const RecipeCard: React.FC<RecipeCardProps> = ({ hit }) => {
-  const { recipe, _links } = hit;
+const getFormattedCookTime = (totalTime: number): string =>
+  totalTime > 0 ? `${totalTime} minutes` : "Unable to determine";
+
+const RecipeCard: React.FC<RecipeCardProps> = ({
+  hit,
+  user,
+  savedRecipes,
+  setSavedRecipes,
+}) => {
+  const {
+    recipe: {
+      label,
+      url,
+      calories,
+      source,
+      images,
+      totalTime,
+      ingredientLines,
+    },
+  } = hit;
 
   return (
-    <div className="w-full">
-      <a
-        href={recipe.url}
-        rel="noopener noreferrer"
-        target="_blank"
-        className="group relative flex cursor-pointer gap-8 rounded p-4 hover:bg-zinc-500/5"
-      >
-        <ArrowUpRight
-          strokeWidth={2}
-          className="absolute right-6 top-6 text-xl text-pastel-orange transition-transform ease-in-out group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-bittersweet md:right-2 md:top-2 md:text-3xl"
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`
+        h-[400px] w-full max-w-[400px]
+        group
+        relative
+        flex flex-col gap-3
+        border border-[var(--card-border-color)]/50 rounded-xl
+        shadow-md hover:shadow-lg
+        transition-shadow
+        p-4 pb-10
+      `}
+    >
+      {/* External link icon */}
+      <ArrowUpRight
+        strokeWidth={3}
+        size={25}
+        className={`
+          absolute right-4 top-4
+          text-2xl md:text-3xl text-pastel-orange
+          bg-zinc-500/90
+          p-1
+          rounded-full
+          group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-bittersweet group-hover:scale-105
+          transition-transform
+          z-10
+        `}
+      />
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
+        <StarIcon
+          hit={hit}
+          user={user}
+          savedRecipes={savedRecipes}
+          setSavedRecipes={setSavedRecipes}
         />
-        <div className="flex flex-col items-center text-xs md:text-sm">
-          <div className="size-24 md:size-36">
-            <Image
-              src={recipe.images.SMALL.url}
-              width={150}
-              height={150}
-              alt={recipe.label}
-              className="rounded object-cover"
-            />
-          </div>
-          <div className="mt-2 flex max-w-24 flex-col items-center text-center md:max-w-36">
-            <p className="font-semibold">{recipe.label}</p>
-            <p>({recipe.calories.toFixed(0)} calories)</p>
-            <div className="mt-1">
-              <p className="italic">Source:</p>
-              <p className="break-all">{recipe.source}</p>
-            </div>
-          </div>
-        </div>
-        <div>
-          <p className="text-xs md:text-base">
-            <span className="font-semibold">Est. cook time: </span>
-            {recipe.totalTime > 0 ?
-              <span>{recipe.totalTime} minutes</span>
-            : <span>Unable to determine</span>}
-          </p>
+      </div>
 
-          <span className="text-xs font-semibold md:text-base">
-            Ingredients:
-          </span>
-          <ul className="text-[0.7rem] md:text-sm">
-            {recipe.ingredientLines.map((ingr, index) => (
-              <li
-                key={index}
-                className="ml-5 list-disc"
-              >
-                {ingr}
-              </li>
+      {/* Image */}
+      <div className="relative w-full h-[122px] rounded overflow-hidden flex-shrink-0">
+        <Image
+          src={images.LARGE?.url || images.REGULAR?.url || images.SMALL?.url}
+          alt={label}
+          fill
+          quality={85}
+          className="object-cover rounded"
+        />
+      </div>
+
+      <div
+        className="flex flex-col flex-grow overflow-hidden"
+        style={{ height: "calc(100% - 122px)" }}
+      >
+        {/* Title + Calories */}
+        <div className="flex flex-col items-start">
+          <h3 className="font-semibold text-sm md:text-base line-clamp-2">
+            {label}
+          </h3>
+          <p className="text-xs text-gray-500">
+            {Math.round(calories)} calories
+          </p>
+        </div>
+
+        {/* Cook Time + Source */}
+        <div className="flex justify-between text-xs md:text-sm text-gray-500/80">
+          <span>⏱️ {getFormattedCookTime(totalTime)}</span>
+          <span className="italic truncate max-w-[40%]">By {source}</span>
+        </div>
+
+        {/* Ingredients with scroll */}
+        <div className="mt-2 text-xs md:text-sm overflow-y-auto pr-1 flex-grow">
+          <p className="font-semibold mb-1">Ingredients:</p>
+          <ul className="list-disc ml-4 space-y-1">
+            {ingredientLines.slice(0, 5).map((ingr, index) => (
+              <li key={index}>{ingr}</li>
             ))}
           </ul>
+          {ingredientLines.length > 5 && (
+            <p className="mt-1 italic text-gray-400">
+              + {ingredientLines.length - 5} more
+            </p>
+          )}
         </div>
-      </a>
-    </div>
+      </div>
+    </a>
   );
 };
 

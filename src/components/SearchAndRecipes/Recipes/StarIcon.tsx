@@ -88,12 +88,19 @@ const StarIcon: React.FC<StarIconProps> = ({
   return (
     <Tooltip text={tooltipText}>
       <Star
+        size={30}
         strokeWidth={1}
         className={`
           ${user ? "cursor-pointer text-2xl" : "cursor-not-allowed text-2xl"}
           ${isSaved ? "fill-yellow-300 stroke-yellow-300" : ""}
         `}
-        onClick={() => (isSaved ? removeRecipe(hit) : saveRecipe(hit))}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+
+          if (isSaved) removeRecipe(hit);
+          else saveRecipe(hit);
+        }}
       />
     </Tooltip>
   );
