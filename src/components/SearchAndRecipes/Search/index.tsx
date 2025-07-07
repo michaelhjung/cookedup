@@ -10,7 +10,7 @@ import React, {
   useState,
 } from "react";
 
-import Icon from "@/components/Icon2";
+import Icon from "@components/Icon2";
 import Tooltip from "@components/Tooltip";
 import ingredientsList from "@data/ingredients.json";
 import { Hit, RecipeData } from "@interfaces/edamam";
