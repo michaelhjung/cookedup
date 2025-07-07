@@ -19,6 +19,7 @@ interface RecipesProps {
   setIsLoadingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
   errorFetchingRecipes: boolean;
   setErrorFetchingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
+  isSidebarOpen: boolean;
 }
 
 const Recipes: React.FC<RecipesProps> = ({
@@ -31,6 +32,7 @@ const Recipes: React.FC<RecipesProps> = ({
   setIsLoadingRecipes,
   errorFetchingRecipes,
   setErrorFetchingRecipes,
+  isSidebarOpen,
 }) => {
   const loadMoreRecipes = async () => {
     if (!recipesData) return;
@@ -73,6 +75,7 @@ const Recipes: React.FC<RecipesProps> = ({
         size-full flex flex-col grow items-center
         transition-all duration-500 ease-in-out p-4
         overflow-auto
+        ${isSidebarOpen ? "" : "pl-4"}
       `}
     >
       <div>
