@@ -12,7 +12,7 @@ import React, {
 
 import Icon from "@components/Icon";
 import EllipsisLoader from "@components/loaders/Ellipsis";
-import Tooltip from "@components/Tooltip/Tooltip";
+import Tooltip from "@components/Tooltip";
 import ingredientsList from "@data/ingredients.json";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import { debounce } from "@utils/index";
@@ -28,6 +28,8 @@ interface SearchProps {
   setRecipesData: React.Dispatch<React.SetStateAction<RecipeData | null>>;
   setIsLoadingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
   setErrorFetchingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
+  isSidebarOpen: boolean;
+  toggleSidebar: () => void;
 }
 
 const Search: React.FC<SearchProps> = ({
@@ -36,6 +38,7 @@ const Search: React.FC<SearchProps> = ({
   setRecipesData,
   setIsLoadingRecipes,
   setErrorFetchingRecipes,
+  isSidebarOpen,
 }) => {
   const [ingredients, setIngredients] = useState<{
     all: string[] | [];
@@ -236,7 +239,14 @@ const Search: React.FC<SearchProps> = ({
   };
 
   return (
-    <section className="flex h-1/3 max-h-full flex-col items-center border-0 lg:h-full lg:w-1/3 lg:rounded-lg lg:border-2 lg:border-gray-200/70 lg:p-4">
+    <section
+      className={`
+        size-full transition-opacity duration-300 ease-in-out
+        border-zinc-500/10 rounded-md lg:border-y-2 lg:border-l-0 lg:border-r-2
+        lg:p-4
+        ${isSidebarOpen ? "opacity-100" : "opacity-0"}
+      `}
+    >
       <div className="flex flex-col items-center">
         <Icon
           type="ingredients"
@@ -271,7 +281,7 @@ const Search: React.FC<SearchProps> = ({
               <div className="relative flex-grow">
                 <input
                   ref={searchInputRef}
-                  className="h-10 max-w-[7.5rem] sm:h-12 md:max-w-[8.5rem] md:h-14 rounded-full border-2 py-4 pl-6 pr-12 text-xs md:text-sm lg:text-base outline-none duration-300 ease-in-out focus:max-w-[10rem] focus:border-[var(--pastel-blue)]"
+                  className="h-10 max-w-[7.5rem] sm:h-12 md:max-w-[8.5rem] md:h-14 rounded-full border-1 py-4 pl-6 pr-12 text-xs md:text-sm lg:text-base outline-none duration-300 ease-in-out focus:max-w-[10rem] focus:border-[var(--pastel-blue)]"
                   type="text"
                   value={searchInput}
                   placeholder="Search"

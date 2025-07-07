@@ -4,10 +4,10 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-import AuthButton from "@/components/AuthButton";
+import AuthButton from "@components/AuthButton";
 import chefBulb from "@public/logo.png";
 
-const Heading = () => {
+const Header = () => {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -18,7 +18,7 @@ const Heading = () => {
   const isDark = resolvedTheme === "dark";
 
   return (
-    <section className="flex flex-col items-center justify-center gap-1">
+    <header className="flex flex-col items-center justify-center gap-1">
       <AuthButton />
 
       <button
@@ -45,8 +45,8 @@ const Heading = () => {
       <p className="text-xs sm:text-sm md:text-base text-center">
         Find recipes based on ingredients on hand!
       </p>
-    </section>
+    </header>
   );
 };
 
-export default Heading;
+export default Header;

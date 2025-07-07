@@ -4,8 +4,8 @@ import React from "react";
 
 import Icon from "@components/Icon";
 import Bowl from "@components/loaders/Bowl";
-import RecipeCard from "@components/main/Recipes/RecipeCard";
-import StarIcon from "@components/main/Recipes/StarIcon";
+import RecipeCard from "@components/SearchAndRecipes/Recipes/RecipeCard";
+import StarIcon from "@components/SearchAndRecipes/Recipes/StarIcon";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
 
@@ -68,7 +68,13 @@ const Recipes: React.FC<RecipesProps> = ({
   };
 
   return (
-    <section className="flex h-full flex-col items-center overflow-auto lg:w-2/3 lg:p-4">
+    <section
+      className={`
+        size-full flex flex-col grow items-center
+        transition-all duration-500 ease-in-out p-4
+        overflow-auto
+      `}
+    >
       <div>
         <Icon
           type="fork-and-spoon"
@@ -76,7 +82,7 @@ const Recipes: React.FC<RecipesProps> = ({
         />
       </div>
 
-      <div className="flex w-full flex-col items-center justify-center">
+      <div className="w-full flex flex-col items-center justify-center">
         {!recipesData?.from && (
           <p className="text-xs sm:text-sm md:text-base">
             Enter ingredients with the search bar to find recipes!
@@ -100,7 +106,10 @@ const Recipes: React.FC<RecipesProps> = ({
         {recipesData?.from && recipesData.count > 0 && (
           <>
             <p className="mb-4 text-xs sm:text-sm md:text-base">
-              Found <span className="font-bold">{recipesData.count}</span>{" "}
+              Found{" "}
+              <span className="font-bold">
+                {recipesData.count.toLocaleString()}
+              </span>{" "}
               {recipesData.count > 1 ? "recipes" : "recipe"}!
             </p>
 

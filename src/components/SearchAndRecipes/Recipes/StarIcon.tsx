@@ -2,7 +2,7 @@ import { User } from "@supabase/supabase-js";
 import { Star } from "lucide-react";
 import React from "react";
 
-import Tooltip from "@components/Tooltip/Tooltip";
+import Tooltip from "@components/Tooltip";
 import { Hit } from "@interfaces/edamam";
 import { supabase } from "@utils/supabase";
 
