@@ -1,7 +1,7 @@
 "use client";
 
 import { User } from "@supabase/supabase-js";
-import { RefreshCcw, SearchIcon, Star } from "lucide-react";
+import { RefreshCcw, Star } from "lucide-react";
 import React, {
   useCallback,
   useEffect,
@@ -11,11 +11,14 @@ import React, {
 } from "react";
 
 import Icon from "@components/Icon";
-import EllipsisLoader from "@components/loaders/Ellipsis";
 import Tooltip from "@components/Tooltip";
 import ingredientsList from "@data/ingredients.json";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import { debounce } from "@utils/index";
+
+import IngredientsList from "./IngredientsList";
+import SearchInput from "./SearchInput";
+import SelectedIngredients from "./SelectedIngredients";
 
 const DEFAULT_INGREDIENTS_LIST = {
   all: ingredientsList,
@@ -109,86 +112,6 @@ const Search: React.FC<SearchProps> = ({
     return () => debouncedFilter.cancel();
   }, [searchInput, debouncedFilter]);
 
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!showIngredientsList) setShowIngredientsList(true);
-    const { value } = e.currentTarget;
-    setSearchInput(value);
-  };
-
-  const handleSearchFocusAndClick = (
-    e:
-      | React.FocusEvent<HTMLInputElement>
-      | React.MouseEvent<HTMLInputElement, MouseEvent>,
-  ) => {
-    handleSearchInputChange(e as React.ChangeEvent<HTMLInputElement>);
-    setShowIngredientsList(true);
-  };
-
-  const handleSearchInputKeyDown = (e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case "Enter": {
-        const searchInputValue = searchInput.trim().toLowerCase();
-        if (searchInputValue) handleSelectIngredient(searchInputValue);
-        break;
-      }
-      case "ArrowUp":
-      case "ArrowLeft": {
-        const lastIndexInList = ingredients.filtered.length - 1;
-
-        setFocusedIngredientIndex(lastIndexInList);
-        ingredientRefs?.current[lastIndexInList]?.focus();
-        break;
-      }
-      case "ArrowDown":
-      case "ArrowRight":
-        setFocusedIngredientIndex(0);
-        ingredientRefs?.current[0]?.focus();
-        break;
-      case "Escape":
-        setShowIngredientsList(false);
-        setFocusedIngredientIndex(0);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleIngredientsListKeyDown = (
-    e: React.KeyboardEvent,
-    ingredient: string,
-  ) => {
-    switch (e.key) {
-      case "Enter":
-      case " ":
-        handleSelectIngredient(ingredient);
-        break;
-      case "ArrowUp":
-      case "ArrowLeft":
-        setFocusedIngredientIndex((prevIndex) => {
-          const nextIndex =
-            prevIndex === 0 ? ingredients.filtered.length - 1 : prevIndex - 1;
-          ingredientRefs.current[nextIndex]?.focus();
-          return nextIndex;
-        });
-        break;
-      case "ArrowDown":
-      case "ArrowRight":
-        setFocusedIngredientIndex((prevIndex) => {
-          const nextIndex =
-            prevIndex + 1 === ingredients.filtered.length ? 0 : prevIndex + 1;
-          ingredientRefs.current[nextIndex]?.focus();
-          return nextIndex;
-        });
-        break;
-      case "Escape":
-        setShowIngredientsList(false);
-        setFocusedIngredientIndex(0);
-        break;
-      default:
-        break;
-    }
-  };
-
   const handleSelectIngredient = (ingredient: string) => {
     if (selectedIngredients.some((ingred) => ingred === ingredient)) return;
     setSelectedIngredients((prev) => [...prev, ingredient]);
@@ -273,35 +196,17 @@ const Search: React.FC<SearchProps> = ({
               </Tooltip>
             )}
 
-            <Tooltip
-              text="Select from the list below or type a custom ingredient and press enter"
-              isVisible={showIngredientsList}
-              delay={150}
-            >
-              <div className="relative flex-grow">
-                <input
-                  ref={searchInputRef}
-                  className={`
-                    h-10 max-w-[7.5rem] sm:h-12 md:max-w-[8.5rem] md:h-14
-                    rounded-full border-1
-                    py-4 pl-6 pr-12
-                    text-[0.65rem] sm:text-xs md:text-sm lg:text-base
-                    outline-none duration-300 ease-in-out
-                    focus:max-w-[10rem] focus:border-[var(--pastel-blue)]
-                  `}
-                  type="text"
-                  value={searchInput}
-                  placeholder="Search"
-                  onChange={handleSearchInputChange}
-                  onFocus={handleSearchFocusAndClick}
-                  onKeyDown={handleSearchInputKeyDown}
-                />
-                <SearchIcon
-                  strokeWidth={1.5}
-                  className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-gray-400"
-                />
-              </div>
-            </Tooltip>
+            <SearchInput
+              ingredients={ingredients}
+              showIngredientsList={showIngredientsList}
+              setShowIngredientsList={setShowIngredientsList}
+              searchInput={searchInput}
+              setSearchInput={setSearchInput}
+              setFocusedIngredientIndex={setFocusedIngredientIndex}
+              searchInputRef={searchInputRef}
+              ingredientRefs={ingredientRefs}
+              handleSelectIngredient={handleSelectIngredient}
+            />
 
             {selectedIngredients.length > 0 && (
               <Tooltip text="Submit recipe search">
@@ -337,85 +242,23 @@ const Search: React.FC<SearchProps> = ({
           </div>
 
           {showIngredientsList && (
-            <div
-              className={`
-                absolute top-full z-10
-                h-40 w-80
-                sm:h-80 lg:w-64 xl:w-72 2xl:w-96
-                mt-1
-                text-xs sm:text-sm
-                overflow-auto
-                bg-[var(--pastel-brown)]/25 p-4
-                backdrop-blur-lg
-              `}
-            >
-              {ingredients.filtered.length === 0 && (
-                <div>
-                  No matching ingredients found. Press enter to add this custom
-                  ingredient to your list.
-                </div>
-              )}
-
-              {isLoadingIngredientsList && <EllipsisLoader />}
-
-              {!isLoadingIngredientsList &&
-                ingredients.filtered.length > 0 &&
-                ingredients.filtered.map((ingredient, index) => (
-                  <div
-                    key={index}
-                    ref={(el) => {
-                      ingredientRefs.current[index] = el;
-                    }}
-                    role="button"
-                    className={`rounded-lg p-1 lowercase outline-none ${
-                      (
-                        selectedIngredients.some(
-                          (ingred) => ingred === ingredient,
-                        )
-                      ) ?
-                        "cursor-default italic text-gray-400"
-                      : "cursor-pointer hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35"
-                    }`}
-                    onClick={() => handleSelectIngredient(ingredient)}
-                    onKeyDown={(e) =>
-                      handleIngredientsListKeyDown(e, ingredient)
-                    }
-                    tabIndex={0}
-                  >
-                    {ingredient}
-                  </div>
-                ))}
-            </div>
+            <IngredientsList
+              ingredients={ingredients}
+              setShowIngredientsList={setShowIngredientsList}
+              selectedIngredients={selectedIngredients}
+              isLoadingIngredientsList={isLoadingIngredientsList}
+              setFocusedIngredientIndex={setFocusedIngredientIndex}
+              ingredientRefs={ingredientRefs}
+              handleSelectIngredient={handleSelectIngredient}
+            />
           )}
         </div>
       </div>
 
-      <div className="h-full mt-4 flex flex-col items-center sm:h-3/5 lg:h-4/5">
-        <h2 className="text-xs sm:text-sm md:text-base">
-          Selected Ingredients:
-        </h2>
-        <div className="my-2 flex flex-wrap justify-center gap-2 overflow-auto">
-          {selectedIngredients.map((ingredient, index) => (
-            <button
-              key={index}
-              type="button"
-              className="group flex items-center rounded bg-blue-100 px-2 py-1 text-xs"
-              onClick={() =>
-                setSelectedIngredients((prev) =>
-                  prev.filter((ingred) => ingred !== ingredient),
-                )
-              }
-            >
-              <span className="font-semibold lowercase text-blue-800 group-hover:text-red-400 text-[0.65rem] sm:text-xs">
-                {ingredient}
-              </span>
-              <span className="ml-2 text-xl text-blue-500 group-hover:font-semibold group-hover:text-red-400">
-                ×
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <SelectedIngredients
+        selectedIngredients={selectedIngredients}
+        setSelectedIngredients={setSelectedIngredients}
+      />
     </section>
   );
 };

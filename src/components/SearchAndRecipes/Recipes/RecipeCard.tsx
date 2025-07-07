@@ -3,8 +3,9 @@ import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
-import StarIcon from "@components/SearchAndRecipes/Recipes/StarIcon";
 import { Hit } from "@interfaces/edamam";
+
+import StarIcon from "./StarIcon";
 
 interface RecipeCardProps {
   hit: Hit;

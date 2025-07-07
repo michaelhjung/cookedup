@@ -43,7 +43,16 @@ const Tooltip: React.FC<TooltipProps> = ({
       {children}
       {visible && (
         <div
-          className={`${styles.tooltipContainer} absolute bottom-full rounded-lg bg-slate-600 px-2 py-1 text-center text-xs text-white`}
+          className={`
+            min-w-24
+            ${styles.tooltipContainer}
+            absolute
+            bottom-full
+            rounded-lg
+            bg-slate-600
+            px-2 py-1
+            text-center text-xs text-white text-pretty
+          `}
         >
           {text}
         </div>
