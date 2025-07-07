@@ -11,6 +11,8 @@
   --pastel-green: #{$light-pastel-green};
   --pastel-orange: #{$light-pastel-orange};
   --pastel-yellow: #{$light-pastel-yellow};
+
+  --card-border-color: #ddd;
 }
 
 [data-theme="dark"] {
@@ -24,6 +26,8 @@
   --pastel-green: #{$dark-pastel-green};
   --pastel-orange: #{$dark-pastel-orange};
   --pastel-yellow: #{$dark-pastel-yellow};
+
+  --card-border-color: #444;
 }
 
 body {

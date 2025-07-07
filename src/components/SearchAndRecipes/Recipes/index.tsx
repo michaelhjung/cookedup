@@ -5,7 +5,6 @@ import React from "react";
 import Icon from "@components/Icon";
 import Bowl from "@components/loaders/Bowl";
 import RecipeCard from "@components/SearchAndRecipes/Recipes/RecipeCard";
-import StarIcon from "@components/SearchAndRecipes/Recipes/StarIcon";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
 
@@ -75,7 +74,7 @@ const Recipes: React.FC<RecipesProps> = ({
         size-full flex flex-col grow items-center
         transition-all duration-500 ease-in-out p-4
         overflow-auto
-        ${isSidebarOpen ? "" : "pl-4"}
+        ${isSidebarOpen ? "" : "pl-8"}
       `}
     >
       <div>
@@ -116,21 +115,15 @@ const Recipes: React.FC<RecipesProps> = ({
               {recipesData.count > 1 ? "recipes" : "recipe"}!
             </p>
 
-            <div className="overflow-visible">
+            <div className="grid w-full gap-6 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
               {recipesData.hits.map((hit: Hit, index: number) => (
-                <div
+                <RecipeCard
                   key={index}
-                  className="flex items-center gap-2"
-                >
-                  <StarIcon
-                    hit={hit}
-                    user={user}
-                    savedRecipes={savedRecipes}
-                    setSavedRecipes={setSavedRecipes}
-                  />
-
-                  <RecipeCard hit={hit} />
-                </div>
+                  hit={hit}
+                  user={user}
+                  savedRecipes={savedRecipes}
+                  setSavedRecipes={setSavedRecipes}
+                />
               ))}
             </div>
           </>
@@ -156,7 +149,7 @@ const Recipes: React.FC<RecipesProps> = ({
         recipesData?._links?.next?.href && (
           <button
             type="button"
-            className="my-10 rounded-full bg-pastel-brown/25 px-4 py-2 text-[0.7rem] text-cinerous md:px-6 md:py-3 md:text-sm"
+            className="my-10 rounded-3xl bg-[var(--pastel-brown)]/20 px-4 py-2 text-[0.7rem] text-cinerous md:px-6 md:py-3 md:text-sm"
             onClick={loadMoreRecipes}
           >
             Load more recipes
