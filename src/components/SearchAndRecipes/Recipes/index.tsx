@@ -4,9 +4,10 @@ import React from "react";
 
 import Icon from "@components/Icon";
 import Bowl from "@components/loaders/Bowl";
-import RecipeCard from "@components/SearchAndRecipes/Recipes/RecipeCard";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
+
+import RecipeCard from "./RecipeCard";
 
 interface RecipesProps {
   user: User | null;
@@ -149,7 +150,17 @@ const Recipes: React.FC<RecipesProps> = ({
         recipesData?._links?.next?.href && (
           <button
             type="button"
-            className="my-10 rounded-3xl bg-[var(--pastel-brown)]/20 px-4 py-2 text-[0.7rem] text-cinerous md:px-6 md:py-3 md:text-sm"
+            className={`
+              my-10
+              bg-[var(--pastel-brown)]/20
+              px-4 py-2
+              md:px-6 md:py-3
+              text-[0.7rem] text-cinerous
+              md:text-sm
+              rounded-3xl
+              hover:scale-105
+              transition-transform
+            `}
             onClick={loadMoreRecipes}
           >
             Load more recipes

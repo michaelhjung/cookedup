@@ -53,7 +53,7 @@ const AuthButton = () => {
         <button
           aria-label={open ? "Close auth modal" : "Open auth modal"}
           onClick={() => setOpen((prev) => !prev)}
-          className="rounded-md hover:scale-105"
+          className="rounded-md hover:scale-105 transition-transform"
         >
           {open ?
             <X />
@@ -65,10 +65,22 @@ const AuthButton = () => {
 
       {/* Modal Overlay */}
       {open && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center backdrop-blur-sm">
+        <div
+          className={`
+            fixed inset-0 z-40
+            flex items-center justify-center
+            backdrop-blur-sm
+          `}
+        >
           <div
             ref={modalRef}
-            className="w-80 max-w-sm border border-zinc-500/15 rounded-md p-4 shadow-xl"
+            className={`
+              w-80 max-w-sm
+              border border-zinc-500/15 rounded-md
+              p-4
+              shadow-xl
+              bg-[var(--background-color)]
+            `}
           >
             {user ?
               <div className="flex flex-col items-center gap-2">
