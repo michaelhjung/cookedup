@@ -281,7 +281,14 @@ const Search: React.FC<SearchProps> = ({
               <div className="relative flex-grow">
                 <input
                   ref={searchInputRef}
-                  className="h-10 max-w-[7.5rem] sm:h-12 md:max-w-[8.5rem] md:h-14 rounded-full border-1 py-4 pl-6 pr-12 text-xs md:text-sm lg:text-base outline-none duration-300 ease-in-out focus:max-w-[10rem] focus:border-[var(--pastel-blue)]"
+                  className={`
+                    h-10 max-w-[7.5rem] sm:h-12 md:max-w-[8.5rem] md:h-14
+                    rounded-full border-1
+                    py-4 pl-6 pr-12
+                    text-[0.65rem] sm:text-xs md:text-sm lg:text-base
+                    outline-none duration-300 ease-in-out
+                    focus:max-w-[10rem] focus:border-[var(--pastel-blue)]
+                  `}
                   type="text"
                   value={searchInput}
                   placeholder="Search"
@@ -330,7 +337,18 @@ const Search: React.FC<SearchProps> = ({
           </div>
 
           {showIngredientsList && (
-            <div className="absolute top-full z-10 mt-1 h-40 w-80 overflow-auto rounded-lg bg-pastel-brown/25 p-4 text-sm backdrop-blur-lg sm:h-80 lg:w-64 xl:w-72 2xl:w-96">
+            <div
+              className={`
+                absolute top-full z-10
+                h-40 w-80
+                sm:h-80 lg:w-64 xl:w-72 2xl:w-96
+                mt-1
+                text-xs sm:text-sm
+                overflow-auto
+                bg-[var(--pastel-brown)]/25 p-4
+                backdrop-blur-lg
+              `}
+            >
               {ingredients.filtered.length === 0 && (
                 <div>
                   No matching ingredients found. Press enter to add this custom
@@ -372,7 +390,7 @@ const Search: React.FC<SearchProps> = ({
         </div>
       </div>
 
-      <div className="mt-4 flex h-2/5 flex-col items-center sm:h-3/5 lg:h-4/5">
+      <div className="h-full mt-4 flex flex-col items-center sm:h-3/5 lg:h-4/5">
         <h2 className="text-xs sm:text-sm md:text-base">
           Selected Ingredients:
         </h2>
@@ -388,7 +406,7 @@ const Search: React.FC<SearchProps> = ({
                 )
               }
             >
-              <span className="font-semibold lowercase text-blue-800 group-hover:text-red-400">
+              <span className="font-semibold lowercase text-blue-800 group-hover:text-red-400 text-[0.65rem] sm:text-xs">
                 {ingredient}
               </span>
               <span className="ml-2 text-xl text-blue-500 group-hover:font-semibold group-hover:text-red-400">

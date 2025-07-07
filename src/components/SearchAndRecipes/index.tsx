@@ -85,8 +85,10 @@ const SearchAndRecipes = () => {
       {/* Search Sidebar */}
       <div
         className={`
-          mb-4 p-4 lg:p-0 lg:mb-0
-          transition-all duration-300 ease-in-out lg:overflow-hidden
+          max-h-1/2 lg:max-h-full
+          mb-4 lg:p-0 lg:mb-0
+          transition-all duration-300 ease-in-out
+          lg:overflow-hidden
           ${isSidebarOpen ? "lg:w-1/3" : "lg:w-0"}
         `}
       >
@@ -112,6 +114,7 @@ const SearchAndRecipes = () => {
         setIsLoadingRecipes={setIsLoadingRecipes}
         errorFetchingRecipes={errorFetchingRecipes}
         setErrorFetchingRecipes={setErrorFetchingRecipes}
+        isSidebarOpen={isSidebarOpen}
       />
     </div>
   );
