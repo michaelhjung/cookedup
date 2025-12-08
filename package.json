@@ -7,7 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "format": "prettier --config .prettierrc --write .",
-    "lint": "next lint",
+    "lint": "eslint .",
     "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
     "clean": "rm -rf dist .DS_Store .eslintcache",
     "prepare": "node .husky/install.mjs"
@@ -22,14 +22,13 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.3.5",
+    "eslint-config-next": "^16.0.7",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-import": "^2.32.0",
     "husky": "^9.1.7",
