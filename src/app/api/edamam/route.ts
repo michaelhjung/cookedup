@@ -5,7 +5,7 @@ const apiBaseUrl = "https://api.edamam.com";
 const getEdamamApiUrl = (ingredientsQuery: string) =>
   `${apiBaseUrl}/api/recipes/v2?type=public&q=${ingredientsQuery}&app_id=${EDAMAM_APP_ID}&app_key=${EDAMAM_API_KEY}`;
 
-export async function GET(req: NextRequest, _res: NextResponse) {
+export async function GET(req: NextRequest) {
   const ingredients = req.nextUrl.searchParams.get("ingredients");
   if (!ingredients)
     return NextResponse.json({
