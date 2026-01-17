@@ -19,7 +19,7 @@ const Footer = () => {
           </a>
         </p>
         <span className="mt-1 text-[0.65rem] sm:text-xs opacity-50 tracking-tight">
-          Copyright &copy; 2024-2025 Michael Jung. All rights reserved.
+          Copyright &copy; 2024-2026 Michael Jung. All rights reserved.
         </span>
       </div>
     </footer>
