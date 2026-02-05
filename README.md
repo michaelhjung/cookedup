@@ -16,6 +16,6 @@ Cook up ideas for your next meal based on ingredients already on hand!
 
 This project is **not open source**. The source code may not be copied, modified, or distributed without permission.
 
-Copyright © 2024-2025 Michael Jung. All rights reserved.
+Copyright © 2024-2026 Michael Jung. All rights reserved.
 
 </div>
