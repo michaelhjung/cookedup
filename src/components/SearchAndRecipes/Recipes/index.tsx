@@ -121,7 +121,7 @@ const Recipes: React.FC<RecipesProps> = ({
       <div className="w-full flex flex-col items-center justify-center">
         {!recipesData?.from && (
           <p className="text-xs sm:text-sm md:text-base">
-            Enter ingredients with the search bar to find recipes!
+            Search by ingredients or generate random recipes to get started!
           </p>
         )}
 
@@ -133,8 +133,7 @@ const Recipes: React.FC<RecipesProps> = ({
               className="size-24 rounded md:size-40 xl:size-48"
             />
             <p className="text-center">
-              No recipes found for those combination of ingredients. Try out
-              some other ingredients!
+              No recipes matched. Try a different combination!
             </p>
           </div>
         )}

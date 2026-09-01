@@ -2,31 +2,43 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  RANDOM_RECIPE_FILTER_OPTIONS,
+  RANDOM_RECIPE_FILTER_PARAM_NAMES,
+} from "@data/randomRecipeFilters";
+
 const { EDAMAM_APP_ID, EDAMAM_API_KEY } = process.env;
 const apiBaseUrl = "https://api.edamam.com";
 
 const getEdamamApiUrl = (ingredientsQuery: string) =>
   `${apiBaseUrl}/api/recipes/v2?type=public&q=${ingredientsQuery}&app_id=${EDAMAM_APP_ID}&app_key=${EDAMAM_API_KEY}`;
 
-// Repeatable filter params for the random recipe generator (e.g.
-// `diet=low-carb&diet=high-fiber`), forwarded to Edamam as-is. Values are
-// validated client-side against src/data/randomRecipeFilters.ts before
-// ever reaching this route.
-const RANDOM_RECIPE_FILTER_PARAMS = [
-  "cuisineType",
-  "diet",
-  "health",
-  "mealType",
-  "dishType",
-] as const;
+// (param, value) pairs allowed through to Edamam for the random recipe
+// generator. This is a server-side allowlist, not just client-side UI
+// affordance: anyone can call this route directly (curl, etc.) with
+// arbitrary values, and forwarding those unchecked would let them burn
+// this app's Edamam quota. We only forward values that exactly match an
+// entry in the verified src/data/randomRecipeFilters.ts list; anything
+// else is silently dropped.
+const VALID_FILTER_VALUES_BY_PARAM = RANDOM_RECIPE_FILTER_OPTIONS.reduce(
+  (acc, option) => {
+    const values = acc.get(option.param) ?? new Set<string>();
+    values.add(option.value);
+    acc.set(option.param, values);
+    return acc;
+  },
+  new Map<string, Set<string>>(),
+);
 
 const getRandomRecipesApiUrl = (searchParams: URLSearchParams): string => {
   const edamamParams = new URLSearchParams();
   edamamParams.set("type", "public");
   edamamParams.set("random", "true");
 
-  RANDOM_RECIPE_FILTER_PARAMS.forEach((param) => {
+  RANDOM_RECIPE_FILTER_PARAM_NAMES.forEach((param) => {
+    const validValues = VALID_FILTER_VALUES_BY_PARAM.get(param);
     searchParams.getAll(param).forEach((value) => {
+      if (!validValues?.has(value)) return;
       edamamParams.append(param, value);
     });
   });

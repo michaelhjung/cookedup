@@ -1,6 +1,34 @@
-import React from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 
 import { TagMultiSelectOption } from "./types";
+
+// Preferred dropdown heights, mirroring the `h-40`/`sm:h-80` Tailwind
+// scale this dropdown used to render at unconditionally. These are now
+// upper bounds rather than fixed heights: the effect below shrinks the
+// dropdown to whatever room is actually available (e.g. inside the
+// sidebar's `lg:overflow-hidden` container), so it stays fully reachable
+// via its own internal scroll instead of being silently clipped by an
+// ancestor.
+const PREFERRED_MAX_HEIGHT_PX = 160; // matches h-40
+const PREFERRED_MAX_HEIGHT_SM_PX = 320; // matches sm:h-80 at the `sm` breakpoint (640px)
+const SM_BREAKPOINT_PX = 640;
+const MIN_USABLE_HEIGHT_PX = 96;
+const BOTTOM_MARGIN_PX = 8;
+
+// Walk up from the dropdown to find the nearest ancestor that actually
+// clips overflow (the sidebar container uses `lg:overflow-hidden`).
+// Falls back to the viewport when no clipping ancestor is found.
+const getClippingBoundaryBottom = (el: HTMLElement): number => {
+  let node = el.parentElement;
+  while (node) {
+    const { overflowY, overflow } = window.getComputedStyle(node);
+    if (/(hidden|auto|scroll|clip)/.test(overflowY || overflow)) {
+      return node.getBoundingClientRect().bottom;
+    }
+    node = node.parentElement;
+  }
+  return window.innerHeight;
+};
 
 interface OptionsDropdownProps {
   options: TagMultiSelectOption[];
@@ -20,6 +48,40 @@ const OptionsDropdown: React.FC<OptionsDropdownProps> = ({
   onSelect,
   onClose,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined);
+
+  useLayoutEffect(() => {
+    const recalculate = () => {
+      const el = containerRef.current;
+      if (!el) return;
+
+      const preferredMaxHeight =
+        window.innerWidth >= SM_BREAKPOINT_PX ?
+          PREFERRED_MAX_HEIGHT_SM_PX
+        : PREFERRED_MAX_HEIGHT_PX;
+
+      const { top } = el.getBoundingClientRect();
+      const availableHeight =
+        getClippingBoundaryBottom(el) - top - BOTTOM_MARGIN_PX;
+
+      setMaxHeight(
+        Math.max(
+          MIN_USABLE_HEIGHT_PX,
+          Math.min(preferredMaxHeight, availableHeight),
+        ),
+      );
+    };
+
+    recalculate();
+    window.addEventListener("resize", recalculate);
+    window.addEventListener("scroll", recalculate, true);
+    return () => {
+      window.removeEventListener("resize", recalculate);
+      window.removeEventListener("scroll", recalculate, true);
+    };
+  }, []);
+
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
     switch (e.key) {
       case "Enter":
@@ -53,10 +115,12 @@ const OptionsDropdown: React.FC<OptionsDropdownProps> = ({
 
   return (
     <div
+      ref={containerRef}
+      style={{ maxHeight }}
       className={`
         absolute top-full z-10
-        h-40 w-80
-        sm:h-80 lg:w-64 xl:w-72 2xl:w-96
+        w-80
+        lg:w-64 xl:w-72 2xl:w-96
         mt-1
         text-xs sm:text-sm
         overflow-auto
