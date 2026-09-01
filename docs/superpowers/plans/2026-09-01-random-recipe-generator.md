@@ -36,9 +36,11 @@
 ### Task 1: Filter data and Edamam query-building helper
 
 **Files:**
+
 - Create: `src/data/randomRecipeFilters.ts`
 
 **Interfaces:**
+
 - Produces: `RandomRecipeFilterOption { key: string; label: string; param: "cuisineType" | "diet" | "health" | "mealType" | "dishType"; value: string }`, `RANDOM_RECIPE_FILTER_OPTIONS: RandomRecipeFilterOption[]`, `buildRandomRecipeSearchParams(selectedKeys: string[]): URLSearchParams`
 
 Note: `cuisineType` includes `"Kosher"` and `health` includes `"kosher"` —
@@ -183,10 +185,8 @@ const FILTER_CATEGORIES: {
   },
 ];
 
-const makeOptionKey = (
-  param: RandomRecipeFilterParam,
-  value: string,
-): string => `${param}:${value}`;
+const makeOptionKey = (param: RandomRecipeFilterParam, value: string): string =>
+  `${param}:${value}`;
 
 export const RANDOM_RECIPE_FILTER_OPTIONS: RandomRecipeFilterOption[] =
   FILTER_CATEGORIES.flatMap(({ param, groupLabel, values }) =>
@@ -241,7 +241,7 @@ import {
 } from "./src/data/randomRecipeFilters";
 
 console.log("total options:", RANDOM_RECIPE_FILTER_OPTIONS.length);
-// expected: 20 (cuisine) + 6 (diet) + 34 (health) + 5 (mealType) + 17 (dishType) = 82
+// expected: 20 (cuisine) + 6 (diet) + 35 (health) + 5 (mealType) + 17 (dishType) = 83
 
 const keys = RANDOM_RECIPE_FILTER_OPTIONS.map((o) => o.key);
 console.log("unique keys:", new Set(keys).size === keys.length);
@@ -260,8 +260,9 @@ console.log("collision test:", params.toString());
 Run (from the repo root):
 `node --experimental-strip-types verify-random-recipe-filters.ts`
 Expected output:
+
 ```
-total options: 82
+total options: 83
 unique keys: true
 collision test: random=true&cuisineType=Kosher&health=kosher
 ```
@@ -285,11 +286,13 @@ git commit -m "Add verified Edamam filter data for random recipe generator"
 ### Task 2: Generic `TagMultiSelect` component
 
 **Files:**
+
 - Create: `src/components/TagMultiSelect/types.ts`
 - Create: `src/components/TagMultiSelect/OptionsDropdown.tsx`
 - Create: `src/components/TagMultiSelect/index.tsx`
 
 **Interfaces:**
+
 - Consumes: nothing from Task 1 directly (this component is generic and
   option-source-agnostic).
 - Produces: `TagMultiSelectOption { key: string; label: string }`, and a
@@ -588,9 +591,11 @@ git commit -m "Add generic TagMultiSelect component"
 ### Task 3: Extend `/api/edamam` for random/filtered requests
 
 **Files:**
+
 - Modify: `src/app/api/edamam/route.ts`
 
 **Interfaces:**
+
 - Consumes: nothing new from earlier tasks.
 - Produces: the route now also accepts `random=true` plus repeated
   `cuisineType`/`diet`/`health`/`mealType`/`dishType` query params. Existing
@@ -727,10 +732,12 @@ git commit -m "Support random/filtered recipe requests in /api/edamam"
 ### Task 4: `RandomRecipeFilters` UI and sidebar mode switcher
 
 **Files:**
+
 - Create: `src/components/SearchAndRecipes/Search/RandomRecipeFilters/index.tsx`
 - Modify: `src/components/SearchAndRecipes/Search/index.tsx`
 
 **Interfaces:**
+
 - Consumes: `TagMultiSelect` (Task 2), `RANDOM_RECIPE_FILTER_OPTIONS` /
   `buildRandomRecipeSearchParams` (Task 1), the extended `/api/edamam`
   route (Task 3).
@@ -822,7 +829,10 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
           }
         >
           {RESULT_COUNT_OPTIONS.map((count) => (
-            <option key={count} value={count}>
+            <option
+              key={count}
+              value={count}
+            >
               {count}
             </option>
           ))}
@@ -1064,9 +1074,7 @@ const Search: React.FC<SearchProps> = ({
         </div>
 
         <Tooltip
-          text={
-            user ? "View saved recipes" : "Log in to view saved recipes"
-          }
+          text={user ? "View saved recipes" : "Log in to view saved recipes"}
         >
           <button
             type="button"
