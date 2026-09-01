@@ -100,6 +100,9 @@ Lives at
 `src/components/SearchAndRecipes/Search/RandomRecipeFilters/index.tsx`,
 alongside the existing ingredient-search components.
 
+- A "How many to show" control: 1 / 5 / 10 / 20 (defaulting to 10).
+- A "Generate" button, disabled until at least one filter is selected.
+  Every click is a fresh random draw (also serves as "regenerate").
 - A single searchable tag picker across all 83 filter values, each
   rendered with its category as a prefix (e.g. "Cuisine: Italian",
   "Health: Vegan") — the same interaction model the ingredient search
@@ -113,9 +116,11 @@ alongside the existing ingredient-search components.
   component is a natural candidate for the later DRY/maintainability
   phase already planned, not this feature; not doing so here avoids
   touching the already-working ingredient search flow in this change.
-- A "How many to show" control: 1 / 5 / 10 / 20 (defaulting to 10).
-- A "Generate" button, disabled until at least one filter is selected.
-  Every click is a fresh random draw (also serves as "regenerate").
+
+  The count selector and Generate button are placed above the tag
+  picker (not below it): the picker's dropdown is absolutely
+  positioned, and an open dropdown below these controls would overlap
+  and intercept clicks meant for them.
 
 ### Filter data
 
