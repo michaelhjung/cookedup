@@ -34,18 +34,32 @@ const StarIcon: React.FC<StarIconProps> = ({
         return;
       }
 
-      const { error } = await supabase.from("recipes").insert({
-        user_id: user.id,
-        type: "starred",
-        data,
-      });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error("Supabase error object:", error);
-        throw new Error(error.message || "An unknown error occurred.");
+      if (!session) {
+        alert("Your session has expired. Please log in again.");
+        return;
       }
 
-      setSavedRecipes((prev) => [...prev, data]);
+      const response = await fetch("/api/recipes/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok)
+        throw new Error(result.message || "An unknown error occurred.");
+
+      // Use the server's response, not the local `data`: it points at the
+      // permanently-hosted thumbnail instead of Edamam's temporary one.
+      setSavedRecipes((prev) => [...prev, result.hit]);
     } catch (error) {
       alert("There was an error while trying to save the recipe.");
       console.error(
