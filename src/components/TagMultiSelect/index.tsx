@@ -54,6 +54,11 @@ const TagMultiSelect: React.FC<TagMultiSelectProps> = ({
   const selectOption = (key: string) => {
     if (selectedKeys.includes(key)) return;
     onChange([...selectedKeys, key]);
+    // Clear the query and reset focus so picking several filters in a
+    // row (the intended workflow) doesn't require manually clearing the
+    // box each time.
+    setSearchInput("");
+    setFocusedIndex(0);
   };
 
   const removeOption = (key: string) => {
@@ -88,37 +93,52 @@ const TagMultiSelect: React.FC<TagMultiSelectProps> = ({
   return (
     <div
       ref={wrapperRef}
-      className="relative flex w-full flex-col items-center"
+      className="flex w-full flex-col items-center"
     >
-      <input
-        className={`
-          h-10 w-full max-w-xs rounded-full border-1
-          px-4 text-xs outline-none
-          duration-300 ease-in-out
-          focus:border-[var(--pastel-blue)]
-          sm:h-12 sm:text-sm
-        `}
-        type="text"
-        value={searchInput}
-        placeholder={placeholder}
-        onChange={(e) => {
-          setSearchInput(e.target.value);
-          setIsOpen(true);
-        }}
-        onFocus={() => setIsOpen(true)}
-        onKeyDown={handleInputKeyDown}
-      />
-
-      {isOpen && (
-        <OptionsDropdown
-          options={filteredOptions}
-          selectedKeys={selectedKeys}
-          setFocusedIndex={setFocusedIndex}
-          optionRefs={optionRefs}
-          onSelect={selectOption}
-          onClose={() => setIsOpen(false)}
+      {/*
+        This inner wrapper (rather than the outer one, which also holds
+        the selected-chip list below) is the dropdown's positioning
+        anchor. Anchoring to the outer wrapper meant its height — and so
+        the dropdown's `top-full` offset — grew every time a chip row was
+        added below, pushing the dropdown further down with each
+        selection. Scoping the anchor to just the input keeps the
+        dropdown's position stable regardless of how many chips are
+        selected.
+      */}
+      <div className="relative flex w-full max-w-xs flex-col items-center">
+        <input
+          className={`
+            h-10 w-full max-w-xs rounded-full border-1
+            px-4 text-xs outline-none
+            duration-300 ease-in-out
+            focus:border-[var(--pastel-blue)]
+            sm:h-12 sm:text-sm
+          `}
+          type="text"
+          value={searchInput}
+          placeholder={placeholder}
+          onChange={(e) => {
+            setSearchInput(e.target.value);
+            setIsOpen(true);
+            // Reset focus so Enter selects the first visible match for the
+            // new query, not a stale index left over from the previous one.
+            setFocusedIndex(0);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={handleInputKeyDown}
         />
-      )}
+
+        {isOpen && (
+          <OptionsDropdown
+            options={filteredOptions}
+            selectedKeys={selectedKeys}
+            setFocusedIndex={setFocusedIndex}
+            optionRefs={optionRefs}
+            onSelect={selectOption}
+            onClose={() => setIsOpen(false)}
+          />
+        )}
+      </div>
 
       {selectedOptions.length > 0 && (
         <div className="mt-3 flex w-full flex-wrap justify-center gap-2">

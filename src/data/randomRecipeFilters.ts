@@ -143,6 +143,33 @@ export const RANDOM_RECIPE_FILTER_OPTIONS: RandomRecipeFilterOption[] =
     })),
   );
 
+// Dev-time guard: the composite `param:value` key is relied on elsewhere
+// (e.g. buildRandomRecipeSearchParams's Map lookup) to uniquely identify
+// an option. A future edit that accidentally introduces a duplicate
+// param/value pair would otherwise silently make one of the two options
+// disappear from the UI with no error anywhere.
+if (process.env.NODE_ENV !== "production") {
+  const seenKeys = new Set<string>();
+  const duplicateKey = RANDOM_RECIPE_FILTER_OPTIONS.find((option) => {
+    if (seenKeys.has(option.key)) return true;
+    seenKeys.add(option.key);
+    return false;
+  })?.key;
+
+  if (duplicateKey) {
+    throw new Error(
+      `Duplicate RANDOM_RECIPE_FILTER_OPTIONS key detected: "${duplicateKey}". Each (param, value) pair must be unique.`,
+    );
+  }
+}
+
+// The single source of truth for which query params the random recipe
+// generator is allowed to send to Edamam — reused by the API route so it
+// doesn't maintain a second, drifting copy of this list.
+export const RANDOM_RECIPE_FILTER_PARAM_NAMES: RandomRecipeFilterParam[] = [
+  ...new Set(RANDOM_RECIPE_FILTER_OPTIONS.map((option) => option.param)),
+];
+
 /**
  * Turns selected option keys (from RANDOM_RECIPE_FILTER_OPTIONS) into the
  * query params Edamam expects: `random=true` plus each filter repeated

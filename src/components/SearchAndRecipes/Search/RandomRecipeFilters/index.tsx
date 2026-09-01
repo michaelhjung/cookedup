@@ -27,13 +27,15 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
 }) => {
   const [selectedFilterKeys, setSelectedFilterKeys] = useState<string[]>([]);
   const [resultCount, setResultCount] = useState<ResultCount>(10);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateRandomRecipes = async () => {
-    if (selectedFilterKeys.length === 0) return;
+    if (selectedFilterKeys.length === 0 || isGenerating) return;
 
     const params = buildRandomRecipeSearchParams(selectedFilterKeys);
 
     try {
+      setIsGenerating(true);
       setIsLoadingRecipes(true);
       const response = await fetch(`/api/edamam?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to generate recipes.");
@@ -42,10 +44,21 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
       const hits: Hit[] = data.hits.slice(0, resultCount);
 
       setErrorFetchingRecipes(false);
-      // count reflects the (sliced) batch actually shown, not Edamam's
-      // total match count (often 10,000+), which would be misleading
-      // here — "Found 10,000 recipes!" makes no sense for a random draw.
-      setRecipesData({ ...data, hits, count: hits.length });
+      // count and `to` reflect the (sliced) batch actually shown, not
+      // Edamam's total match count (often 10,000+) or un-sliced `to`,
+      // which would be misleading here — "Found 10,000 recipes!" makes
+      // no sense for a random draw. `_links` is explicitly cleared
+      // (rather than spread through unchanged) so this doesn't rely on
+      // Edamam never returning a `next` link for `random=true` responses
+      // — matching how `handleViewSavedRecipes` in Search/index.tsx
+      // builds its own RecipeData.
+      setRecipesData({
+        ...data,
+        hits,
+        count: hits.length,
+        to: hits.length,
+        _links: undefined,
+      });
     } catch (error) {
       console.error(
         "An error occurred while generating random recipes:",
@@ -55,6 +68,7 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
       setErrorFetchingRecipes(true);
     } finally {
       setIsLoadingRecipes(false);
+      setIsGenerating(false);
     }
   };
 
@@ -83,12 +97,12 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
 
       <button
         type="button"
-        disabled={selectedFilterKeys.length === 0}
+        disabled={selectedFilterKeys.length === 0 || isGenerating}
         className={`
           rounded-3xl px-4 py-2 text-xs sm:text-sm
           transition-transform
           ${
-            selectedFilterKeys.length === 0 ?
+            selectedFilterKeys.length === 0 || isGenerating ?
               "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
             : "cursor-pointer bg-[var(--pastel-brown)]/20 text-cinerous hover:scale-105"
           }
