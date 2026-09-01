@@ -17,6 +17,7 @@ import { Hit, RecipeData } from "@interfaces/edamam";
 import { debounce } from "@utils/index";
 
 import IngredientsList from "./IngredientsList";
+import RandomRecipeFilters from "./RandomRecipeFilters";
 import SearchInput from "./SearchInput";
 import SelectedIngredients from "./SelectedIngredients";
 
@@ -24,6 +25,8 @@ const DEFAULT_INGREDIENTS_LIST = {
   all: ingredientsList,
   filtered: ingredientsList,
 };
+
+type SearchMode = "ingredients" | "random";
 
 interface SearchProps {
   user: User | null;
@@ -43,6 +46,7 @@ const Search: React.FC<SearchProps> = ({
   setErrorFetchingRecipes,
   isSidebarOpen,
 }) => {
+  const [mode, setMode] = useState<SearchMode>("ingredients");
   const [ingredients, setIngredients] = useState<{
     all: string[] | [];
     filtered: string[] | [];
@@ -170,95 +174,132 @@ const Search: React.FC<SearchProps> = ({
         ${isSidebarOpen ? "opacity-100" : "opacity-0"}
       `}
     >
-      <div className="flex flex-col items-center">
-        <Icon
-          type="ingredients"
-          className="w-8 h-8 sm:w-12 sm:h-12 mb-4 text-pastel-blue"
-        />
-
-        <div
-          ref={searchWrapperRef}
-          className="relative flex flex-col items-center"
-        >
-          <div className="max-w-full flex items-center gap-4">
-            {selectedIngredients.length > 0 && (
-              <Tooltip text="Clear selected ingredients">
-                <button
-                  type="button"
-                  className="shrink-0 cursor-pointer text-3xl text-gray-400 hover:text-red-400 sm:text-4xl md:text-5xl"
-                  onClick={() => setSelectedIngredients([])}
-                >
-                  <RefreshCcw
-                    strokeWidth={1.5}
-                    className="w-6 h-6 sm:w-8 sm:h-8 shrink-0"
-                  />
-                </button>
-              </Tooltip>
-            )}
-
-            <SearchInput
-              ingredients={ingredients}
-              showIngredientsList={showIngredientsList}
-              setShowIngredientsList={setShowIngredientsList}
-              searchInput={searchInput}
-              setSearchInput={setSearchInput}
-              setFocusedIngredientIndex={setFocusedIngredientIndex}
-              searchInputRef={searchInputRef}
-              ingredientRefs={ingredientRefs}
-              handleSelectIngredient={handleSelectIngredient}
-            />
-
-            {selectedIngredients.length > 0 && (
-              <Tooltip text="Submit recipe search">
-                <button
-                  type="button"
-                  className="shrink-0 cursor-pointer px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl"
-                  onClick={() => handleSearchRecipes(selectedIngredients)}
-                >
-                  <Icon
-                    className="w-8 h-8 sm:w-10 sm:h-10 shrink-0"
-                    type="recipe-book"
-                  />
-                </button>
-              </Tooltip>
-            )}
-
-            <Tooltip
-              text={
-                user ? "View saved recipes" : "Log in to view saved recipes"
-              }
-            >
-              <button
-                type="button"
-                className={`${user ? "cursor-pointer" : "cursor-not-allowed"} shrink-0 px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl`}
-                onClick={user ? handleViewSavedRecipes : undefined}
-              >
-                <Star
-                  strokeWidth={1}
-                  className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 ${user ? "fill-yellow-300 stroke-yellow-300" : ""}`}
-                />
-              </button>
-            </Tooltip>
-          </div>
-
-          {showIngredientsList && (
-            <IngredientsList
-              ingredients={ingredients}
-              setShowIngredientsList={setShowIngredientsList}
-              selectedIngredients={selectedIngredients}
-              isLoadingIngredientsList={isLoadingIngredientsList}
-              setFocusedIngredientIndex={setFocusedIngredientIndex}
-              ingredientRefs={ingredientRefs}
-              handleSelectIngredient={handleSelectIngredient}
-            />
-          )}
+      <div className="mb-4 flex w-full items-center justify-between gap-2">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className={`rounded-full px-3 py-1 text-xs sm:text-sm ${
+              mode === "ingredients" ?
+                "bg-[var(--pastel-brown)]/30 font-semibold"
+              : "text-gray-400"
+            }`}
+            onClick={() => setMode("ingredients")}
+          >
+            Ingredients
+          </button>
+          <button
+            type="button"
+            className={`rounded-full px-3 py-1 text-xs sm:text-sm ${
+              mode === "random" ?
+                "bg-[var(--pastel-brown)]/30 font-semibold"
+              : "text-gray-400"
+            }`}
+            onClick={() => setMode("random")}
+          >
+            Random
+          </button>
         </div>
+
+        <Tooltip
+          text={user ? "View saved recipes" : "Log in to view saved recipes"}
+        >
+          <button
+            type="button"
+            className={`${user ? "cursor-pointer" : "cursor-not-allowed"} shrink-0 px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl`}
+            onClick={user ? handleViewSavedRecipes : undefined}
+          >
+            <Star
+              strokeWidth={1}
+              className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 ${user ? "fill-yellow-300 stroke-yellow-300" : ""}`}
+            />
+          </button>
+        </Tooltip>
       </div>
 
-      <SelectedIngredients
-        selectedIngredients={selectedIngredients}
-        setSelectedIngredients={setSelectedIngredients}
-      />
+      {mode === "ingredients" && (
+        <>
+          <div className="flex flex-col items-center">
+            <Icon
+              type="ingredients"
+              className="w-8 h-8 sm:w-12 sm:h-12 mb-4 text-pastel-blue"
+            />
+
+            <div
+              ref={searchWrapperRef}
+              className="relative flex flex-col items-center"
+            >
+              <div className="max-w-full flex items-center gap-4">
+                {selectedIngredients.length > 0 && (
+                  <Tooltip text="Clear selected ingredients">
+                    <button
+                      type="button"
+                      className="shrink-0 cursor-pointer text-3xl text-gray-400 hover:text-red-400 sm:text-4xl md:text-5xl"
+                      onClick={() => setSelectedIngredients([])}
+                    >
+                      <RefreshCcw
+                        strokeWidth={1.5}
+                        className="w-6 h-6 sm:w-8 sm:h-8 shrink-0"
+                      />
+                    </button>
+                  </Tooltip>
+                )}
+
+                <SearchInput
+                  ingredients={ingredients}
+                  showIngredientsList={showIngredientsList}
+                  setShowIngredientsList={setShowIngredientsList}
+                  searchInput={searchInput}
+                  setSearchInput={setSearchInput}
+                  setFocusedIngredientIndex={setFocusedIngredientIndex}
+                  searchInputRef={searchInputRef}
+                  ingredientRefs={ingredientRefs}
+                  handleSelectIngredient={handleSelectIngredient}
+                />
+
+                {selectedIngredients.length > 0 && (
+                  <Tooltip text="Submit recipe search">
+                    <button
+                      type="button"
+                      className="shrink-0 cursor-pointer px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl"
+                      onClick={() => handleSearchRecipes(selectedIngredients)}
+                    >
+                      <Icon
+                        className="w-8 h-8 sm:w-10 sm:h-10 shrink-0"
+                        type="recipe-book"
+                      />
+                    </button>
+                  </Tooltip>
+                )}
+              </div>
+
+              {showIngredientsList && (
+                <IngredientsList
+                  ingredients={ingredients}
+                  setShowIngredientsList={setShowIngredientsList}
+                  selectedIngredients={selectedIngredients}
+                  isLoadingIngredientsList={isLoadingIngredientsList}
+                  setFocusedIngredientIndex={setFocusedIngredientIndex}
+                  ingredientRefs={ingredientRefs}
+                  handleSelectIngredient={handleSelectIngredient}
+                />
+              )}
+            </div>
+          </div>
+
+          <SelectedIngredients
+            selectedIngredients={selectedIngredients}
+            setSelectedIngredients={setSelectedIngredients}
+          />
+        </>
+      )}
+
+      {mode === "random" && (
+        <RandomRecipeFilters
+          setRecipesData={setRecipesData}
+          setIsLoadingRecipes={setIsLoadingRecipes}
+          setErrorFetchingRecipes={setErrorFetchingRecipes}
+        />
+      )}
     </section>
   );
 };
