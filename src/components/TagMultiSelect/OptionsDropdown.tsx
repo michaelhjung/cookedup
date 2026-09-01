@@ -7,6 +7,7 @@ interface OptionsDropdownProps {
   selectedKeys: string[];
   setFocusedIndex: React.Dispatch<React.SetStateAction<number>>;
   optionRefs: React.RefObject<(HTMLDivElement | null)[]>;
+  // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
   onSelect: (_key: string) => void;
   onClose: () => void;
 }

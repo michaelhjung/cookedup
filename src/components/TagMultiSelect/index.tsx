@@ -10,6 +10,7 @@ export type { TagMultiSelectOption };
 interface TagMultiSelectProps {
   options: TagMultiSelectOption[];
   selectedKeys: string[];
+  // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
   onChange: (_nextSelectedKeys: string[]) => void;
   placeholder?: string;
 }
