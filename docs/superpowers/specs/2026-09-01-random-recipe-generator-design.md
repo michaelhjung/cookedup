@@ -59,7 +59,7 @@ own credentials before writing this design, rather than assumed:
 **Diet** (6): `balanced`, `high-fiber`, `high-protein`, `low-carb`,
 `low-fat`, `low-sodium`
 
-**Health** (34): `alcohol-cocktail`, `alcohol-free`, `celery-free`,
+**Health** (35): `alcohol-cocktail`, `alcohol-free`, `celery-free`,
 `crustacean-free`, `dairy-free`, `DASH`, `egg-free`, `fish-free`,
 `fodmap-free`, `gluten-free`, `immuno-supportive`, `keto-friendly`,
 `kidney-friendly`, `kosher`, `low-potassium`, `low-sugar`, `lupine-free`,
@@ -100,7 +100,7 @@ Lives at
 `src/components/SearchAndRecipes/Search/RandomRecipeFilters/index.tsx`,
 alongside the existing ingredient-search components.
 
-- A single searchable tag picker across all 82 filter values, each
+- A single searchable tag picker across all 83 filter values, each
   rendered with its category as a prefix (e.g. "Cuisine: Italian",
   "Health: Vegan") — the same interaction model the ingredient search
   already has: type to filter the list, click/select to add, selected
