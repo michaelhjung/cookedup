@@ -60,13 +60,6 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <TagMultiSelect
-        options={RANDOM_RECIPE_FILTER_OPTIONS}
-        selectedKeys={selectedFilterKeys}
-        onChange={setSelectedFilterKeys}
-        placeholder="Search filters (cuisine, diet, health...)"
-      />
-
       <div className="flex flex-col items-center gap-1 text-xs sm:text-sm">
         <label htmlFor="random-recipe-count">How many to show:</label>
         <select
@@ -104,6 +97,13 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
       >
         Generate
       </button>
+
+      <TagMultiSelect
+        options={RANDOM_RECIPE_FILTER_OPTIONS}
+        selectedKeys={selectedFilterKeys}
+        onChange={setSelectedFilterKeys}
+        placeholder="Search filters (cuisine, diet, health...)"
+      />
     </div>
   );
 };
