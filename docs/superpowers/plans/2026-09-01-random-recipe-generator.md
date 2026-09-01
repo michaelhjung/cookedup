@@ -811,13 +811,6 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <TagMultiSelect
-        options={RANDOM_RECIPE_FILTER_OPTIONS}
-        selectedKeys={selectedFilterKeys}
-        onChange={setSelectedFilterKeys}
-        placeholder="Search filters (cuisine, diet, health...)"
-      />
-
       <div className="flex flex-col items-center gap-1 text-xs sm:text-sm">
         <label htmlFor="random-recipe-count">How many to show:</label>
         <select
@@ -855,12 +848,27 @@ const RandomRecipeFilters: React.FC<RandomRecipeFiltersProps> = ({
       >
         Generate
       </button>
+
+      <TagMultiSelect
+        options={RANDOM_RECIPE_FILTER_OPTIONS}
+        selectedKeys={selectedFilterKeys}
+        onChange={setSelectedFilterKeys}
+        placeholder="Search filters (cuisine, diet, health...)"
+      />
     </div>
   );
 };
 
 export default RandomRecipeFilters;
 ```
+
+> **Note:** the count selector and Generate button are placed _above_ the
+> `TagMultiSelect` filter picker (not below it, as an earlier version of
+> this snippet showed) — TagMultiSelect's dropdown is absolutely
+> positioned, and rendering it above these controls in the DOM order kept
+> its open dropdown from visually overlapping and intercepting clicks
+> meant for them. See the "Fix dropdown overlap in RandomRecipeFilters by
+> reordering controls" commit.
 
 - [ ] **Step 2: Read the current `Search/index.tsx` to confirm the baseline**
 
