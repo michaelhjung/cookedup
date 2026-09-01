@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 
 import { Hit } from "@interfaces/edamam";
 import { createAuthedSupabaseClient } from "@utils/supabase/server";
@@ -165,18 +165,15 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
 
-  const hitWithPersistedImage = await persistRecipeImage(
-    supabase,
-    user.id,
-    hit,
-  );
-
+  // Insert immediately with the recipe as-is (Edamam's temporary image URL
+  // included — it's valid for ~1hr) so the response isn't held up by the
+  // image download/upload below. Saving should feel instant.
   const { data, error } = await supabase
     .from("recipes")
     .insert({
       user_id: user.id,
       type: "starred",
-      data: hitWithPersistedImage,
+      data: hit,
     })
     .select()
     .single();
@@ -189,5 +186,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ hit: hitWithPersistedImage, row: data });
+  // Persist a permanent copy of the image after the response is sent, then
+  // swap it into the row. Failures here are logged only — the row already
+  // exists and still has a (temporarily) working image either way.
+  after(async () => {
+    const hitWithPersistedImage = await persistRecipeImage(
+      supabase,
+      user.id,
+      hit,
+    );
+
+    if (hitWithPersistedImage === hit) return; // nothing to update
+
+    const { error: updateError } = await supabase
+      .from("recipes")
+      .update({ data: hitWithPersistedImage })
+      .eq("id", data.id);
+
+    if (updateError)
+      console.error("Failed to persist recipe image after save:", updateError);
+  });
+
+  return NextResponse.json({ hit, row: data });
 }
