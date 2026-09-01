@@ -1,6 +1,6 @@
 import { User } from "@supabase/supabase-js";
 import { Star } from "lucide-react";
-import React from "react";
+import React, { useRef } from "react";
 
 import Tooltip from "@components/Tooltip";
 import { Hit } from "@interfaces/edamam";
@@ -12,6 +12,37 @@ interface StarIconProps {
   savedRecipes: Hit[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
 }
+
+const persistSaveRecipe = async (data: Hit) => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) throw new Error("Your session has expired.");
+
+  const response = await fetch("/api/recipes/save", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+  if (!response.ok)
+    throw new Error(result.message || "An unknown error occurred.");
+};
+
+const persistRemoveRecipe = async (userId: string, data: Hit) => {
+  const { error } = await supabase
+    .from("recipes")
+    .delete()
+    .eq("user_id", userId)
+    .eq("data->recipe->>url", data.recipe.url); // Match based on the recipe URL
+
+  if (error) throw new Error(error.message || "An unknown error occurred.");
+};
 
 const StarIcon: React.FC<StarIconProps> = ({
   hit,
@@ -27,76 +58,56 @@ const StarIcon: React.FC<StarIconProps> = ({
     : isSaved ? "Click to remove this recipe from your saved list"
     : "Click to save this recipe";
 
-  const saveRecipe = async (data: Hit) => {
-    try {
-      if (!user) {
-        alert("You must be logged in to save recipes.");
-        return;
-      }
+  // Toggling the star updates `savedRecipes` immediately (optimistic), so
+  // it feels instant regardless of network speed. The actual request is
+  // chained off this ref so rapid re-toggling still reaches the server in
+  // the order it was clicked, and a failure rolls the optimistic change
+  // back with an alert.
+  const pendingRequestRef = useRef<Promise<void>>(Promise.resolve());
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        alert("Your session has expired. Please log in again.");
-        return;
-      }
-
-      const response = await fetch("/api/recipes/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok)
-        throw new Error(result.message || "An unknown error occurred.");
-
-      // Use the server's response, not the local `data`: it points at the
-      // permanently-hosted thumbnail instead of Edamam's temporary one.
-      setSavedRecipes((prev) => [...prev, result.hit]);
-    } catch (error) {
-      alert("There was an error while trying to save the recipe.");
-      console.error(
-        "An error occurred while attempting to save the recipe:",
-        error,
-      );
+  const saveRecipe = (data: Hit) => {
+    if (!user) {
+      alert("You must be logged in to save recipes.");
+      return;
     }
+
+    setSavedRecipes((prev) => [...prev, data]);
+
+    pendingRequestRef.current = pendingRequestRef.current.then(() =>
+      persistSaveRecipe(data).catch((error) => {
+        setSavedRecipes((prev) =>
+          prev.filter((savedHit) => savedHit.recipe.url !== data.recipe.url),
+        );
+        alert("There was an error while trying to save the recipe.");
+        console.error(
+          "An error occurred while attempting to save the recipe:",
+          error,
+        );
+      }),
+    );
   };
 
-  const removeRecipe = async (data: Hit) => {
-    try {
-      if (!user) {
-        alert("You must be logged in to remove saved recipes.");
-        return;
-      }
-
-      const { error } = await supabase
-        .from("recipes")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("data->recipe->>url", data.recipe.url); // Match based on the recipe URL
-
-      if (error) {
-        console.error("Supabase error object:", error);
-        throw new Error(error.message || "An unknown error occurred.");
-      }
-
-      setSavedRecipes((prev) =>
-        prev.filter((savedHit) => savedHit.recipe.url !== data.recipe.url),
-      );
-    } catch (error) {
-      alert("There was an error while trying to remove the saved recipe.");
-      console.error(
-        "An error occurred while attempting to remove the recipe:",
-        error,
-      );
+  const removeRecipe = (data: Hit) => {
+    if (!user) {
+      alert("You must be logged in to remove saved recipes.");
+      return;
     }
+
+    const userId = user.id;
+    setSavedRecipes((prev) =>
+      prev.filter((savedHit) => savedHit.recipe.url !== data.recipe.url),
+    );
+
+    pendingRequestRef.current = pendingRequestRef.current.then(() =>
+      persistRemoveRecipe(userId, data).catch((error) => {
+        setSavedRecipes((prev) => [...prev, data]);
+        alert("There was an error while trying to remove the saved recipe.");
+        console.error(
+          "An error occurred while attempting to remove the saved recipe:",
+          error,
+        );
+      }),
+    );
   };
 
   return (

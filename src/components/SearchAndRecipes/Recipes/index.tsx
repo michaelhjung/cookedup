@@ -1,6 +1,6 @@
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 import Icon from "@components/Icon";
 import Bowl from "@components/loaders/Bowl";
@@ -34,6 +34,9 @@ const Recipes: React.FC<RecipesProps> = ({
   setErrorFetchingRecipes,
   isSidebarOpen,
 }) => {
+  const scrollContainerRef = useRef<HTMLElement | null>(null);
+  const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
+
   const loadMoreRecipes = async () => {
     if (!recipesData) return;
 
@@ -42,7 +45,11 @@ const Recipes: React.FC<RecipesProps> = ({
 
     try {
       setIsLoadingRecipes(true);
-      const nextRecipesPageResponse = await fetch(nextLink);
+      // Proxied through our own API route (instead of fetching Edamam's
+      // link directly) so our app_id/app_key never reach the browser.
+      const nextRecipesPageResponse = await fetch(
+        `/api/edamam?nextPage=${encodeURIComponent(nextLink)}`,
+      );
       if (!nextRecipesPageResponse.ok)
         throw new Error("No aditional recipes found.");
 
@@ -69,8 +76,34 @@ const Recipes: React.FC<RecipesProps> = ({
     }
   };
 
+  const nextPageHref = recipesData?._links?.next?.href;
+
+  // Auto-load the next page as the sentinel below the recipe grid
+  // scrolls near the bottom of the (internally-scrolling) section.
+  // Depending on `nextPageHref` (rather than just "is there a next page")
+  // guarantees this re-runs, and re-closes over fresh `recipesData`,
+  // whenever the page actually changes — including a brand new search
+  // replacing the results outright.
+  useEffect(() => {
+    if (!nextPageHref || errorFetchingRecipes) return;
+
+    const sentinel = loadMoreSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoadingRecipes) loadMoreRecipes();
+      },
+      { root: scrollContainerRef.current, rootMargin: "600px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [nextPageHref, errorFetchingRecipes, isLoadingRecipes]);
+
   return (
     <section
+      ref={scrollContainerRef}
       className={`
         size-full flex flex-col grow items-center
         transition-all duration-500 ease-in-out p-4
@@ -145,27 +178,13 @@ const Recipes: React.FC<RecipesProps> = ({
         </p>
       )}
 
-      {!isLoadingRecipes &&
-        !errorFetchingRecipes &&
-        recipesData?._links?.next?.href && (
-          <button
-            type="button"
-            className={`
-              my-10
-              bg-[var(--pastel-brown)]/20
-              px-4 py-2
-              md:px-6 md:py-3
-              text-[0.7rem] text-cinerous
-              md:text-sm
-              rounded-3xl
-              hover:scale-105
-              transition-transform
-            `}
-            onClick={loadMoreRecipes}
-          >
-            Load more recipes
-          </button>
-        )}
+      {/* Invisible trigger for auto-loading the next page on scroll. */}
+      {!errorFetchingRecipes && nextPageHref && (
+        <div
+          ref={loadMoreSentinelRef}
+          className="h-px w-full"
+        />
+      )}
     </section>
   );
 };
