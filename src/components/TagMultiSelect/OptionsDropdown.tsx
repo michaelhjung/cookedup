@@ -80,7 +80,13 @@ const OptionsDropdown: React.FC<OptionsDropdownProps> = ({
       window.removeEventListener("resize", recalculate);
       window.removeEventListener("scroll", recalculate, true);
     };
-  }, []);
+    // The dropdown is anchored below the chip list (see TagMultiSelect's
+    // wrapper), and selecting/removing a chip doesn't close/reopen the
+    // dropdown (fix #5 keeps it open across selections) — so this needs
+    // to re-measure whenever `selectedKeys` changes, not just on mount,
+    // or a stale max-height would linger as the anchor's position moves
+    // with the growing/shrinking chip list.
+  }, [selectedKeys.length]);
 
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
     switch (e.key) {

@@ -93,52 +93,57 @@ const TagMultiSelect: React.FC<TagMultiSelectProps> = ({
   return (
     <div
       ref={wrapperRef}
-      className="flex w-full flex-col items-center"
+      className="relative flex w-full flex-col items-center"
     >
       {/*
-        This inner wrapper (rather than the outer one, which also holds
-        the selected-chip list below) is the dropdown's positioning
-        anchor. Anchoring to the outer wrapper meant its height — and so
-        the dropdown's `top-full` offset — grew every time a chip row was
-        added below, pushing the dropdown further down with each
-        selection. Scoping the anchor to just the input keeps the
-        dropdown's position stable regardless of how many chips are
-        selected.
+        The dropdown is anchored to this whole wrapper — input AND the
+        chip list below it — rather than to just the input. That means
+        its `top-full` offset (a percentage of this wrapper's height)
+        grows as chips are added, which is intentional: it keeps the
+        dropdown rendering below the full chip list instead of covering
+        it (an earlier version anchored to the input alone, which kept
+        the dropdown's position stable but let it visually overlap and
+        cover already-selected chips — including their "remove" click
+        target — whenever it was open, which fix #5's "leave the
+        dropdown open across selections" workflow makes the common
+        case). OptionsDropdown's own max-height logic recalculates from
+        wherever this anchor puts it (see its `selectedKeys.length`
+        dependency), so growth here no longer pushes the dropdown off
+        the usable area — it just gets a shorter, internally-scrollable
+        max-height instead.
       */}
-      <div className="relative flex w-full max-w-xs flex-col items-center">
-        <input
-          className={`
-            h-10 w-full max-w-xs rounded-full border-1
-            px-4 text-xs outline-none
-            duration-300 ease-in-out
-            focus:border-[var(--pastel-blue)]
-            sm:h-12 sm:text-sm
-          `}
-          type="text"
-          value={searchInput}
-          placeholder={placeholder}
-          onChange={(e) => {
-            setSearchInput(e.target.value);
-            setIsOpen(true);
-            // Reset focus so Enter selects the first visible match for the
-            // new query, not a stale index left over from the previous one.
-            setFocusedIndex(0);
-          }}
-          onFocus={() => setIsOpen(true)}
-          onKeyDown={handleInputKeyDown}
-        />
+      <input
+        className={`
+          h-10 w-full max-w-xs rounded-full border-1
+          px-4 text-xs outline-none
+          duration-300 ease-in-out
+          focus:border-[var(--pastel-blue)]
+          sm:h-12 sm:text-sm
+        `}
+        type="text"
+        value={searchInput}
+        placeholder={placeholder}
+        onChange={(e) => {
+          setSearchInput(e.target.value);
+          setIsOpen(true);
+          // Reset focus so Enter selects the first visible match for the
+          // new query, not a stale index left over from the previous one.
+          setFocusedIndex(0);
+        }}
+        onFocus={() => setIsOpen(true)}
+        onKeyDown={handleInputKeyDown}
+      />
 
-        {isOpen && (
-          <OptionsDropdown
-            options={filteredOptions}
-            selectedKeys={selectedKeys}
-            setFocusedIndex={setFocusedIndex}
-            optionRefs={optionRefs}
-            onSelect={selectOption}
-            onClose={() => setIsOpen(false)}
-          />
-        )}
-      </div>
+      {isOpen && (
+        <OptionsDropdown
+          options={filteredOptions}
+          selectedKeys={selectedKeys}
+          setFocusedIndex={setFocusedIndex}
+          optionRefs={optionRefs}
+          onSelect={selectOption}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
 
       {selectedOptions.length > 0 && (
         <div className="mt-3 flex w-full flex-wrap justify-center gap-2">
