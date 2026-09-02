@@ -34,3 +34,16 @@ body {
   background-color: var(--background-color);
   color: var(--gray-medium);
 }
+
+// The filter disclosures (<details>/<summary>) render their own chevron
+// icon that rotates on open, so the browser's native marker triangle
+// (and, on older WebKit, its own separate marker box) is redundant and
+// looks doubled-up. Hidden globally since every <summary> in the app
+// follows this pattern.
+summary {
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
