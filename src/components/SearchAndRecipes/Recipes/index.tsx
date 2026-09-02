@@ -218,7 +218,7 @@ const Recipes: React.FC<RecipesProps> = ({
       <div className="w-full flex flex-col items-center justify-center">
         {!recipesData?.from && (
           <p className="text-xs sm:text-sm md:text-base">
-            Search by ingredients or generate random recipes to get started!
+            Search by ingredients or filter for specific recipes to get started!
           </p>
         )}
 
