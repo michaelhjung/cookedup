@@ -16,6 +16,9 @@
 # next.js
 /.next/
 /out/
+# auto-written by `next dev` itself on every run (generate-agent-files.js)
+/AGENTS.md
+/CLAUDE.md
 
 # production
 /build
