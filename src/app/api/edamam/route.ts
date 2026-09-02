@@ -10,11 +10,10 @@ import {
 const { EDAMAM_APP_ID, EDAMAM_API_KEY } = process.env;
 const apiBaseUrl = "https://api.edamam.com";
 
-const getEdamamApiUrl = (ingredientsQuery: string) =>
-  `${apiBaseUrl}/api/recipes/v2?type=public&q=${ingredientsQuery}&app_id=${EDAMAM_APP_ID}&app_key=${EDAMAM_API_KEY}`;
-
-// (param, value) pairs allowed through to Edamam for the random recipe
-// generator. This is a server-side allowlist, not just client-side UI
+// (param, value) pairs allowed through to Edamam for the filter
+// checkboxes (cuisine/diet/health/meal/dish type) — used both for
+// filters-only random draws and for an ingredients search narrowed by
+// filters. This is a server-side allowlist, not just client-side UI
 // affordance: anyone can call this route directly (curl, etc.) with
 // arbitrary values, and forwarding those unchecked would let them burn
 // this app's Edamam quota. We only forward values that exactly match an
@@ -30,11 +29,10 @@ const VALID_FILTER_VALUES_BY_PARAM = RANDOM_RECIPE_FILTER_OPTIONS.reduce(
   new Map<string, Set<string>>(),
 );
 
-const getRandomRecipesApiUrl = (searchParams: URLSearchParams): string => {
-  const edamamParams = new URLSearchParams();
-  edamamParams.set("type", "public");
-  edamamParams.set("random", "true");
-
+const appendValidFilterParams = (
+  edamamParams: URLSearchParams,
+  searchParams: URLSearchParams,
+): void => {
   RANDOM_RECIPE_FILTER_PARAM_NAMES.forEach((param) => {
     const validValues = VALID_FILTER_VALUES_BY_PARAM.get(param);
     searchParams.getAll(param).forEach((value) => {
@@ -42,7 +40,27 @@ const getRandomRecipesApiUrl = (searchParams: URLSearchParams): string => {
       edamamParams.append(param, value);
     });
   });
+};
 
+const getEdamamApiUrl = (
+  ingredientsQuery: string,
+  searchParams: URLSearchParams,
+): string => {
+  const edamamParams = new URLSearchParams();
+  edamamParams.set("type", "public");
+  edamamParams.set("q", ingredientsQuery);
+  appendValidFilterParams(edamamParams, searchParams);
+  edamamParams.set("app_id", EDAMAM_APP_ID!);
+  edamamParams.set("app_key", EDAMAM_API_KEY!);
+
+  return `${apiBaseUrl}/api/recipes/v2?${edamamParams.toString()}`;
+};
+
+const getRandomRecipesApiUrl = (searchParams: URLSearchParams): string => {
+  const edamamParams = new URLSearchParams();
+  edamamParams.set("type", "public");
+  edamamParams.set("random", "true");
+  appendValidFilterParams(edamamParams, searchParams);
   edamamParams.set("app_id", EDAMAM_APP_ID!);
   edamamParams.set("app_key", EDAMAM_API_KEY!);
 
@@ -70,7 +88,7 @@ export async function GET(req: NextRequest) {
     nextPage ||
     (isRandomRequest ?
       getRandomRecipesApiUrl(req.nextUrl.searchParams)
-    : getEdamamApiUrl(ingredientsQuery!));
+    : getEdamamApiUrl(ingredientsQuery!, req.nextUrl.searchParams));
 
   try {
     const response = await fetch(url);

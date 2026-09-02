@@ -1,4 +1,4 @@
-// src/components/SearchAndRecipes/Search/RandomRecipeFilters/CheckboxFilterGroup.tsx
+// src/components/SearchAndRecipes/Search/FilterCategories/CheckboxFilterGroup.tsx
 
 "use client";
 

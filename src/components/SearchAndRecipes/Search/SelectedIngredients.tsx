@@ -8,7 +8,7 @@ const SelectedIngredients: React.FC<SelectedIngredientsProps> = ({
   setSelectedIngredients,
 }) => {
   return (
-    <div className="h-full mt-4 flex flex-col items-center sm:h-3/5 lg:h-4/5">
+    <div className="mt-4 flex max-h-32 flex-col items-center">
       <h2 className="text-xs sm:text-sm md:text-base">Selected Ingredients:</h2>
       <div className="my-2 flex flex-wrap justify-center gap-2 overflow-auto">
         {selectedIngredients.map((ingredient, index) => (
