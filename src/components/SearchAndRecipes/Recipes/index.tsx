@@ -109,8 +109,8 @@ const Recipes: React.FC<RecipesProps> = ({
     }
   };
 
-  // Filter mode has no real cursor — `random=true` omits `_links.next`
-  // entirely (see docs/superpowers/specs/2026-09-01-random-recipe-generator-design.md).
+  // Filter mode has no real cursor — Edamam's `random=true` omits
+  // `_links.next` entirely (confirmed by live-testing against the API).
   // "Load more" here means: draw again with the same filters, and keep
   // only recipes not already shown.
   const loadMoreFilterRecipes = async () => {

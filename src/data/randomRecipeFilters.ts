@@ -13,8 +13,7 @@ export interface RandomRecipeFilterOption {
 }
 
 // Every value below was live-tested against the Edamam v2 Recipe Search
-// API (see docs/superpowers/specs/2026-09-01-random-recipe-generator-design.md).
-// `low-fat-abs` is a real Edamam health value but is rejected by this
+// API. `low-fat-abs` is a real Edamam health value but is rejected by this
 // account's plan tier, so it's intentionally excluded.
 const FILTER_CATEGORIES: {
   param: RandomRecipeFilterParam;
@@ -103,7 +102,7 @@ const FILTER_CATEGORIES: {
   {
     param: "mealType",
     groupLabel: "Meal Type",
-    values: ["Breakfast", "Dinner", "Lunch", "Snack", "Teatime"],
+    values: ["Breakfast", "Lunch", "Dinner", "Snack", "Teatime"],
   },
   {
     param: "dishType",
