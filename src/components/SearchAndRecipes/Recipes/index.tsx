@@ -1,13 +1,28 @@
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import Icon from "@components/Icon";
 import Bowl from "@components/loaders/Bowl";
+import { buildRandomRecipeSearchParams } from "@data/randomRecipeFilters";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
 
 import RecipeCard from "./RecipeCard";
+
+type RecipesSource = "ingredients" | "filter" | "saved" | null;
+
+// Safety valve for filter mode: each scroll-triggered "load more" is a
+// live Edamam call (random mode has no real cursor, so it's a fresh draw
+// every time). Cap total accumulated hits so an unusually large or
+// diverse filter combination can't auto-fire calls indefinitely while
+// the user scrolls.
+const MAX_FILTER_RECIPES = 200;
+// How many consecutive random draws must come back with zero recipes not
+// already shown before we conclude this filter combination is exhausted
+// and stop auto-loading. >1 tolerates the normal case where a draw
+// returns some overlap but still has a few new recipes mixed in.
+const MAX_CONSECUTIVE_EMPTY_DRAWS = 3;
 
 interface RecipesProps {
   user: User | null;
@@ -20,6 +35,10 @@ interface RecipesProps {
   errorFetchingRecipes: boolean;
   setErrorFetchingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
   isSidebarOpen: boolean;
+  recipesSource: RecipesSource;
+  activeFilterKeys: string[];
+  filterGeneration: number;
+  highlightedRecipeUrl: string | null;
 }
 
 const Recipes: React.FC<RecipesProps> = ({
@@ -33,9 +52,23 @@ const Recipes: React.FC<RecipesProps> = ({
   errorFetchingRecipes,
   setErrorFetchingRecipes,
   isSidebarOpen,
+  recipesSource,
+  activeFilterKeys,
+  filterGeneration,
+  highlightedRecipeUrl,
 }) => {
   const scrollContainerRef = useRef<HTMLElement | null>(null);
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
+  const consecutiveEmptyDrawsRef = useRef(0);
+  const [hasMoreFilterDraws, setHasMoreFilterDraws] = useState(true);
+
+  // A fresh Generate/regenerate click (even with unchanged filters)
+  // bumps `filterGeneration`, which should always restart the
+  // exhausted-draws tracking for the new batch.
+  useEffect(() => {
+    consecutiveEmptyDrawsRef.current = 0;
+    setHasMoreFilterDraws(true);
+  }, [filterGeneration]);
 
   const loadMoreRecipes = async () => {
     if (!recipesData) return;
@@ -76,30 +109,93 @@ const Recipes: React.FC<RecipesProps> = ({
     }
   };
 
-  const nextPageHref = recipesData?._links?.next?.href;
+  // Filter mode has no real cursor — `random=true` omits `_links.next`
+  // entirely (see docs/superpowers/specs/2026-09-01-random-recipe-generator-design.md).
+  // "Load more" here means: draw again with the same filters, and keep
+  // only recipes not already shown.
+  const loadMoreFilterRecipes = async () => {
+    if (!recipesData || activeFilterKeys.length === 0) return;
+    if (recipesData.hits.length >= MAX_FILTER_RECIPES) {
+      setHasMoreFilterDraws(false);
+      return;
+    }
 
-  // Auto-load the next page as the sentinel below the recipe grid
-  // scrolls near the bottom of the (internally-scrolling) section.
-  // Depending on `nextPageHref` (rather than just "is there a next page")
-  // guarantees this re-runs, and re-closes over fresh `recipesData`,
-  // whenever the page actually changes — including a brand new search
-  // replacing the results outright.
+    try {
+      setIsLoadingRecipes(true);
+      const params = buildRandomRecipeSearchParams(activeFilterKeys);
+      const response = await fetch(`/api/edamam?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to load more recipes.");
+
+      const data: RecipeData = await response.json();
+      const existingUrls = new Set(
+        recipesData.hits.map((hit) => hit.recipe.url),
+      );
+      const newHits = data.hits.filter(
+        (hit) => !existingUrls.has(hit.recipe.url),
+      );
+
+      if (newHits.length === 0) {
+        consecutiveEmptyDrawsRef.current += 1;
+        if (consecutiveEmptyDrawsRef.current >= MAX_CONSECUTIVE_EMPTY_DRAWS)
+          setHasMoreFilterDraws(false);
+        return;
+      }
+
+      consecutiveEmptyDrawsRef.current = 0;
+      setRecipesData((prev) => {
+        if (!prev) return null;
+
+        return {
+          ...prev,
+          count: prev.count + newHits.length,
+          to: prev.to + newHits.length,
+          hits: [...prev.hits, ...newHits],
+        };
+      });
+    } catch (_error) {
+      setErrorFetchingRecipes(true);
+    } finally {
+      setIsLoadingRecipes(false);
+    }
+  };
+
+  const nextPageHref = recipesData?._links?.next?.href;
+  const canLoadMoreIngredients =
+    recipesSource === "ingredients" && !!nextPageHref;
+  const canLoadMoreFilterRecipes =
+    recipesSource === "filter" && hasMoreFilterDraws;
+  const canLoadMore = canLoadMoreIngredients || canLoadMoreFilterRecipes;
+
+  // Auto-load more recipes as the sentinel below the recipe grid scrolls
+  // near the bottom of the (internally-scrolling) section. Depending on
+  // the concrete triggers below (rather than just "is there more") makes
+  // sure this re-runs, and re-closes over fresh state, whenever the
+  // active search actually changes — including a brand new search or
+  // filter draw replacing the results outright.
   useEffect(() => {
-    if (!nextPageHref || errorFetchingRecipes) return;
+    if (!canLoadMore || errorFetchingRecipes) return;
 
     const sentinel = loadMoreSentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoadingRecipes) loadMoreRecipes();
+        if (!entries[0].isIntersecting || isLoadingRecipes) return;
+        if (canLoadMoreIngredients) loadMoreRecipes();
+        else if (canLoadMoreFilterRecipes) loadMoreFilterRecipes();
       },
       { root: scrollContainerRef.current, rootMargin: "600px" },
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [nextPageHref, errorFetchingRecipes, isLoadingRecipes]);
+  }, [
+    canLoadMore,
+    canLoadMoreIngredients,
+    canLoadMoreFilterRecipes,
+    errorFetchingRecipes,
+    isLoadingRecipes,
+  ]);
 
   return (
     <section
@@ -156,6 +252,7 @@ const Recipes: React.FC<RecipesProps> = ({
                   user={user}
                   savedRecipes={savedRecipes}
                   setSavedRecipes={setSavedRecipes}
+                  isHighlighted={hit.recipe.url === highlightedRecipeUrl}
                 />
               ))}
             </div>
@@ -177,8 +274,19 @@ const Recipes: React.FC<RecipesProps> = ({
         </p>
       )}
 
-      {/* Invisible trigger for auto-loading the next page on scroll. */}
-      {!errorFetchingRecipes && nextPageHref && (
+      {!errorFetchingRecipes &&
+        recipesSource === "filter" &&
+        !hasMoreFilterDraws &&
+        !!recipesData?.hits?.length &&
+        !isLoadingRecipes && (
+          <p className="mt-5 text-xs text-gray-400 md:text-sm">
+            That&rsquo;s every recipe we could find for these filters — try
+            adjusting them for more.
+          </p>
+        )}
+
+      {/* Invisible trigger for auto-loading more recipes on scroll. */}
+      {!errorFetchingRecipes && canLoadMore && (
         <div
           ref={loadMoreSentinelRef}
           className="h-px w-full"

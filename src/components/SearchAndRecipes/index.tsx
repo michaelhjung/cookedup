@@ -18,6 +18,24 @@ const SearchAndRecipes = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
+  // Which flow populated `recipesData`, so Recipes knows how to fetch
+  // more of it on scroll (ingredient-search pagination vs. re-drawing
+  // random filter results vs. the saved-recipes view, which has no
+  // "more" to load).
+  const [recipesSource, setRecipesSource] = useState<
+    "ingredients" | "filter" | "saved" | null
+  >(null);
+  // The filter keys behind the current filter-mode results, so scroll-
+  // triggered "load more" can re-draw with the same filters.
+  const [activeFilterKeys, setActiveFilterKeys] = useState<string[]>([]);
+  // Bumped on every Generate/regenerate click so Recipes' exhausted-
+  // draws tracking resets even when the filter selection is unchanged.
+  const [filterGeneration, setFilterGeneration] = useState(0);
+  // The recipe URL "Pick one for me" most recently highlighted, if any.
+  const [highlightedRecipeUrl, setHighlightedRecipeUrl] = useState<
+    string | null
+  >(null);
+
   useEffect(() => {
     const checkForURLErrors = () => {
       const { hash } = window.location;
@@ -95,9 +113,14 @@ const SearchAndRecipes = () => {
         <Search
           user={user}
           savedRecipes={savedRecipes}
+          recipesData={recipesData}
           setRecipesData={setRecipesData}
           setIsLoadingRecipes={setIsLoadingRecipes}
           setErrorFetchingRecipes={setErrorFetchingRecipes}
+          setRecipesSource={setRecipesSource}
+          setActiveFilterKeys={setActiveFilterKeys}
+          setFilterGeneration={setFilterGeneration}
+          setHighlightedRecipeUrl={setHighlightedRecipeUrl}
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
         />
@@ -115,6 +138,10 @@ const SearchAndRecipes = () => {
         errorFetchingRecipes={errorFetchingRecipes}
         setErrorFetchingRecipes={setErrorFetchingRecipes}
         isSidebarOpen={isSidebarOpen}
+        recipesSource={recipesSource}
+        activeFilterKeys={activeFilterKeys}
+        filterGeneration={filterGeneration}
+        highlightedRecipeUrl={highlightedRecipeUrl}
       />
     </div>
   );
