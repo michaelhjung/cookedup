@@ -2,6 +2,7 @@
 
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import React, { useMemo, useState } from "react";
 
 interface CheckboxOption {
@@ -86,9 +87,23 @@ const CheckboxFilterGroup: React.FC<CheckboxFilterGroupProps> = ({
 
   if (collapsible) {
     return (
-      <details className="w-full text-left">
-        <summary className="cursor-pointer text-xs font-semibold sm:text-sm">
-          {heading}
+      // Lighter weight and a muted color than the outer "Filters"
+      // summary (which is bold, full-opacity, on a tinted pill) — the
+      // two tiers read as parent/child by visual weight rather than by
+      // indentation, so this can stay flush with the left rule above it
+      // instead of shrinking the sidebar further.
+      //
+      // Named group ("group/category") — see the matching comment in
+      // FilterCategories/index.tsx for why a bare "group" would let this
+      // chevron rotate in step with the outer "Filters" disclosure
+      // instead of its own.
+      <details className="group/category w-full text-left">
+        <summary className="flex cursor-pointer items-center justify-between gap-2 text-xs font-medium text-current/70 sm:text-sm">
+          <span>{heading}</span>
+          <ChevronDown
+            strokeWidth={2}
+            className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-open/category:rotate-180"
+          />
         </summary>
         <div className="mt-2 flex flex-col gap-2">
           {searchable && (

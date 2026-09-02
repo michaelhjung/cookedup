@@ -7,6 +7,7 @@
 
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import React from "react";
 
 import {
@@ -40,12 +41,26 @@ const FilterCategories: React.FC<FilterCategoriesProps> = ({
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
-      <details className="w-full max-w-xs text-left">
-        <summary className="cursor-pointer text-sm font-semibold sm:text-base">
-          {summaryLabel}
+      {/* Named group ("group/filters") rather than a bare "group" — a
+          bare group's `group-open:` cascades to ANY nested group-open
+          utility below it (including each category's own chevron in
+          CheckboxFilterGroup), rotating every sub-arrow the moment this
+          outer <details> opens, regardless of whether that category
+          itself is open. Naming scopes the open-state match to just
+          this <details>. */}
+      <details className="group/filters w-full max-w-xs text-left">
+        <summary className="flex cursor-pointer items-center justify-between rounded-lg bg-[var(--pastel-brown)]/15 px-3 py-2 text-sm font-semibold sm:text-base">
+          <span>{summaryLabel}</span>
+          <ChevronDown
+            strokeWidth={2}
+            className="h-4 w-4 shrink-0 transition-transform duration-200 group-open/filters:rotate-180"
+          />
         </summary>
 
-        <div className="mt-3 flex w-full flex-col gap-4">
+        {/* The left rule (rather than indentation) is what marks these
+            as nested under "Filters" — an actual indent would eat into
+            an already-narrow sidebar. */}
+        <div className="mt-3 flex w-full flex-col gap-4 border-l-2 border-[var(--pastel-brown)]/25 pl-3">
           {RANDOM_RECIPE_FILTER_CATEGORIES.map((category) => (
             <CheckboxFilterGroup
               key={category.param}

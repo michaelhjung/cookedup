@@ -1,7 +1,7 @@
 "use client";
 
 import { User } from "@supabase/supabase-js";
-import { RefreshCcw, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import React, {
   useCallback,
   useEffect,
@@ -256,9 +256,23 @@ const Search: React.FC<SearchProps> = ({
     // clearance so the fixed sidebar-toggle button — 38px wide, centered
     // at the viewport's vertical middle — never overlaps this section's
     // own content, regardless of scroll position.
+    //
+    // `overflow-y-auto` (at every breakpoint, not just lg) is what keeps
+    // this section's own content inside its own box. The parent wrapper
+    // (SearchAndRecipes/index.tsx) only clips overflow at `lg:` and up —
+    // below that, with a lot of ingredients selected, the ingredient
+    // chips can grow tall enough that the fixed-height siblings (chips +
+    // input + the pinned action-button row) outgrow this section's
+    // `max-h-1/2`-of-viewport allowance. Without this, that overflow
+    // doesn't get clipped or scrolled — it just bleeds straight past the
+    // section's box and visually overlaps the Recipes content rendered
+    // right below it. Scrolling the whole sidebar in that edge case is
+    // the fallback; in the common case there's nothing to scroll and
+    // this is a no-op.
     <section
       className={`
         size-full flex flex-col
+        overflow-y-auto
         transition-opacity duration-300 ease-in-out
         border-zinc-500/10 rounded-md lg:border-y-2 lg:border-l-0 lg:border-r-2
         lg:py-4 lg:pr-4 lg:pl-14
@@ -283,44 +297,32 @@ const Search: React.FC<SearchProps> = ({
         </Tooltip>
       </div>
 
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-3">
         <Icon
           type="ingredients"
-          className="w-8 h-8 sm:w-12 sm:h-12 mb-4 text-pastel-blue"
+          className="w-8 h-8 sm:w-12 sm:h-12 text-pastel-blue"
+        />
+
+        <SelectedIngredients
+          selectedIngredients={selectedIngredients}
+          setSelectedIngredients={setSelectedIngredients}
         />
 
         <div
           ref={searchWrapperRef}
           className="relative flex flex-col items-center"
         >
-          <div className="max-w-full flex items-center gap-4">
-            {selectedIngredients.length > 0 && (
-              <Tooltip text="Clear selected ingredients">
-                <button
-                  type="button"
-                  className="shrink-0 cursor-pointer text-3xl text-gray-400 hover:text-red-400 sm:text-4xl md:text-5xl"
-                  onClick={() => setSelectedIngredients([])}
-                >
-                  <RefreshCcw
-                    strokeWidth={1.5}
-                    className="w-6 h-6 sm:w-8 sm:h-8 shrink-0"
-                  />
-                </button>
-              </Tooltip>
-            )}
-
-            <SearchInput
-              ingredients={ingredients}
-              showIngredientsList={showIngredientsList}
-              setShowIngredientsList={setShowIngredientsList}
-              searchInput={searchInput}
-              setSearchInput={setSearchInput}
-              setFocusedIngredientIndex={setFocusedIngredientIndex}
-              searchInputRef={searchInputRef}
-              ingredientRefs={ingredientRefs}
-              handleSelectIngredient={handleSelectIngredient}
-            />
-          </div>
+          <SearchInput
+            ingredients={ingredients}
+            showIngredientsList={showIngredientsList}
+            setShowIngredientsList={setShowIngredientsList}
+            searchInput={searchInput}
+            setSearchInput={setSearchInput}
+            setFocusedIngredientIndex={setFocusedIngredientIndex}
+            searchInputRef={searchInputRef}
+            ingredientRefs={ingredientRefs}
+            handleSelectIngredient={handleSelectIngredient}
+          />
 
           {showIngredientsList && (
             <IngredientsList
@@ -336,78 +338,85 @@ const Search: React.FC<SearchProps> = ({
         </div>
       </div>
 
-      <SelectedIngredients
-        selectedIngredients={selectedIngredients}
-        setSelectedIngredients={setSelectedIngredients}
-      />
-
-      {/* Filter categories + action bar can comfortably exceed the
-          sidebar's height, so they get their own scrollable region
-          rather than being silently clipped by the sidebar wrapper's
+      {/* The filter categories get their own scrollable region rather
+          than being silently clipped by the sidebar wrapper's
           `lg:overflow-hidden` (src/components/SearchAndRecipes/index.tsx)
           further up. The ingredient picker above stays outside this
           wrapper on purpose — its dropdown is absolutely positioned, and
           nesting it inside a scroll container risks the dropdown needing
-          its own scroll to reach instead of just appearing. */}
-      <div className="min-h-0 w-full flex-1 overflow-y-auto">
+          its own scroll to reach instead of just appearing.
+
+          The action buttons below live *outside* this scrollable region,
+          as their own `shrink-0` flex item, so they stay pinned at the
+          bottom of the sidebar and reachable no matter how long the
+          ingredient/filter selection grows, instead of scrolling out of
+          view along with the filters. */}
+      <div className="mt-4 min-h-0 w-full flex-1 overflow-y-auto">
         <FilterCategories
           selectedKeys={selectedFilterKeys}
           onToggle={toggleFilterKey}
         />
+      </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-          <button
-            type="button"
-            disabled={!hasSelection}
-            className={`
-              rounded-3xl px-4 py-2 text-xs sm:text-sm
-              transition-transform
-              ${
-                !hasSelection ?
-                  "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
-                : "cursor-pointer bg-[var(--pastel-brown)]/20 text-cinerous hover:scale-105"
-              }
-            `}
-            onClick={handleReset}
-          >
-            Reset
-          </button>
+      {/* Three-tier visual weight so the buttons read by role, not just
+          by label: Search is the primary action (solid, larger, bolder,
+          with a shadow) since it's what most selections are working
+          toward; Reset is the quiet secondary action (outline only,
+          reddens on hover as a subtle "this clears things" cue); Pick
+          one for me is a distinct accent color so it doesn't read as a
+          sibling of Search, just a smaller fun extra. */}
+      <div className="mt-3 flex shrink-0 flex-wrap items-center justify-center gap-2 border-t border-zinc-500/10 pt-3">
+        <button
+          type="button"
+          disabled={!hasSelection}
+          className={`
+            rounded-3xl border px-4 py-2 text-xs sm:text-sm
+            transition-all
+            ${
+              !hasSelection ?
+                "cursor-not-allowed border-transparent bg-[var(--pastel-brown)]/10 text-gray-400"
+              : "cursor-pointer border-zinc-400/50 text-gray-500 hover:scale-105 hover:border-red-400 hover:text-red-400"
+            }
+          `}
+          onClick={handleReset}
+        >
+          Reset
+        </button>
 
-          <button
-            type="button"
-            disabled={!hasSelection || isSearching}
-            className={`
-              rounded-3xl px-4 py-2 text-xs sm:text-sm
-              transition-transform
-              ${
-                !hasSelection || isSearching ?
-                  "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
-                : "cursor-pointer bg-[var(--pastel-brown)]/20 text-cinerous hover:scale-105"
-              }
-            `}
-            onClick={handleSearch}
-          >
-            Search
-          </button>
+        <button
+          type="button"
+          disabled={!hasSelection || isSearching}
+          className={`
+            rounded-3xl px-6 py-2.5 text-sm font-semibold sm:text-base
+            transition-all
+            ${
+              !hasSelection || isSearching ?
+                "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
+              : "cursor-pointer bg-[var(--pastel-blue)] text-blue-900 shadow-md hover:scale-105 hover:shadow-lg"
+            }
+          `}
+          onClick={handleSearch}
+        >
+          Search
+        </button>
 
-          <button
-            type="button"
-            disabled={!hasLoadedRecipes}
-            title="Randomly highlight one of the recipes already loaded below"
-            className={`
-              rounded-3xl px-4 py-2 text-xs sm:text-sm
-              transition-transform
-              ${
-                !hasLoadedRecipes ?
-                  "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
-                : "cursor-pointer bg-[var(--pastel-brown)]/20 text-cinerous hover:scale-105"
-              }
-            `}
-            onClick={handlePickRandomLoaded}
-          >
-            🎲 Pick one for me
-          </button>
-        </div>
+        <button
+          type="button"
+          disabled={!hasLoadedRecipes}
+          title="Randomly highlight one of the recipes already loaded below"
+          className={`
+            rounded-3xl px-4 py-2 text-xs sm:text-sm
+            transition-transform
+            ${
+              !hasLoadedRecipes ?
+                "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
+              : "cursor-pointer bg-[var(--pastel-orange)]/70 text-orange-900 hover:scale-105"
+            }
+          `}
+          onClick={handlePickRandomLoaded}
+        >
+          🎲 Pick one for me
+        </button>
       </div>
     </section>
   );
