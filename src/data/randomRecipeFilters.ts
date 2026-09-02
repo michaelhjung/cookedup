@@ -21,6 +21,11 @@ const FILTER_CATEGORIES: {
   values: string[];
 }[] = [
   {
+    param: "mealType",
+    groupLabel: "Meal Type",
+    values: ["Breakfast", "Lunch", "Dinner", "Snack", "Teatime"],
+  },
+  {
     param: "cuisineType",
     groupLabel: "Cuisine",
     values: [
@@ -98,11 +103,6 @@ const FILTER_CATEGORIES: {
       "vegetarian",
       "wheat-free",
     ],
-  },
-  {
-    param: "mealType",
-    groupLabel: "Meal Type",
-    values: ["Breakfast", "Lunch", "Dinner", "Snack", "Teatime"],
   },
   {
     param: "dishType",
