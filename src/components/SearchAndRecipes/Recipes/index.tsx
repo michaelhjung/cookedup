@@ -145,10 +145,11 @@ const Recipes: React.FC<RecipesProps> = ({
       setRecipesData((prev) => {
         if (!prev) return null;
 
+        // `count`/`to` are left untouched — they already reflect
+        // Edamam's real total match count for these filters (set once,
+        // from the initial draw), not how many have been loaded so far.
         return {
           ...prev,
-          count: prev.count + newHits.length,
-          to: prev.to + newHits.length,
           hits: [...prev.hits, ...newHits],
         };
       });
@@ -245,9 +246,9 @@ const Recipes: React.FC<RecipesProps> = ({
             </p>
 
             <div className="grid w-full gap-6 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
-              {recipesData.hits.map((hit: Hit, index: number) => (
+              {recipesData.hits.map((hit: Hit) => (
                 <RecipeCard
-                  key={index}
+                  key={hit.recipe.url}
                   hit={hit}
                   user={user}
                   savedRecipes={savedRecipes}
