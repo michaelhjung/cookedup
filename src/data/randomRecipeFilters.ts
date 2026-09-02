@@ -191,26 +191,60 @@ export const RANDOM_RECIPE_FILTER_PARAM_NAMES: RandomRecipeFilterParam[] = [
   ...new Set(RANDOM_RECIPE_FILTER_OPTIONS.map((option) => option.param)),
 ];
 
-/**
- * Turns selected option keys (from RANDOM_RECIPE_FILTER_OPTIONS) into the
- * query params Edamam expects: `random=true` plus each filter repeated
- * per selected value (e.g. `diet=low-carb&diet=high-fiber`).
- */
-export const buildRandomRecipeSearchParams = (
+// Appends each selected filter (from RANDOM_RECIPE_FILTER_OPTIONS) onto an
+// existing URLSearchParams, repeating the param per selected value (e.g.
+// `diet=low-carb&diet=high-fiber`). Shared by both builders below so
+// there's one place that knows how a filter key maps to a query param.
+const appendFilterParams = (
+  params: URLSearchParams,
   selectedKeys: string[],
-): URLSearchParams => {
+): void => {
   const optionsByKey = new Map(
     RANDOM_RECIPE_FILTER_OPTIONS.map((option) => [option.key, option]),
   );
-
-  const params = new URLSearchParams();
-  params.set("random", "true");
 
   selectedKeys.forEach((key) => {
     const option = optionsByKey.get(key);
     if (!option) return;
     params.append(option.param, option.value);
   });
+};
+
+/**
+ * Turns selected option keys (from RANDOM_RECIPE_FILTER_OPTIONS) into the
+ * query params Edamam expects: `random=true` plus each filter repeated
+ * per selected value. Used for filter-only searches (no ingredients),
+ * including scroll-triggered "load more" redraws.
+ */
+export const buildRandomRecipeSearchParams = (
+  selectedKeys: string[],
+): URLSearchParams => {
+  const params = new URLSearchParams();
+  params.set("random", "true");
+  appendFilterParams(params, selectedKeys);
+  return params;
+};
+
+/**
+ * Turns a selected-ingredients list and selected filter keys into the
+ * query params for a combined search: ingredients (if any) narrow the
+ * search via `ingredients=`, filters narrow it further, and with no
+ * ingredients selected it falls back to a filters-only `random=true`
+ * draw (there's no non-random, filters-only browse endpoint).
+ */
+export const buildSearchParams = (
+  selectedIngredients: string[],
+  selectedFilterKeys: string[],
+): URLSearchParams => {
+  const params = new URLSearchParams();
+
+  if (selectedIngredients.length > 0) {
+    params.set("ingredients", selectedIngredients.join(","));
+  } else {
+    params.set("random", "true");
+  }
+
+  appendFilterParams(params, selectedFilterKeys);
 
   return params;
 };

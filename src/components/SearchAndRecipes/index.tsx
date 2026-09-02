@@ -89,10 +89,13 @@ const SearchAndRecipes = () => {
       ${isSidebarOpen ? "lg:gap-6" : "lg:gap-0"}
     `}
     >
-      {/* Sidebar Toggle (visible only on lg+) */}
+      {/* Sidebar Toggle (visible only on lg+). Solid background (rather
+          than transparent) so it fully occludes whatever sidebar content
+          happens to sit behind it at the viewport's vertical center,
+          instead of visually bleeding through it. */}
       <button
         onClick={toggleSidebar}
-        className="hidden lg:flex fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-md border border-zinc-500/40 p-1 shadow-md"
+        className="hidden lg:flex fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-md border border-zinc-500/40 bg-[var(--background-color)] p-1 shadow-md"
         aria-label="Toggle sidebar"
       >
         {isSidebarOpen ?
