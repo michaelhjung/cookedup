@@ -7,6 +7,11 @@ interface TooltipProps {
   text: string;
   isVisible?: boolean;
   delay?: number; // in milliseconds
+  // Where the tooltip box renders relative to its trigger. Defaults to
+  // "top" (the original behavior). Use "bottom" for triggers that sit
+  // near the top edge of a clipping ancestor, where an above-positioned
+  // tooltip would get cut off.
+  position?: "top" | "bottom";
 }
 
 const Tooltip: React.FC<TooltipProps> = ({
@@ -14,6 +19,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   text,
   isVisible: controlledIsVisible,
   delay = 0,
+  position = "top",
 }) => {
   const [delayedVisible, setDelayedVisible] = useState(false);
   const [uncontrolledVisible, setUncontrolledVisible] = useState(false);
@@ -45,9 +51,9 @@ const Tooltip: React.FC<TooltipProps> = ({
         <div
           className={`
             min-w-24
-            ${styles.tooltipContainer}
+            ${position === "bottom" ? styles.tooltipContainerBottom : styles.tooltipContainer}
             absolute
-            bottom-full
+            ${position === "bottom" ? "top-full" : "bottom-full"}
             rounded-lg
             bg-slate-600
             px-2 py-1

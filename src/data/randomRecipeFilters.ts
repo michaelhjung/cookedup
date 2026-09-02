@@ -143,6 +143,28 @@ export const RANDOM_RECIPE_FILTER_OPTIONS: RandomRecipeFilterOption[] =
     })),
   );
 
+export interface RandomRecipeFilterCategory {
+  param: RandomRecipeFilterParam;
+  groupLabel: string;
+  // Unprefixed labels (just the value) — the per-category UI already
+  // shows the group heading, so repeating it in every checkbox label
+  // (as RANDOM_RECIPE_FILTER_OPTIONS does for the flat picker) would be
+  // redundant here.
+  options: { key: string; label: string }[];
+}
+
+// Same underlying data as RANDOM_RECIPE_FILTER_OPTIONS, grouped by
+// category for the per-section checkbox UI.
+export const RANDOM_RECIPE_FILTER_CATEGORIES: RandomRecipeFilterCategory[] =
+  FILTER_CATEGORIES.map(({ param, groupLabel, values }) => ({
+    param,
+    groupLabel,
+    options: values.map((value) => ({
+      key: makeOptionKey(param, value),
+      label: value,
+    })),
+  }));
+
 // Dev-time guard: the composite `param:value` key is relied on elsewhere
 // (e.g. buildRandomRecipeSearchParams's Map lookup) to uniquely identify
 // an option. A future edit that accidentally introduces a duplicate

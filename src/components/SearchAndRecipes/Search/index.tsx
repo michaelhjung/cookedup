@@ -26,14 +26,20 @@ const DEFAULT_INGREDIENTS_LIST = {
   filtered: ingredientsList,
 };
 
-type SearchMode = "ingredients" | "random";
+type SearchMode = "ingredients" | "filter";
+type RecipesSource = "ingredients" | "filter" | "saved" | null;
 
 interface SearchProps {
   user: User | null;
   savedRecipes: Hit[];
+  recipesData: RecipeData | null;
   setRecipesData: React.Dispatch<React.SetStateAction<RecipeData | null>>;
   setIsLoadingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
   setErrorFetchingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
+  setRecipesSource: React.Dispatch<React.SetStateAction<RecipesSource>>;
+  setActiveFilterKeys: React.Dispatch<React.SetStateAction<string[]>>;
+  setFilterGeneration: React.Dispatch<React.SetStateAction<number>>;
+  setHighlightedRecipeUrl: React.Dispatch<React.SetStateAction<string | null>>;
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
 }
@@ -41,9 +47,14 @@ interface SearchProps {
 const Search: React.FC<SearchProps> = ({
   user,
   savedRecipes,
+  recipesData,
   setRecipesData,
   setIsLoadingRecipes,
   setErrorFetchingRecipes,
+  setRecipesSource,
+  setActiveFilterKeys,
+  setFilterGeneration,
+  setHighlightedRecipeUrl,
   isSidebarOpen,
 }) => {
   const [mode, setMode] = useState<SearchMode>("ingredients");
@@ -125,6 +136,7 @@ const Search: React.FC<SearchProps> = ({
 
   const handleSearchRecipes = async (selectedIngreds: string[]) => {
     setIsLoadingRecipes(true);
+    setHighlightedRecipeUrl(null);
     const edamamResponse = await fetch(
       `/api/edamam?ingredients=${selectedIngreds.join(",")}`,
     );
@@ -139,6 +151,7 @@ const Search: React.FC<SearchProps> = ({
     setErrorFetchingRecipes(false);
     const edamamData = await edamamResponse.json();
     setRecipesData(edamamData);
+    setRecipesSource("ingredients");
   };
 
   const handleViewSavedRecipes = async () => {
@@ -149,6 +162,7 @@ const Search: React.FC<SearchProps> = ({
 
     try {
       setIsLoadingRecipes(true);
+      setHighlightedRecipeUrl(null);
       setRecipesData({
         from: 1,
         to: 1,
@@ -156,6 +170,7 @@ const Search: React.FC<SearchProps> = ({
         _links: undefined,
         hits: savedRecipes,
       });
+      setRecipesSource("saved");
       setIsLoadingRecipes(false);
       setErrorFetchingRecipes(false);
     } catch (err) {
@@ -168,7 +183,8 @@ const Search: React.FC<SearchProps> = ({
   return (
     <section
       className={`
-        size-full transition-opacity duration-300 ease-in-out
+        size-full flex flex-col
+        transition-opacity duration-300 ease-in-out
         border-zinc-500/10 rounded-md lg:border-y-2 lg:border-l-0 lg:border-r-2
         lg:p-4
         ${isSidebarOpen ? "opacity-100" : "opacity-0"}
@@ -190,18 +206,19 @@ const Search: React.FC<SearchProps> = ({
           <button
             type="button"
             className={`rounded-full px-3 py-1 text-xs sm:text-sm ${
-              mode === "random" ?
+              mode === "filter" ?
                 "bg-[var(--pastel-brown)]/30 font-semibold"
               : "text-gray-400"
             }`}
-            onClick={() => setMode("random")}
+            onClick={() => setMode("filter")}
           >
-            Random
+            Filter
           </button>
         </div>
 
         <Tooltip
           text={user ? "View saved recipes" : "Log in to view saved recipes"}
+          position="bottom"
         >
           <button
             type="button"
@@ -293,12 +310,26 @@ const Search: React.FC<SearchProps> = ({
         </>
       )}
 
-      {mode === "random" && (
-        <RandomRecipeFilters
-          setRecipesData={setRecipesData}
-          setIsLoadingRecipes={setIsLoadingRecipes}
-          setErrorFetchingRecipes={setErrorFetchingRecipes}
-        />
+      {mode === "filter" && (
+        // Unlike the ingredients-mode block above (which never overflows
+        // its container), the per-category checkbox sections here can
+        // comfortably exceed the sidebar's height. This wrapper is a
+        // flex-1 child of the section's flex column so it fills the
+        // remaining space and scrolls internally, rather than being
+        // silently clipped by the sidebar wrapper's `lg:overflow-hidden`
+        // (src/components/SearchAndRecipes/index.tsx) further up.
+        <div className="min-h-0 w-full flex-1 overflow-y-auto">
+          <RandomRecipeFilters
+            recipesData={recipesData}
+            setRecipesData={setRecipesData}
+            setIsLoadingRecipes={setIsLoadingRecipes}
+            setErrorFetchingRecipes={setErrorFetchingRecipes}
+            setRecipesSource={setRecipesSource}
+            setActiveFilterKeys={setActiveFilterKeys}
+            setFilterGeneration={setFilterGeneration}
+            setHighlightedRecipeUrl={setHighlightedRecipeUrl}
+          />
+        </div>
       )}
     </section>
   );

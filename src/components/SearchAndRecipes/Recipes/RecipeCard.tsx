@@ -1,7 +1,7 @@
 import { User } from "@supabase/supabase-js";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 import { Hit } from "@interfaces/edamam";
 
@@ -12,6 +12,7 @@ interface RecipeCardProps {
   user: User | null;
   savedRecipes: Hit[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
+  isHighlighted?: boolean;
 }
 
 const getFormattedCookTime = (totalTime: number): string =>
@@ -22,6 +23,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   user,
   savedRecipes,
   setSavedRecipes,
+  isHighlighted = false,
 }) => {
   const {
     recipe: {
@@ -35,8 +37,20 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
     },
   } = hit;
 
+  // "Pick one for me" (RandomRecipeFilters) sets `isHighlighted` on a
+  // single card at a time; bring it into view and give it a brief pulse
+  // so it's obvious which one was picked, even if it's already loaded
+  // off-screen.
+  const cardRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    if (isHighlighted)
+      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [isHighlighted]);
+
   return (
     <a
+      ref={cardRef}
       href={url}
       target="_blank"
       rel="noopener noreferrer"
@@ -49,6 +63,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
         shadow-md hover:shadow-lg
         transition-shadow
         p-4 pb-10
+        ${isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2 animate-pulse" : ""}
       `}
     >
       {/* External link icon */}

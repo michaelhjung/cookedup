@@ -8,3 +8,16 @@
   border-style: solid;
   border-color: #4b5563 transparent transparent transparent;
 }
+
+// Used when the tooltip box itself renders below its trigger (`position="bottom"`)
+// instead of above it — the arrow flips to point up at the trigger from below.
+.tooltipContainerBottom::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #4b5563 transparent;
+}
