@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useRef } from "react";
 
+import AddToPlanButton from "@components/MealPlan/AddToPlanButton";
 import { Hit } from "@interfaces/edamam";
 
 import StarIcon from "./StarIcon";
@@ -81,12 +82,16 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           z-10
         `}
       />
-      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
+      <div className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3">
         <StarIcon
           hit={hit}
           user={user}
           savedRecipes={savedRecipes}
           setSavedRecipes={setSavedRecipes}
+        />
+        <AddToPlanButton
+          hit={hit}
+          user={user}
         />
       </div>
 
