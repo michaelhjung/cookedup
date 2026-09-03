@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 import AuthButton from "@components/AuthButton";
+import Nav from "@components/Nav";
 import chefBulb from "@public/logo.png";
 
 const Header = () => {
@@ -45,6 +46,8 @@ const Header = () => {
       <p className="text-xs sm:text-sm md:text-base text-center">
         Find recipes based on ingredients on hand!
       </p>
+
+      <Nav />
     </header>
   );
 };

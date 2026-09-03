@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 
 import Tooltip from "@components/Tooltip";
 import { Hit } from "@interfaces/edamam";
+import { unstarRecipe } from "@lib/mealPlan/client";
 import { supabase } from "@utils/supabase";
 
 interface StarIconProps {
@@ -34,15 +35,12 @@ const persistSaveRecipe = async (data: Hit) => {
     throw new Error(result.message || "An unknown error occurred.");
 };
 
-const persistRemoveRecipe = async (userId: string, data: Hit) => {
-  const { error } = await supabase
-    .from("recipes")
-    .delete()
-    .eq("user_id", userId)
-    .eq("data->recipe->>url", data.recipe.url); // Match based on the recipe URL
-
-  if (error) throw new Error(error.message || "An unknown error occurred.");
-};
+/**
+ * Unstarring can't just delete the row any more: the same library row
+ * may be what a planned meal points at. The RPC clears the star and only
+ * removes the row when nothing else needs it.
+ */
+const persistRemoveRecipe = async (data: Hit) => unstarRecipe(data.recipe.url);
 
 const StarIcon: React.FC<StarIconProps> = ({
   hit,
@@ -93,13 +91,12 @@ const StarIcon: React.FC<StarIconProps> = ({
       return;
     }
 
-    const userId = user.id;
     setSavedRecipes((prev) =>
       prev.filter((savedHit) => savedHit.recipe.url !== data.recipe.url),
     );
 
     pendingRequestRef.current = pendingRequestRef.current.then(() =>
-      persistRemoveRecipe(userId, data).catch((error) => {
+      persistRemoveRecipe(data).catch((error) => {
         setSavedRecipes((prev) => [...prev, data]);
         alert("There was an error while trying to remove the saved recipe.");
         console.error(

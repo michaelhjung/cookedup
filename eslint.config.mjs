@@ -54,6 +54,10 @@ const eslintConfig = [
               group: "internal",
             },
             {
+              pattern: "@lib/**",
+              group: "internal",
+            },
+            {
               pattern: "@public/**",
               group: "internal",
             },

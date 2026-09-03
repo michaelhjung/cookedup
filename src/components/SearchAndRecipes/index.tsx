@@ -67,7 +67,7 @@ const SearchAndRecipes = () => {
         .from("recipes")
         .select("data")
         .eq("user_id", user.id)
-        .eq("type", "starred");
+        .eq("is_starred", true);
 
       if (error || !data?.length) {
         console.error("Error fetching saved recipes:", error || "none found");
