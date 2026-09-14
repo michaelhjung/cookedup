@@ -1,9 +1,9 @@
 "use client";
 
 import Script from "next/script";
-import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 
+import AuthOptionButton from "@components/AuthOptionButton";
 import { supabase } from "@utils/supabase";
 
 // Google's sign-in, done on this origin rather than through Supabase's
@@ -51,8 +51,8 @@ export const googleSignInEnabled = Boolean(CLIENT_ID);
  */
 const GoogleIcon = () => (
   <svg
-    width="20"
-    height="20"
+    width="24"
+    height="24"
     viewBox="0 0 18 18"
     aria-hidden="true"
   >
@@ -75,21 +75,12 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// Colors from Google's branding guidelines for self-rendered buttons
-// (light: white on #747775 border; dark: #131314 on #8E918F border), which
-// unlike the script-rendered button put the logo straight on the surface.
-const THEME_CLASSES = {
-  light: "bg-white border-[#747775] text-[#1f1f1f] hover:bg-[#1f1f1f]/8",
-  dark: "bg-[#131314] border-[#8e918f] text-[#e3e3e3] hover:bg-[#e3e3e3]/8",
-};
-
 interface Props {
   onSuccess: () => void;
   onError: (_message: string) => void;
 }
 
 const GoogleSignInButton = ({ onSuccess, onError }: Props) => {
-  const { resolvedTheme } = useTheme();
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const codeClient = useRef<GoogleCodeClient | null>(null);
@@ -158,24 +149,13 @@ const GoogleSignInButton = ({ onSuccess, onError }: Props) => {
 
   return (
     <>
-      <button
-        type="button"
+      <AuthOptionButton
+        icon={<GoogleIcon />}
         onClick={handleClick}
         disabled={!ready || busy}
-        className={`
-          relative flex h-10 w-full items-center justify-center
-          rounded border px-3
-          text-sm font-medium
-          transition
-          disabled:cursor-not-allowed disabled:opacity-50
-          ${THEME_CLASSES[resolvedTheme === "dark" ? "dark" : "light"]}
-        `}
       >
-        <span className="absolute left-3 flex">
-          <GoogleIcon />
-        </span>
         {busy ? "Signing in..." : "Continue with Google"}
-      </button>
+      </AuthOptionButton>
       <Script
         src={GSI_SCRIPT}
         strategy="afterInteractive"
