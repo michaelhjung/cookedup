@@ -1,7 +1,5 @@
 import React, { ReactNode, useEffect, useState } from "react";
 
-import styles from "./Tooltip.module.scss";
-
 interface TooltipProps {
   children: ReactNode;
   text: string;
@@ -12,7 +10,19 @@ interface TooltipProps {
   // near the top edge of a clipping ancestor, where an above-positioned
   // tooltip would get cut off.
   position?: "top" | "bottom";
+  // How the box lines up horizontally with its trigger. "center" (the
+  // default) centers it; "end" hangs it off the trigger's right edge, for
+  // triggers that sit against the right edge of a scrolling ancestor —
+  // there a centered box spills past the edge, and since any ancestor
+  // with overflow-y:auto clips on x too, it gets cut off and grows the
+  // ancestor a horizontal scrollbar. The arrow stays on the trigger.
+  align?: "center" | "end";
 }
+
+// The arrow is its own element anchored to the trigger rather than a
+// pseudo-element on the box, so it keeps pointing at the trigger no matter
+// where the box is aligned.
+const ARROW_SIZE = 5;
 
 const Tooltip: React.FC<TooltipProps> = ({
   children,
@@ -20,6 +30,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   isVisible: controlledIsVisible,
   delay = 0,
   position = "top",
+  align = "center",
 }) => {
   const [delayedVisible, setDelayedVisible] = useState(false);
   const [uncontrolledVisible, setUncontrolledVisible] = useState(false);
@@ -39,6 +50,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   }, [controlledIsVisible, delay, isControlled]);
 
   const visible = isControlled ? delayedVisible : uncontrolledVisible;
+  const below = position === "bottom";
 
   return (
     <div
@@ -48,20 +60,43 @@ const Tooltip: React.FC<TooltipProps> = ({
     >
       {children}
       {visible && (
-        <div
-          className={`
-            min-w-24
-            ${position === "bottom" ? styles.tooltipContainerBottom : styles.tooltipContainer}
-            absolute
-            ${position === "bottom" ? "top-full" : "bottom-full"}
-            rounded-lg
-            bg-slate-600
-            px-2 py-1
-            text-center text-xs text-white text-pretty
-          `}
-        >
-          {text}
-        </div>
+        <>
+          <span
+            aria-hidden="true"
+            className={`absolute left-1/2 -translate-x-1/2 border-solid border-transparent ${
+              below ?
+                "top-full border-b-slate-600"
+              : "bottom-full border-t-slate-600"
+            }`}
+            // Only the half facing the box is painted; pull the element
+            // back by that half so the painted triangle sits between
+            // trigger and box instead of hidden under the box.
+            style={{
+              borderWidth: ARROW_SIZE,
+              ...(below ?
+                { marginTop: -ARROW_SIZE }
+              : { marginBottom: -ARROW_SIZE }),
+            }}
+          />
+          <div
+            className={`
+              min-w-24
+              absolute
+              ${below ? "top-full" : "bottom-full"}
+              ${align === "end" ? "right-0" : ""}
+              rounded-lg
+              bg-slate-600
+              px-2 py-1
+              text-center text-xs text-white text-pretty
+            `}
+            // Clear the arrow so the box sits on its tip rather than over it.
+            style={
+              below ? { marginTop: ARROW_SIZE } : { marginBottom: ARROW_SIZE }
+            }
+          >
+            {text}
+          </div>
+        </>
       )}
     </div>
   );

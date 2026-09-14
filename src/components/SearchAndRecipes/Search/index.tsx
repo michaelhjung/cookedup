@@ -283,6 +283,7 @@ const Search: React.FC<SearchProps> = ({
         <Tooltip
           text={user ? "View saved recipes" : "Log in to view saved recipes"}
           position="bottom"
+          align="end"
         >
           <button
             type="button"
