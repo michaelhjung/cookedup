@@ -10,7 +10,7 @@ import { notFound } from "next/navigation";
 import Footer from "@components/Footer";
 import SharedPlanView from "@components/MealPlan/SharedPlanView";
 import { MealPlanEntry, parseSlots } from "@lib/mealPlan/types";
-import { supabase } from "@utils/supabase";
+import { publicSupabase as supabase } from "@utils/supabase/server";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
