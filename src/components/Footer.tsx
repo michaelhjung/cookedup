@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 const Footer = () => {
@@ -21,6 +22,13 @@ const Footer = () => {
         <span className="mt-1 text-[0.65rem] sm:text-xs opacity-50 tracking-tight">
           Copyright &copy; 2024-{new Date().getFullYear()} Michael Jung. All
           rights reserved.
+          {" · "}
+          <Link
+            href="/privacy"
+            className="hover:underline"
+          >
+            Privacy
+          </Link>
         </span>
       </div>
     </footer>
