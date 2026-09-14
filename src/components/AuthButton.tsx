@@ -1,9 +1,8 @@
 "use client";
 
-import { LogIn, Mail, X, UserRoundCheck } from "lucide-react";
+import { LogIn, X, UserRoundCheck } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 
-import AuthOptionButton from "@components/AuthOptionButton";
 import GoogleSignInButton, {
   googleSignInEnabled,
 } from "@components/GoogleSignInButton";
@@ -16,10 +15,6 @@ const AuthButton = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  // The email form sits behind a "Continue with Email" button so the two
-  // sign-in options present as a matched pair. Without Google configured
-  // there is only one option, so the form shows straight away.
-  const [emailOpen, setEmailOpen] = useState(!googleSignInEnabled);
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -60,10 +55,6 @@ const AuthButton = () => {
     url.searchParams.delete("auth_error");
     window.history.replaceState({}, "", url.toString());
   }, []);
-
-  useEffect(() => {
-    if (!open && googleSignInEnabled) setEmailOpen(false);
-  }, [open]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -150,42 +141,26 @@ const AuthButton = () => {
                   </>
                 )}
 
-                {emailOpen ?
-                  <form
-                    onSubmit={handleLogin}
-                    className="flex flex-col gap-3"
+                <form
+                  onSubmit={handleLogin}
+                  className="flex flex-col gap-3"
+                >
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                    className="h-11 rounded border px-3 text-sm focus:ring-1"
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="rounded py-2 text-sm hover:font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:font-normal"
                   >
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      required
-                      // Only ever mounted in response to a click on
-                      // "Continue with Email", so focus is expected.
-                      autoFocus={googleSignInEnabled}
-                      className="h-11 rounded border px-3 text-sm focus:ring-1"
-                    />
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="rounded py-2 hover:font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:font-normal"
-                    >
-                      {loading ? "Sending..." : "Send magic link"}
-                    </button>
-                  </form>
-                : <AuthOptionButton
-                    icon={
-                      <Mail
-                        size={22}
-                        strokeWidth={1.75}
-                      />
-                    }
-                    onClick={() => setEmailOpen(true)}
-                  >
-                    Continue with Email
-                  </AuthOptionButton>
-                }
+                    {loading ? "Sending..." : "Send magic link"}
+                  </button>
+                </form>
 
                 {message && <p className="text-center text-xs">{message}</p>}
               </div>
