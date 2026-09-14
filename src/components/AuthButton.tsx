@@ -3,8 +3,15 @@
 import { LogIn, X, UserRoundCheck } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 
+import GoogleSignInButton, {
+  googleSignInEnabled,
+} from "@components/GoogleSignInButton";
 import { useAuth } from "@context/AuthContext";
 import { supabase } from "@utils/supabase";
+
+// The modal is w-80 with p-4 on each side; Google draws the button at a
+// fixed pixel width, so it has to be told what fits.
+const GOOGLE_BUTTON_WIDTH = 288;
 
 const AuthButton = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -15,6 +22,14 @@ const AuthButton = () => {
 
   const modalRef = useRef<HTMLDivElement>(null);
 
+  // Magic links come back through the callback route, which trades the
+  // one-time code for a session and returns the user to the page they
+  // started on. (Google signs in without leaving the page.)
+  const callbackUrl = () =>
+    `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+      window.location.pathname,
+    )}`;
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -24,13 +39,26 @@ const AuthButton = () => {
       email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: callbackUrl(),
       },
     });
 
     setLoading(false);
     setMessage(error ? "Error sending link. Try again." : "Check your email!");
   };
+
+  // The callback route sends failures back with ?auth_error=1 rather than
+  // rendering an error page of its own.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("auth_error")) return;
+
+    setOpen(true);
+    setMessage("That sign-in link didn't work. Try again.");
+
+    url.searchParams.delete("auth_error");
+    window.history.replaceState({}, "", url.toString());
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -98,27 +126,49 @@ const AuthButton = () => {
                   Logout
                 </button>
               </div>
-            : <form
-                onSubmit={handleLogin}
-                className="flex flex-col gap-3"
-              >
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                  className="rounded border px-3 py-2 text-sm focus:ring-1"
-                />
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="rounded py-2 hover:font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:font-normal"
+            : <div className="flex flex-col gap-3">
+                {googleSignInEnabled && (
+                  <>
+                    <GoogleSignInButton
+                      width={GOOGLE_BUTTON_WIDTH}
+                      onSuccess={() => {
+                        setOpen(false);
+                        setMessage("");
+                      }}
+                      onError={setMessage}
+                    />
+
+                    <div className="flex items-center gap-2 text-xs text-zinc-500">
+                      <span className="h-px grow bg-zinc-500/25" />
+                      or
+                      <span className="h-px grow bg-zinc-500/25" />
+                    </div>
+                  </>
+                )}
+
+                <form
+                  onSubmit={handleLogin}
+                  className="flex flex-col gap-3"
                 >
-                  {loading ? "Sending..." : "Login / Signup"}
-                </button>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                    className="rounded border px-3 py-2 text-sm focus:ring-1"
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="rounded py-2 hover:font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:font-normal"
+                  >
+                    {loading ? "Sending..." : "Login / Signup"}
+                  </button>
+                </form>
+
                 {message && <p className="text-center text-xs">{message}</p>}
-              </form>
+              </div>
             }
           </div>
         </div>

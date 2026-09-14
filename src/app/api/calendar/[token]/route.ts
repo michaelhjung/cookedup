@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import { buildCalendar } from "@lib/ics/buildCalendar";
 import { buildPlanEvents } from "@lib/mealPlan/buildPlanEvents";
 import { MealPlanEntry, parseSlots } from "@lib/mealPlan/types";
-import { supabase } from "@utils/supabase";
+import { publicSupabase as supabase } from "@utils/supabase/server";
 
 // A feed is a full snapshot, so removed meals disappear simply by not
 // being emitted. The window keeps it from growing without bound while
