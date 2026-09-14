@@ -9,10 +9,6 @@ import GoogleSignInButton, {
 import { useAuth } from "@context/AuthContext";
 import { supabase } from "@utils/supabase";
 
-// The modal is w-80 with p-4 on each side; Google draws the button at a
-// fixed pixel width, so it has to be told what fits.
-const GOOGLE_BUTTON_WIDTH = 288;
-
 const AuthButton = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const [email, setEmail] = useState("");
@@ -130,7 +126,6 @@ const AuthButton = () => {
                 {googleSignInEnabled && (
                   <>
                     <GoogleSignInButton
-                      width={GOOGLE_BUTTON_WIDTH}
                       onSuccess={() => {
                         setOpen(false);
                         setMessage("");

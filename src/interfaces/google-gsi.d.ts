@@ -3,41 +3,35 @@
 // import types from; declared by hand rather than pulling in
 // @types/google.accounts for a handful of fields.
 //
-// Reference: https://developers.google.com/identity/gsi/web/reference/js-reference
+// Reference: https://developers.google.com/identity/oauth2/web/reference/js-reference
 
-interface GoogleCredentialResponse {
-  /** The ID token: a signed JWT carrying the user's email, name and `sub`. */
-  credential: string;
-  select_by: string;
+interface GoogleCodeResponse {
+  /** One-time authorization code; absent when `error` is set. */
+  code?: string;
+  /** e.g. "access_denied" when the user closes the consent popup. */
+  error?: string;
+  error_description?: string;
 }
 
-interface GoogleIdConfiguration {
+interface GoogleCodeClientConfig {
   client_id: string;
-  callback: (_response: GoogleCredentialResponse) => void;
-  /** SHA-256 of the value later handed to Supabase, which recomputes it. */
-  nonce?: string;
+  /** Space-separated. Must include "openid" for an ID token to be issued. */
+  scope: string;
+  ux_mode?: "popup" | "redirect";
+  callback: (_response: GoogleCodeResponse) => void;
+  /** Fires when the popup is closed or blocked before Google answers. */
+  error_callback?: (_error: { type: string }) => void;
 }
 
-interface GoogleButtonConfiguration {
-  type?: "standard" | "icon";
-  theme?: "outline" | "filled_blue" | "filled_black";
-  size?: "large" | "medium" | "small";
-  text?: "signin_with" | "signup_with" | "continue_with" | "signin";
-  shape?: "rectangular" | "pill" | "circle" | "square";
-  logo_alignment?: "left" | "center";
-  /** Pixels, 200–400. */
-  width?: number;
+interface GoogleCodeClient {
+  requestCode: () => void;
 }
 
 interface Window {
   google?: {
     accounts: {
-      id: {
-        initialize: (_config: GoogleIdConfiguration) => void;
-        renderButton: (
-          _parent: HTMLElement,
-          _options: GoogleButtonConfiguration,
-        ) => void;
+      oauth2: {
+        initCodeClient: (_config: GoogleCodeClientConfig) => GoogleCodeClient;
       };
     };
   };
