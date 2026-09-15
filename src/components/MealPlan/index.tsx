@@ -46,7 +46,7 @@ const useIsDesktop = (): boolean | null => {
 };
 
 const MealPlanner = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, openAuthModal } = useAuth();
   const isDesktop = useIsDesktop();
 
   const [plans, setPlans] = useState<MealPlan[]>([]);
@@ -275,11 +275,17 @@ const MealPlanner = () => {
         <h2 className="text-lg font-semibold sm:text-xl">
           Plan your week of meals
         </h2>
-        <p className="max-w-md text-xs text-gray-500 sm:text-sm">
+        <p className="max-w-md text-xs text-ink-muted sm:text-sm">
           Drop recipes onto a calendar, subscribe to it from Google Calendar or
-          any other calendar app, and share it with whoever you cook for. Log in
-          with the button in the top right to get started.
+          any other calendar app, and share it with whoever you cook for.
         </p>
+        <button
+          type="button"
+          onClick={openAuthModal}
+          className="mt-2 h-10 rounded-md bg-pastel-blue px-6 text-sm font-semibold text-blue-950 shadow-sm transition hover:brightness-95 hover:shadow-md"
+        >
+          Sign in to get started
+        </button>
       </div>
     );
 
@@ -289,7 +295,7 @@ const MealPlanner = () => {
         <h2 className="text-lg font-semibold sm:text-xl">
           You don&rsquo;t have a meal plan yet
         </h2>
-        <p className="max-w-md text-xs text-gray-500 sm:text-sm">
+        <p className="max-w-md text-xs text-ink-muted sm:text-sm">
           Create one to start dropping recipes onto a calendar you can subscribe
           to and share.
         </p>
@@ -300,12 +306,12 @@ const MealPlanner = () => {
           disabled={isCreating}
           className={`
             flex items-center gap-1.5
-            rounded-3xl px-5 py-2.5 text-sm font-semibold
+            rounded-md px-5 py-2.5 text-sm font-semibold
             transition-all
             ${
               isCreating ?
-                "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
-              : "cursor-pointer bg-[var(--pastel-blue)] text-blue-900 shadow-md hover:scale-105 hover:shadow-lg"
+                "cursor-not-allowed bg-pastel-brown-tint text-ink-muted"
+              : "cursor-pointer bg-pastel-blue text-blue-950 shadow-sm hover:brightness-95 hover:shadow-md"
             }
           `}
         >
@@ -325,7 +331,7 @@ const MealPlanner = () => {
             <select
               value={activePlan.id}
               onChange={(event) => setActivePlanId(event.target.value)}
-              className="rounded border border-zinc-500/30 bg-[var(--background-color)] px-2 py-1 text-sm font-semibold"
+              className="rounded-md border border-line bg-surface-raised px-2 py-1 text-sm font-semibold"
             >
               {plans.map((plan) => (
                 <option
@@ -345,7 +351,7 @@ const MealPlanner = () => {
           <button
             type="button"
             onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-1.5 rounded-3xl border border-zinc-400/50 px-3 py-1.5 text-xs text-gray-500 transition-colors hover:border-[var(--pastel-blue)] hover:text-[var(--pastel-blue)]"
+            className="flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-pastel-blue hover:text-pastel-blue"
           >
             <Settings2 className="size-3.5" />
             Share &amp; settings

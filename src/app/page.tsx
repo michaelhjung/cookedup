@@ -8,12 +8,14 @@ const Homepage = () => (
       flex h-screen flex-col
       overflow-hidden
       p-4 md:p-6 lg:p-8
-      pl-0 md:pl-0 lg:pl-0
     `}
   >
     <Header />
 
-    <main className="mt-4 flex flex-col grow overflow-hidden lg:flex-row lg:justify-between">
+    {/* Pulled back to the viewport's left edge at lg so the search
+        sidebar (and its fixed toggle) sit flush against it; the sidebar
+        adds its own left clearance. */}
+    <main className="mt-4 flex flex-col grow overflow-hidden lg:-ml-8 lg:flex-row lg:justify-between">
       <SearchAndRecipes />
     </main>
 

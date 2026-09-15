@@ -1,17 +1,46 @@
-$light-gray-medium: #777777;
+// Each pastel comes in two steps: the "solid" (buttons, active states,
+// the wordmark) and a much lighter "tint" (chips, tags, hover
+// backgrounds). Same hues either way — the split is what lets one
+// primary button read as *the* action without leaving the palette.
+
+// ---------- light ----------
+$light-text: #2a2725;
+$light-text-muted: #6f6a66;
+$light-surface: #f7f5f2;
+$light-surface-raised: #ffffff;
+$light-line: #e2ddd7;
+
 $light-bittersweet: #f56960;
 $light-cinerous: #92817a;
-$light-pastel-brown: #e3cdb3;
-$light-pastel-blue: #b3d4ee;
-$light-pastel-green: #84cacf;
-$light-pastel-orange: #fab4af;
-$light-pastel-yellow: #fff9a7;
 
-$dark-gray-medium: #bbbbbb;
+$light-pastel-brown: #a98866;
+$light-pastel-brown-tint: #f1e7da;
+$light-pastel-blue: #7fb6e3;
+$light-pastel-blue-tint: #e0edf8;
+$light-pastel-green: #6bbfc5;
+$light-pastel-green-tint: #d6eef0;
+$light-pastel-orange: #f39a93;
+$light-pastel-orange-tint: #fde3e0;
+$light-pastel-yellow: #f5e76e;
+$light-pastel-yellow-tint: #fdf7c4;
+
+// ---------- dark ----------
+$dark-text: #ebe7e2;
+$dark-text-muted: #a49e97;
+$dark-surface: #1c1a19;
+$dark-surface-raised: #262322;
+$dark-line: #3a3633;
+
 $dark-bittersweet: #f06b65;
 $dark-cinerous: #a3988f;
+
 $dark-pastel-brown: #c1b09a;
-$dark-pastel-blue: #91bddf;
+$dark-pastel-brown-tint: #2f2a25;
+$dark-pastel-blue: #7fb3dc;
+$dark-pastel-blue-tint: #21313f;
 $dark-pastel-green: #5aa6ab;
-$dark-pastel-orange: #d98f8a;
+$dark-pastel-green-tint: #1e3335;
+$dark-pastel-orange: #e0908a;
+$dark-pastel-orange-tint: #3d2a28;
 $dark-pastel-yellow: #e6e291;
+$dark-pastel-yellow-tint: #3a3823;

@@ -12,6 +12,9 @@ import { supabase } from "@utils/supabase";
 const SearchAndRecipes = () => {
   const { user } = useAuth();
   const [savedRecipes, setSavedRecipes] = useState<Hit[]>([]);
+  // Lives here rather than in Search so the results area's empty state
+  // can seed it with example ingredients.
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [recipesData, setRecipesData] = useState<RecipeData | null>(null);
   const [isLoadingRecipes, setIsLoadingRecipes] = useState(false);
   const [errorFetchingRecipes, setErrorFetchingRecipes] = useState(false);
@@ -31,7 +34,7 @@ const SearchAndRecipes = () => {
   // Bumped on every Generate/regenerate click so Recipes' exhausted-
   // draws tracking resets even when the filter selection is unchanged.
   const [filterGeneration, setFilterGeneration] = useState(0);
-  // The recipe URL "Pick one for me" most recently highlighted, if any.
+  // The recipe URL "Surprise me" most recently highlighted, if any.
   const [highlightedRecipeUrl, setHighlightedRecipeUrl] = useState<
     string | null
   >(null);
@@ -95,12 +98,12 @@ const SearchAndRecipes = () => {
           instead of visually bleeding through it. */}
       <button
         onClick={toggleSidebar}
-        className="hidden lg:flex fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-md border border-zinc-500/40 bg-[var(--background-color)] p-1 shadow-md"
+        className="hidden lg:flex fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-md border border-l-0 border-line bg-surface-raised p-1.5 text-ink-muted shadow-md transition-colors hover:text-ink"
         aria-label="Toggle sidebar"
       >
         {isSidebarOpen ?
-          <PanelLeftClose className="w-7 h-7" />
-        : <PanelLeftOpen className="w-7 h-7" />}
+          <PanelLeftClose className="size-5" />
+        : <PanelLeftOpen className="size-5" />}
       </button>
 
       {/* Search Sidebar */}
@@ -116,6 +119,8 @@ const SearchAndRecipes = () => {
         <Search
           user={user}
           savedRecipes={savedRecipes}
+          selectedIngredients={selectedIngredients}
+          setSelectedIngredients={setSelectedIngredients}
           recipesData={recipesData}
           setRecipesData={setRecipesData}
           setIsLoadingRecipes={setIsLoadingRecipes}
@@ -145,6 +150,11 @@ const SearchAndRecipes = () => {
         activeFilterKeys={activeFilterKeys}
         filterGeneration={filterGeneration}
         highlightedRecipeUrl={highlightedRecipeUrl}
+        onAddIngredient={(ingredient) =>
+          setSelectedIngredients((prev) =>
+            prev.includes(ingredient) ? prev : [...prev, ingredient],
+          )
+        }
       />
     </div>
   );

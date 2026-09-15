@@ -79,12 +79,12 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
         title={entry.recipe.recipe.label}
         className={`
           group flex w-full items-center gap-1.5
-          rounded-md border border-[var(--card-border-color)]/60
-          bg-[var(--pastel-brown)]/10
+          rounded-md border border-line
+          bg-pastel-brown-tint
           p-1
           text-left
           transition-colors
-          hover:border-[var(--pastel-blue)] hover:bg-[var(--pastel-blue)]/20
+          hover:border-pastel-blue hover:bg-pastel-blue-tint
           ${readOnly ? "" : "cursor-grab active:cursor-grabbing"}
           ${draggingEntryId === entry.id ? "opacity-40" : ""}
         `}
@@ -124,8 +124,8 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
 
           {!readOnly && (
             <>
-              <div className="mt-3 border-t border-zinc-500/15 pt-3">
-                <p className="mb-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-gray-400">
+              <div className="mt-3 border-t border-line pt-3">
+                <p className="mb-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-ink-muted">
                   Move to
                 </p>
                 <div className="flex flex-col gap-1.5">
@@ -133,12 +133,12 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                     type="date"
                     value={moveDate}
                     onChange={(event) => setMoveDate(event.target.value)}
-                    className="w-full rounded border border-zinc-500/30 bg-transparent px-2 py-1 text-xs"
+                    className="w-full rounded-md border border-line bg-transparent px-2 py-1 text-xs"
                   />
                   <select
                     value={moveSlot}
                     onChange={(event) => setMoveSlot(event.target.value)}
-                    className="w-full rounded border border-zinc-500/30 bg-[var(--background-color)] px-2 py-1 text-xs"
+                    className="w-full rounded-md border border-line bg-surface-raised px-2 py-1 text-xs"
                   >
                     {slots.map((slot) => (
                       <option
@@ -157,11 +157,11 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                       setIsOpen(false);
                     }}
                     className={`
-                      rounded px-2 py-1 text-xs font-semibold
+                      rounded-md px-2 py-1 text-xs font-semibold
                       ${
                         hasMoved ?
-                          "cursor-pointer bg-[var(--pastel-blue)] text-blue-900"
-                        : "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
+                          "cursor-pointer bg-pastel-blue text-blue-950"
+                        : "cursor-not-allowed bg-pastel-brown-tint text-ink-muted"
                       }
                     `}
                   >
@@ -176,7 +176,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                   onRemove?.(entry);
                   setIsOpen(false);
                 }}
-                className="mt-3 flex w-full items-center gap-1.5 border-t border-zinc-500/15 pt-3 text-xs text-gray-500 hover:text-red-500"
+                className="mt-3 flex w-full items-center gap-1.5 border-t border-line pt-3 text-xs text-ink-muted hover:text-red-500"
               >
                 <Trash2 className="size-3.5" />
                 Remove from plan

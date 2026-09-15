@@ -1,5 +1,5 @@
 import { User } from "@supabase/supabase-js";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Clock } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useRef } from "react";
 
@@ -15,9 +15,6 @@ interface RecipeCardProps {
   setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
   isHighlighted?: boolean;
 }
-
-const getFormattedCookTime = (totalTime: number): string =>
-  totalTime > 0 ? `${totalTime} minutes` : "Unable to determine";
 
 const RecipeCard: React.FC<RecipeCardProps> = ({
   hit,
@@ -38,10 +35,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
     },
   } = hit;
 
-  // "Pick one for me" (RandomRecipeFilters) sets `isHighlighted` on a
-  // single card at a time; bring it into view and give it a brief pulse
-  // so it's obvious which one was picked, even if it's already loaded
-  // off-screen.
+  // "Surprise me" sets `isHighlighted` on a single card at a time;
+  // bring it into view and flash its ring so it's obvious which one was
+  // picked, even if it's already loaded off-screen.
   const cardRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
@@ -60,28 +56,28 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
         group
         relative
         flex flex-col gap-3
-        border border-[var(--card-border-color)]/50 rounded-xl
-        shadow-md hover:shadow-lg
-        transition-shadow
+        rounded-lg border border-line bg-surface-raised
+        shadow-sm hover:border-pastel-blue/60 hover:shadow-md
+        transition-[box-shadow,border-color]
         p-4 pb-10
-        ${isHighlighted ? "ring-4 ring-yellow-300 ring-offset-2 animate-pulse" : ""}
+        ${isHighlighted ? "flash-ring ring-3 ring-pastel-yellow ring-offset-2 ring-offset-surface" : ""}
       `}
     >
-      {/* External link icon */}
-      <ArrowUpRight
-        strokeWidth={3}
-        size={25}
+      {/* External link badge */}
+      <span
         className={`
-          absolute right-4 top-4
-          text-2xl md:text-3xl text-pastel-orange
-          bg-zinc-500/90
-          p-1
-          rounded-full
-          group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-bittersweet group-hover:scale-105
-          transition-transform
-          z-10
+          absolute right-3 top-3 z-10
+          flex size-7 items-center justify-center
+          rounded-full bg-black/55 text-white
+          backdrop-blur-sm
+          transition-colors group-hover:bg-pastel-blue group-hover:text-blue-950
         `}
-      />
+      >
+        <ArrowUpRight
+          strokeWidth={2.5}
+          className="size-4"
+        />
+      </span>
       <div className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3">
         <StarIcon
           hit={hit}
@@ -96,13 +92,13 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       </div>
 
       {/* Image */}
-      <div className="relative w-full h-[122px] rounded overflow-hidden flex-shrink-0">
+      <div className="relative w-full h-[122px] rounded-md overflow-hidden flex-shrink-0">
         <Image
           src={images.LARGE?.url || images.REGULAR?.url || images.SMALL?.url}
           alt={label}
           fill
           quality={85}
-          className="object-cover rounded"
+          className="object-cover"
         />
       </div>
 
@@ -115,27 +111,36 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           <h3 className="font-semibold text-sm md:text-base line-clamp-2">
             {label}
           </h3>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-ink-muted">
             {Math.round(calories)} calories
           </p>
         </div>
 
         {/* Cook Time + Source */}
-        <div className="flex justify-between text-xs md:text-sm text-gray-500/80">
-          <span>⏱️ {getFormattedCookTime(totalTime)}</span>
+        <div className="flex justify-between text-xs md:text-sm text-ink-muted">
+          {/* Edamam reports 0 when it doesn't know; say nothing rather
+              than "unknown". */}
+          <span className="flex items-center gap-1">
+            {totalTime > 0 && (
+              <>
+                <Clock className="size-3.5" />
+                {totalTime} min
+              </>
+            )}
+          </span>
           <span className="italic truncate max-w-[40%]">By {source}</span>
         </div>
 
         {/* Ingredients with scroll */}
         <div className="mt-2 text-xs md:text-sm overflow-y-auto pr-1 flex-grow">
-          <p className="font-semibold mb-1">Ingredients:</p>
-          <ul className="list-disc ml-4 space-y-1">
+          <p className="font-semibold mb-1">Ingredients</p>
+          <ul className="list-disc ml-4 space-y-1 text-ink-muted marker:text-line">
             {ingredientLines.slice(0, 5).map((ingr, index) => (
               <li key={index}>{ingr}</li>
             ))}
           </ul>
           {ingredientLines.length > 5 && (
-            <p className="mt-1 italic text-gray-400">
+            <p className="mt-1 italic text-ink-muted/70">
               + {ingredientLines.length - 5} more
             </p>
           )}

@@ -68,7 +68,7 @@ const CheckboxFilterGroup: React.FC<CheckboxFilterGroupProps> = ({
             type="checkbox"
             checked={selectedKeys.includes(option.key)}
             onChange={() => onToggle(option.key)}
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[var(--pastel-brown)] sm:h-4 sm:w-4"
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[var(--pastel-blue)] sm:h-4 sm:w-4"
           />
           {/* Wraps rather than truncates — hiding part of a filter's
               name is worse than a slightly taller row. */}
@@ -76,7 +76,7 @@ const CheckboxFilterGroup: React.FC<CheckboxFilterGroupProps> = ({
         </label>
       ))}
       {filteredOptions.length === 0 && (
-        <p className="col-span-full text-xs text-gray-400">
+        <p className="col-span-full text-xs text-ink-muted">
           No matches for &ldquo;{search}&rdquo;.
         </p>
       )}
@@ -98,7 +98,7 @@ const CheckboxFilterGroup: React.FC<CheckboxFilterGroupProps> = ({
       // chevron rotate in step with the outer "Filters" disclosure
       // instead of its own.
       <details className="group/category w-full text-left">
-        <summary className="flex cursor-pointer items-center justify-between gap-2 text-xs font-medium text-current/70 sm:text-sm">
+        <summary className="flex cursor-pointer items-center justify-between gap-2 text-xs font-medium text-ink-muted hover:text-ink sm:text-sm">
           <span>{heading}</span>
           <ChevronDown
             strokeWidth={2}
@@ -112,7 +112,7 @@ const CheckboxFilterGroup: React.FC<CheckboxFilterGroupProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search ${groupLabel.toLowerCase()}...`}
-              className="h-8 w-full rounded-full border-1 px-3 text-xs outline-none focus:border-[var(--pastel-blue)]"
+              className="h-8 w-full rounded-md border border-line px-3 text-xs outline-none transition-colors focus:border-pastel-blue"
             />
           )}
           {checkboxList}

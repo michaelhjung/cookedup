@@ -63,10 +63,8 @@ const Tooltip: React.FC<TooltipProps> = ({
         <>
           <span
             aria-hidden="true"
-            className={`absolute left-1/2 -translate-x-1/2 border-solid border-transparent ${
-              below ?
-                "top-full border-b-slate-600"
-              : "bottom-full border-t-slate-600"
+            className={`absolute left-1/2 z-30 -translate-x-1/2 border-solid border-transparent ${
+              below ? "top-full border-b-ink" : "bottom-full border-t-ink"
             }`}
             // Only the half facing the box is painted; pull the element
             // back by that half so the painted triangle sits between
@@ -81,13 +79,13 @@ const Tooltip: React.FC<TooltipProps> = ({
           <div
             className={`
               min-w-24
-              absolute
+              absolute z-30
               ${below ? "top-full" : "bottom-full"}
               ${align === "end" ? "right-0" : ""}
-              rounded-lg
-              bg-slate-600
+              rounded-md
+              bg-ink
               px-2 py-1
-              text-center text-xs text-white text-pretty
+              text-center text-xs text-surface text-pretty
             `}
             // Clear the arrow so the box sits on its tip rather than over it.
             style={

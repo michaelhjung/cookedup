@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import React, { useRef } from "react";
 
 import Tooltip from "@components/Tooltip";
+import { useAuth } from "@context/AuthContext";
 import { Hit } from "@interfaces/edamam";
 import { unstarRecipe } from "@lib/mealPlan/client";
 import { supabase } from "@utils/supabase";
@@ -48,11 +49,12 @@ const StarIcon: React.FC<StarIconProps> = ({
   savedRecipes,
   setSavedRecipes,
 }) => {
+  const { openAuthModal } = useAuth();
   const isSaved = savedRecipes.some(
     (savedHit) => savedHit?.recipe?.url === hit?.recipe?.url,
   );
   const tooltipText =
-    !user ? "Log in to save this recipe"
+    !user ? "Sign in to save this recipe"
     : isSaved ? "Click to remove this recipe from your saved list"
     : "Click to save this recipe";
 
@@ -65,7 +67,7 @@ const StarIcon: React.FC<StarIconProps> = ({
 
   const saveRecipe = (data: Hit) => {
     if (!user) {
-      alert("You must be logged in to save recipes.");
+      openAuthModal();
       return;
     }
 
@@ -87,7 +89,7 @@ const StarIcon: React.FC<StarIconProps> = ({
 
   const removeRecipe = (data: Hit) => {
     if (!user) {
-      alert("You must be logged in to remove saved recipes.");
+      openAuthModal();
       return;
     }
 
@@ -113,7 +115,7 @@ const StarIcon: React.FC<StarIconProps> = ({
         size={30}
         strokeWidth={1}
         className={`
-          ${user ? "cursor-pointer text-2xl" : "cursor-not-allowed text-2xl"}
+          cursor-pointer text-2xl
           ${isSaved ? "fill-yellow-300 stroke-yellow-300" : ""}
         `}
         onClick={(e) => {

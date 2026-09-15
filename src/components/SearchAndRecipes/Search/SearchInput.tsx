@@ -1,7 +1,5 @@
 import { SearchIcon } from "lucide-react";
 
-import Tooltip from "@components/Tooltip";
-
 interface SearchInputProps {
   ingredients: {
     all: string[];
@@ -73,35 +71,29 @@ const SearchInput: React.FC<SearchInputProps> = ({
   };
 
   return (
-    <Tooltip
-      text="Select from the list below or type a custom ingredient and press enter"
-      isVisible={showIngredientsList}
-      delay={150}
-    >
-      <div className="relative flex-grow">
-        <input
-          ref={searchInputRef}
-          className={`
-          h-10 max-w-[7.5rem] sm:h-12 md:max-w-[8.5rem] md:h-14
-          rounded-full border-1
-          py-4 pl-6 pr-12
-          text-[0.65rem] sm:text-xs md:text-sm lg:text-base
-          outline-none duration-300 ease-in-out
-          focus:max-w-[10rem] focus:border-[var(--pastel-blue)]
+    <div className="relative w-full">
+      <input
+        ref={searchInputRef}
+        className={`
+          h-10 w-full sm:h-11
+          rounded-md border border-line
+          pl-4 pr-10
+          text-sm
+          transition-colors
+          focus:border-pastel-blue
         `}
-          type="text"
-          value={searchInput}
-          placeholder="Search"
-          onChange={handleSearchInputChange}
-          onFocus={handleSearchFocusAndClick}
-          onKeyDown={handleSearchInputKeyDown}
-        />
-        <SearchIcon
-          strokeWidth={1.5}
-          className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-gray-400"
-        />
-      </div>
-    </Tooltip>
+        type="text"
+        value={searchInput}
+        placeholder="Add an ingredient…"
+        onChange={handleSearchInputChange}
+        onFocus={handleSearchFocusAndClick}
+        onKeyDown={handleSearchInputKeyDown}
+      />
+      <SearchIcon
+        strokeWidth={1.75}
+        className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-muted"
+      />
+    </div>
   );
 };
 
