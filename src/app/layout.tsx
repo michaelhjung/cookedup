@@ -9,10 +9,37 @@ import "@styles/main.scss";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
+const SITE_URL = "https://www.cookedup.app";
+const TITLE = "Cooked Up!";
+const DESCRIPTION =
+  "Cook up ideas for your next meal based on ingredients you already have at home!";
+
 export const metadata: Metadata = {
-  title: "Cooked Up!",
-  description:
-    "Cook up ideas for your next meal based on ingredients you already have at home!",
+  // Resolves the relative URLs below (and the generated opengraph-image) to
+  // absolute ones, which link previews require.
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: TITLE,
+    title: TITLE,
+    description: DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
