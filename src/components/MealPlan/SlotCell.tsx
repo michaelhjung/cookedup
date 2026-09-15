@@ -48,7 +48,7 @@ const SlotCell: React.FC<SlotCellProps> = ({
       className={`
         flex min-h-16 flex-col gap-1 rounded-md p-1
         transition-colors
-        ${isDropTarget ? "bg-[var(--pastel-blue)]/25 ring-2 ring-inset ring-[var(--pastel-blue)]" : ""}
+        ${isDropTarget ? "bg-pastel-blue-tint ring-2 ring-inset ring-pastel-blue" : ""}
       `}
     >
       {entries.map((entry) => (
@@ -69,11 +69,11 @@ const SlotCell: React.FC<SlotCellProps> = ({
           aria-label={`Add a recipe to ${slot} on ${date}`}
           className={`
           flex grow items-center justify-center
-          rounded-md border border-dashed border-zinc-500/25
+          rounded-md border border-dashed border-line
           py-1.5
-          text-gray-400
+          text-ink-muted
           transition-colors
-          hover:border-[var(--pastel-blue)] hover:bg-[var(--pastel-blue)]/10 hover:text-[var(--pastel-blue)]
+          hover:border-pastel-blue hover:bg-pastel-blue-tint hover:text-pastel-blue
           ${entries.length > 0 ? "min-h-6" : "min-h-10"}
         `}
         >
@@ -82,7 +82,7 @@ const SlotCell: React.FC<SlotCellProps> = ({
       )}
 
       {readOnly && entries.length === 0 && (
-        <div className="flex grow items-center justify-center py-2 text-[0.65rem] text-gray-400">
+        <div className="flex grow items-center justify-center py-2 text-[0.65rem] text-ink-muted">
           —
         </div>
       )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { User } from "@supabase/supabase-js";
-import { Star } from "lucide-react";
+import { Dices, Star } from "lucide-react";
 import React, {
   useCallback,
   useEffect,
@@ -12,6 +12,7 @@ import React, {
 
 import Icon from "@components/Icon";
 import Tooltip from "@components/Tooltip";
+import { useAuth } from "@context/AuthContext";
 import ingredientsList from "@data/ingredients.json";
 import { buildSearchParams } from "@data/randomRecipeFilters";
 import { Hit, RecipeData } from "@interfaces/edamam";
@@ -27,7 +28,7 @@ const DEFAULT_INGREDIENTS_LIST = {
   filtered: ingredientsList,
 };
 
-// How long the "Pick one for me" highlight stays on a card before fading.
+// How long the "Surprise me" highlight stays on a card before fading.
 const HIGHLIGHT_DURATION_MS = 2500;
 
 type RecipesSource = "ingredients" | "filter" | "saved" | null;
@@ -35,6 +36,10 @@ type RecipesSource = "ingredients" | "filter" | "saved" | null;
 interface SearchProps {
   user: User | null;
   savedRecipes: Hit[];
+  // Owned by SearchAndRecipes so the results area's empty state can
+  // add example ingredients to the search as well.
+  selectedIngredients: string[];
+  setSelectedIngredients: React.Dispatch<React.SetStateAction<string[]>>;
   recipesData: RecipeData | null;
   setRecipesData: React.Dispatch<React.SetStateAction<RecipeData | null>>;
   setIsLoadingRecipes: React.Dispatch<React.SetStateAction<boolean>>;
@@ -50,6 +55,8 @@ interface SearchProps {
 const Search: React.FC<SearchProps> = ({
   user,
   savedRecipes,
+  selectedIngredients,
+  setSelectedIngredients,
   recipesData,
   setRecipesData,
   setIsLoadingRecipes,
@@ -60,14 +67,12 @@ const Search: React.FC<SearchProps> = ({
   setHighlightedRecipeUrl,
   isSidebarOpen,
 }) => {
+  const { openAuthModal } = useAuth();
   const [ingredients, setIngredients] = useState<{
     all: string[] | [];
     filtered: string[] | [];
   }>(DEFAULT_INGREDIENTS_LIST);
   const [showIngredientsList, setShowIngredientsList] = useState(false);
-  const [selectedIngredients, setSelectedIngredients] = useState<string[] | []>(
-    [],
-  );
   const [selectedFilterKeys, setSelectedFilterKeys] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const [isLoadingIngredientsList, setIsLoadingIngredientsList] =
@@ -225,7 +230,7 @@ const Search: React.FC<SearchProps> = ({
 
   const handleViewSavedRecipes = async () => {
     if (!user) {
-      alert("You need to be logged in to view saved recipes.");
+      openAuthModal();
       return;
     }
 
@@ -274,36 +279,44 @@ const Search: React.FC<SearchProps> = ({
         size-full flex flex-col
         overflow-y-auto
         transition-opacity duration-300 ease-in-out
-        border-zinc-500/10 rounded-md lg:border-y-2 lg:border-l-0 lg:border-r-2
-        lg:py-4 lg:pr-4 lg:pl-14
+        border-line lg:border-r
+        lg:py-1 lg:pr-5 lg:pl-14
         ${isSidebarOpen ? "opacity-100" : "opacity-0"}
       `}
     >
-      <div className="mb-4 flex w-full items-center justify-end gap-2">
+      <div className="mb-3 flex w-full items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Icon
+            type="ingredients"
+            className="size-6 text-pastel-blue"
+          />
+          <h2 className="text-sm font-semibold sm:text-base">Ingredients</h2>
+        </div>
+
         <Tooltip
-          text={user ? "View saved recipes" : "Log in to view saved recipes"}
+          text={user ? "View saved recipes" : "Sign in to view saved recipes"}
           position="bottom"
           align="end"
         >
           <button
             type="button"
-            className={`${user ? "cursor-pointer" : "cursor-not-allowed"} shrink-0 px-1 text-3xl saturate-0 hover:saturate-100 sm:text-4xl md:text-5xl`}
-            onClick={user ? handleViewSavedRecipes : undefined}
+            aria-label="View saved recipes"
+            className={`
+              flex size-8 items-center justify-center rounded-md
+              transition-colors hover:bg-pastel-yellow-tint
+              ${user ? "text-yellow-500" : "text-ink-muted/50"}
+            `}
+            onClick={handleViewSavedRecipes}
           >
             <Star
-              strokeWidth={1}
-              className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 ${user ? "fill-yellow-300 stroke-yellow-300" : ""}`}
+              strokeWidth={1.75}
+              className={`size-5 ${user ? "fill-yellow-400 stroke-yellow-500" : ""}`}
             />
           </button>
         </Tooltip>
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        <Icon
-          type="ingredients"
-          className="w-8 h-8 sm:w-12 sm:h-12 text-pastel-blue"
-        />
-
         <SelectedIngredients
           selectedIngredients={selectedIngredients}
           setSelectedIngredients={setSelectedIngredients}
@@ -311,7 +324,7 @@ const Search: React.FC<SearchProps> = ({
 
         <div
           ref={searchWrapperRef}
-          className="relative flex flex-col items-center"
+          className="relative w-full max-w-xs"
         >
           <SearchInput
             ingredients={ingredients}
@@ -359,65 +372,66 @@ const Search: React.FC<SearchProps> = ({
         />
       </div>
 
-      {/* Three-tier visual weight so the buttons read by role, not just
-          by label: Search is the primary action (solid, larger, bolder,
-          with a shadow) since it's what most selections are working
-          toward; Reset is the quiet secondary action (outline only,
-          reddens on hover as a subtle "this clears things" cue); Pick
-          one for me is a distinct accent color so it doesn't read as a
-          sibling of Search, just a smaller fun extra. */}
-      <div className="mt-3 flex shrink-0 flex-wrap items-center justify-center gap-2 border-t border-zinc-500/10 pt-3">
-        <button
-          type="button"
-          disabled={!hasSelection}
-          className={`
-            rounded-3xl border px-4 py-2 text-xs sm:text-sm
-            transition-all
-            ${
-              !hasSelection ?
-                "cursor-not-allowed border-transparent bg-[var(--pastel-brown)]/10 text-gray-400"
-              : "cursor-pointer border-zinc-400/50 text-gray-500 hover:scale-105 hover:border-red-400 hover:text-red-400"
-            }
-          `}
-          onClick={handleReset}
-        >
-          Reset
-        </button>
-
+      {/* Search is the primary action, so it gets the full row; Reset
+          and Pick-one share the quieter row beneath it. Stacked rather
+          than inline because the sidebar is narrow enough at lg that
+          three buttons side by side always wrapped unevenly. */}
+      <div className="mt-3 flex w-full shrink-0 flex-col items-center gap-2 border-t border-line pt-3">
         <button
           type="button"
           disabled={!hasSelection || isSearching}
           className={`
-            rounded-3xl px-6 py-2.5 text-sm font-semibold sm:text-base
-            transition-all
+            h-10 w-full max-w-xs rounded-md text-sm font-semibold sm:text-base
+            transition
             ${
               !hasSelection || isSearching ?
-                "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
-              : "cursor-pointer bg-[var(--pastel-blue)] text-blue-900 shadow-md hover:scale-105 hover:shadow-lg"
+                "cursor-not-allowed bg-pastel-brown-tint text-ink-muted/60"
+              : "cursor-pointer bg-pastel-blue text-blue-950 shadow-sm hover:brightness-95 hover:shadow-md"
             }
           `}
           onClick={handleSearch}
         >
-          Search
+          {isSearching ? "Searching…" : "Search"}
         </button>
 
-        <button
-          type="button"
-          disabled={!hasLoadedRecipes}
-          title="Randomly highlight one of the recipes already loaded below"
-          className={`
-            rounded-3xl px-4 py-2 text-xs sm:text-sm
-            transition-transform
-            ${
-              !hasLoadedRecipes ?
-                "cursor-not-allowed bg-[var(--pastel-brown)]/10 text-gray-400"
-              : "cursor-pointer bg-[var(--pastel-orange)]/70 text-orange-900 hover:scale-105"
-            }
-          `}
-          onClick={handlePickRandomLoaded}
-        >
-          🎲 Pick one for me
-        </button>
+        <div className="flex w-full max-w-xs items-center gap-2">
+          <button
+            type="button"
+            disabled={!hasSelection}
+            className={`
+              h-9 shrink-0 rounded-md border px-4 text-xs sm:text-sm
+              transition-colors
+              ${
+                !hasSelection ?
+                  "cursor-not-allowed border-transparent text-ink-muted/50"
+                : "cursor-pointer border-line text-ink-muted hover:border-red-400 hover:text-red-500"
+              }
+            `}
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+
+          {/* The one deliberately playful button: the dice tilt on hover. */}
+          <button
+            type="button"
+            disabled={!hasLoadedRecipes}
+            title="Pick one of the loaded recipes at random"
+            className={`
+              group flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border text-xs sm:text-sm
+              transition-colors
+              ${
+                !hasLoadedRecipes ?
+                  "cursor-not-allowed border-transparent text-ink-muted/50"
+                : "cursor-pointer border-pastel-orange/50 bg-pastel-orange-tint text-red-900 hover:border-pastel-orange dark:text-red-100"
+              }
+            `}
+            onClick={handlePickRandomLoaded}
+          >
+            <Dices className="size-4 transition-transform group-hover:-rotate-12 group-disabled:rotate-0" />
+            Surprise me
+          </button>
+        </div>
       </div>
     </section>
   );

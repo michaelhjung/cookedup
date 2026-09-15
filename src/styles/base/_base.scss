@@ -1,38 +1,78 @@
 @use "../abstracts" as *;
 
+// Runtime tokens. Tailwind picks these up through `@theme inline` in
+// tailwind.css (so `bg-pastel-blue`, `text-ink-muted`, `border-line`
+// etc. all resolve here), and the dark block below swaps their values
+// without Tailwind needing to know about the theme at all.
 :root {
-  --background-color: #f5f5f5;
+  --surface: #{$light-surface};
+  --surface-raised: #{$light-surface-raised};
+  --line: #{$light-line};
+  --text: #{$light-text};
+  --text-muted: #{$light-text-muted};
 
-  --gray-medium: #{$light-gray-medium};
   --bittersweet: #{$light-bittersweet};
   --cinerous: #{$light-cinerous};
-  --pastel-brown: #{$light-pastel-brown};
-  --pastel-blue: #{$light-pastel-blue};
-  --pastel-green: #{$light-pastel-green};
-  --pastel-orange: #{$light-pastel-orange};
-  --pastel-yellow: #{$light-pastel-yellow};
 
-  --card-border-color: #ddd;
+  --pastel-brown: #{$light-pastel-brown};
+  --pastel-brown-tint: #{$light-pastel-brown-tint};
+  --pastel-blue: #{$light-pastel-blue};
+  --pastel-blue-tint: #{$light-pastel-blue-tint};
+  --pastel-green: #{$light-pastel-green};
+  --pastel-green-tint: #{$light-pastel-green-tint};
+  --pastel-orange: #{$light-pastel-orange};
+  --pastel-orange-tint: #{$light-pastel-orange-tint};
+  --pastel-yellow: #{$light-pastel-yellow};
+  --pastel-yellow-tint: #{$light-pastel-yellow-tint};
+
+  // Still referenced by a few older components; aliases of the tokens
+  // above so nothing has to change in lockstep.
+  --background-color: var(--surface);
+  --card-border-color: var(--line);
 }
 
 [data-theme="dark"] {
-  --background-color: #1f1e1d;
+  --surface: #{$dark-surface};
+  --surface-raised: #{$dark-surface-raised};
+  --line: #{$dark-line};
+  --text: #{$dark-text};
+  --text-muted: #{$dark-text-muted};
 
-  --gray-medium: #{$dark-gray-medium};
   --bittersweet: #{$dark-bittersweet};
   --cinerous: #{$dark-cinerous};
-  --pastel-brown: #{$dark-pastel-brown};
-  --pastel-blue: #{$dark-pastel-blue};
-  --pastel-green: #{$dark-pastel-green};
-  --pastel-orange: #{$dark-pastel-orange};
-  --pastel-yellow: #{$dark-pastel-yellow};
 
-  --card-border-color: #444;
+  --pastel-brown: #{$dark-pastel-brown};
+  --pastel-brown-tint: #{$dark-pastel-brown-tint};
+  --pastel-blue: #{$dark-pastel-blue};
+  --pastel-blue-tint: #{$dark-pastel-blue-tint};
+  --pastel-green: #{$dark-pastel-green};
+  --pastel-green-tint: #{$dark-pastel-green-tint};
+  --pastel-orange: #{$dark-pastel-orange};
+  --pastel-orange-tint: #{$dark-pastel-orange-tint};
+  --pastel-yellow: #{$dark-pastel-yellow};
+  --pastel-yellow-tint: #{$dark-pastel-yellow-tint};
 }
 
 body {
-  background-color: var(--background-color);
-  color: var(--gray-medium);
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+// Inputs pick up the raised surface so they stand off the page in both
+// themes without every field having to say so. Layered so a utility
+// like `bg-transparent` can still override it per field.
+@layer base {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    background-color: var(--surface-raised);
+    color: var(--text);
+  }
+
+  ::placeholder {
+    color: var(--text-muted);
+    opacity: 0.8;
+  }
 }
 
 // The filter disclosures (<details>/<summary>) render their own chevron

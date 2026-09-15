@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 
 import Popover from "@components/Popover";
 import Tooltip from "@components/Tooltip";
+import { useAuth } from "@context/AuthContext";
 import { Hit } from "@interfaces/edamam";
 import { addEntry, fetchPlans } from "@lib/mealPlan/client";
 import { todayISO } from "@lib/mealPlan/dates";
@@ -24,6 +25,7 @@ interface AddToPlanButtonProps {
  * need.
  */
 const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
+  const { openAuthModal } = useAuth();
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [plans, setPlans] = useState<MealPlan[] | null>(null);
@@ -98,7 +100,7 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
   };
 
   const tooltipText =
-    !user ? "Log in to plan this recipe"
+    !user ? "Sign in to plan this recipe"
     : justAdded ? "Added to your meal plan"
     : "Add this recipe to your meal plan";
 
@@ -117,12 +119,14 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
           ref={setAnchor}
           type="button"
           aria-label="Add to meal plan"
-          disabled={!user}
           onClick={() => {
-            if (!user) return;
+            if (!user) {
+              openAuthModal();
+              return;
+            }
             setIsOpen((previous) => !previous);
           }}
-          className={user ? "cursor-pointer" : "cursor-not-allowed"}
+          className="cursor-pointer"
         >
           {justAdded ?
             <Check
@@ -144,15 +148,15 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
           onClose={() => setIsOpen(false)}
         >
           {plans === null ?
-            <p className="text-xs text-gray-400">Loading your plans...</p>
+            <p className="text-xs text-ink-muted">Loading your plans...</p>
           : plans.length === 0 ?
             <div className="flex flex-col gap-1.5">
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ink-muted">
                 {error || "You don't have a meal plan you can edit yet."}
               </p>
               <Link
                 href="/plan"
-                className="text-xs font-semibold text-[var(--pastel-blue)] hover:underline"
+                className="text-xs font-semibold text-pastel-blue hover:underline"
               >
                 Go to Meal Plan →
               </Link>
@@ -162,7 +166,7 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
                 <select
                   value={planId}
                   onChange={(event) => setPlanId(event.target.value)}
-                  className="w-full rounded border border-zinc-500/30 bg-[var(--background-color)] px-2 py-1 text-xs"
+                  className="w-full rounded-md border border-line bg-surface-raised px-2 py-1 text-xs"
                 >
                   {plans.map((plan) => (
                     <option
@@ -179,13 +183,13 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
                 type="date"
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
-                className="w-full rounded border border-zinc-500/30 bg-transparent px-2 py-1 text-xs"
+                className="w-full rounded-md border border-line bg-transparent px-2 py-1 text-xs"
               />
 
               <select
                 value={slot}
                 onChange={(event) => setSlot(event.target.value)}
-                className="w-full rounded border border-zinc-500/30 bg-[var(--background-color)] px-2 py-1 text-xs"
+                className="w-full rounded-md border border-line bg-surface-raised px-2 py-1 text-xs"
               >
                 {(activePlan?.slots ?? []).map((candidate) => (
                   <option
@@ -201,7 +205,7 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
                 type="button"
                 onClick={submit}
                 disabled={isSaving}
-                className="rounded-3xl bg-[var(--pastel-blue)] px-3 py-1.5 text-xs font-semibold text-blue-900 disabled:opacity-50"
+                className="rounded-md bg-pastel-blue px-3 py-1.5 text-xs font-semibold text-blue-950 transition hover:brightness-95 disabled:opacity-50"
               >
                 {isSaving ? "Adding..." : "Add to plan"}
               </button>

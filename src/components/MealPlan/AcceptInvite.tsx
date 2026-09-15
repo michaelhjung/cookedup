@@ -16,7 +16,7 @@ type Status = "pending" | "accepting" | "accepted" | "invalid" | "error";
  * session, at which point the effect below redeems it.
  */
 const AcceptInvite: React.FC<{ token: string }> = ({ token }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, openAuthModal } = useAuth();
   const router = useRouter();
   const [status, setStatus] = useState<Status>("pending");
 
@@ -57,10 +57,17 @@ const AcceptInvite: React.FC<{ token: string }> = ({ token }) => {
     return (
       <div className="flex max-w-md flex-col items-center gap-2 text-center">
         <h2 className="text-lg font-semibold">You&rsquo;ve been invited</h2>
-        <p className="text-xs text-gray-500 sm:text-sm">
-          Someone shared their meal plan with you. Log in with the button in the
-          top right to accept — you&rsquo;ll come straight back here.
+        <p className="text-xs text-ink-muted sm:text-sm">
+          Someone shared their meal plan with you. Sign in to accept —
+          you&rsquo;ll come straight back here.
         </p>
+        <button
+          type="button"
+          onClick={openAuthModal}
+          className="mt-2 h-10 rounded-md bg-pastel-blue px-6 text-sm font-semibold text-blue-950 shadow-sm transition hover:brightness-95 hover:shadow-md"
+        >
+          Sign in
+        </button>
       </div>
     );
 
@@ -71,7 +78,7 @@ const AcceptInvite: React.FC<{ token: string }> = ({ token }) => {
           "This invite isn't valid"
         : "Something went wrong"}
       </h2>
-      <p className="text-xs text-gray-500 sm:text-sm">
+      <p className="text-xs text-ink-muted sm:text-sm">
         {status === "invalid" ?
           "It may have already been used, or it may have expired. Ask whoever sent it for a fresh link."
         : "Couldn't accept that invite. Try the link again in a moment."}

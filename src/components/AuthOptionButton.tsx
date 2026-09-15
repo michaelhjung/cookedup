@@ -30,7 +30,7 @@ const AuthOptionButton = ({ icon, children, ...rest }: Props) => {
       {...rest}
       className={`
         flex h-11 w-full items-center justify-center gap-3
-        rounded border px-3
+        rounded-md border px-3
         text-sm font-medium
         transition
         disabled:cursor-not-allowed disabled:opacity-50

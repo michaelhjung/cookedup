@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+/* Bridge the runtime tokens in base/_base.scss into Tailwind so the
+   utilities (`bg-pastel-blue-tint`, `text-ink-muted`, `border-line`,
+   `rounded-md`…) resolve to them. `inline` keeps them as var() refs, so
+   the dark theme just swaps the underlying variables. */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-line: var(--line);
+  --color-ink: var(--text);
+  --color-ink-muted: var(--text-muted);
+
+  --color-bittersweet: var(--bittersweet);
+  --color-cinerous: var(--cinerous);
+
+  --color-pastel-brown: var(--pastel-brown);
+  --color-pastel-brown-tint: var(--pastel-brown-tint);
+  --color-pastel-blue: var(--pastel-blue);
+  --color-pastel-blue-tint: var(--pastel-blue-tint);
+  --color-pastel-green: var(--pastel-green);
+  --color-pastel-green-tint: var(--pastel-green-tint);
+  --color-pastel-orange: var(--pastel-orange);
+  --color-pastel-orange-tint: var(--pastel-orange-tint);
+  --color-pastel-yellow: var(--pastel-yellow);
+  --color-pastel-yellow-tint: var(--pastel-yellow-tint);
+
+  /* Three corner sizes for the whole app: sm for tags and small icon
+     buttons, md for inputs and buttons, lg for cards, modals and
+     drawers. Pills (`rounded-full`) are reserved for chips and the
+     segmented nav. */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 14px;
+}

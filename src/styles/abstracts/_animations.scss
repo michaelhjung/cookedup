@@ -46,3 +46,13 @@
     transform: rotate(25deg) translateX(-5px) translateY(-12px);
   }
 }
+
+@keyframes flash-ring {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}

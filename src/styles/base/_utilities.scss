@@ -19,27 +19,10 @@
     animation: toss-bowl-contents 1.75s ease-in-out infinite;
   }
 
-  .text-cinerous {
-    color: var(--cinerous);
-  }
-
-  .text-pastel-brown {
-    color: var(--pastel-brown);
-  }
-
-  .text-pastel-blue {
-    color: var(--pastel-blue);
-  }
-
-  .text-pastel-green {
-    color: var(--pastel-green);
-  }
-
-  .text-pastel-orange {
-    color: var(--pastel-orange);
-  }
-
-  .text-yellow {
-    color: var(--pastel-yellow);
+  // "Surprise me": a couple of ring flashes, then the ring stays
+  // put until the highlight clears — enough to draw the eye without
+  // pulsing indefinitely.
+  .flash-ring {
+    animation: flash-ring 0.6s ease-in-out 2;
   }
 }

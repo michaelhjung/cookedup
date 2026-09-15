@@ -7,7 +7,7 @@
 
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import React from "react";
 
 import {
@@ -49,7 +49,7 @@ const FilterCategories: React.FC<FilterCategoriesProps> = ({
           itself is open. Naming scopes the open-state match to just
           this <details>. */}
       <details className="group/filters w-full max-w-xs text-left">
-        <summary className="flex cursor-pointer items-center justify-between rounded-lg bg-[var(--pastel-brown)]/15 px-3 py-2 text-sm font-semibold sm:text-base">
+        <summary className="flex cursor-pointer items-center justify-between rounded-md bg-pastel-brown-tint px-3 py-2 text-sm font-semibold transition-colors hover:brightness-[0.97] sm:text-base">
           <span>{summaryLabel}</span>
           <ChevronDown
             strokeWidth={2}
@@ -60,7 +60,7 @@ const FilterCategories: React.FC<FilterCategoriesProps> = ({
         {/* The left rule (rather than indentation) is what marks these
             as nested under "Filters" — an actual indent would eat into
             an already-narrow sidebar. */}
-        <div className="mt-3 flex w-full flex-col gap-4 border-l-2 border-[var(--pastel-brown)]/25 pl-3">
+        <div className="mt-3 flex w-full flex-col gap-4 border-l-2 border-pastel-brown/30 pl-3">
           {RANDOM_RECIPE_FILTER_CATEGORIES.map((category) => (
             <CheckboxFilterGroup
               key={category.param}
@@ -89,15 +89,13 @@ const FilterCategories: React.FC<FilterCategoriesProps> = ({
             <button
               key={option.key}
               type="button"
-              className="group flex items-center rounded bg-blue-100 px-2 py-1 text-xs"
+              className="group flex items-center gap-1.5 rounded-full bg-pastel-blue-tint py-1 pl-2.5 pr-1.5 text-xs transition-colors hover:bg-red-100 dark:hover:bg-red-950/40"
               onClick={() => onToggle(option.key)}
             >
-              <span className="text-[0.65rem] font-semibold text-blue-800 group-hover:text-red-400 sm:text-xs">
+              <span className="text-[0.65rem] font-medium text-blue-900 group-hover:text-red-600 dark:text-blue-100 sm:text-xs">
                 {option.label}
               </span>
-              <span className="ml-2 text-xl text-blue-500 group-hover:font-semibold group-hover:text-red-400">
-                ×
-              </span>
+              <X className="size-3 text-blue-900/60 group-hover:text-red-600 dark:text-blue-100/60" />
             </button>
           ))}
         </div>

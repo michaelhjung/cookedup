@@ -2,13 +2,23 @@ import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
-import Icon from "@components/Icon";
 import Bowl from "@components/loaders/Bowl";
 import { buildRandomRecipeSearchParams } from "@data/randomRecipeFilters";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import chefConfusedImg from "@public/imgs/chef-confused.png";
+import chefBulb from "@public/logo.png";
 
 import RecipeCard from "./RecipeCard";
+
+// Shown as one-click starters in the empty state so a first visit can
+// produce results without typing anything.
+const EXAMPLE_INGREDIENTS = ["chicken", "eggs", "rice", "tomato", "garlic"];
+
+const HOW_IT_WORKS = [
+  "Add ingredients",
+  "Search or filter",
+  "Save or plan your week",
+];
 
 type RecipesSource = "ingredients" | "filter" | "saved" | null;
 
@@ -39,6 +49,8 @@ interface RecipesProps {
   activeFilterKeys: string[];
   filterGeneration: number;
   highlightedRecipeUrl: string | null;
+  // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
+  onAddIngredient: (_ingredient: string) => void;
 }
 
 const Recipes: React.FC<RecipesProps> = ({
@@ -56,6 +68,7 @@ const Recipes: React.FC<RecipesProps> = ({
   activeFilterKeys,
   filterGeneration,
   highlightedRecipeUrl,
+  onAddIngredient,
 }) => {
   const scrollContainerRef = useRef<HTMLElement | null>(null);
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
@@ -208,18 +221,57 @@ const Recipes: React.FC<RecipesProps> = ({
         ${isSidebarOpen ? "" : "pl-8"}
       `}
     >
-      <div>
-        <Icon
-          type="fork-and-spoon"
-          className="mb-4 text-2xl text-cinerous sm:text-5xl"
-        />
-      </div>
-
       <div className="w-full flex flex-col items-center justify-center">
-        {!recipesData?.from && (
-          <p className="text-xs sm:text-sm md:text-base">
-            Search by ingredients or filter for specific recipes to get started!
-          </p>
+        {/* The empty state doubles as the welcome: what the app does and
+            how to get a first result in one click. */}
+        {!recipesData?.from && !isLoadingRecipes && (
+          <div className="flex max-w-lg flex-col items-center gap-4 pt-4 text-center lg:pt-12">
+            {/* The header already shows the bulb on phones, where the
+                vertical space matters more. */}
+            <Image
+              src={chefBulb}
+              alt=""
+              className="hidden w-20 sm:block"
+            />
+            <div className="flex flex-col gap-1.5">
+              <h2 className="text-lg font-semibold sm:text-2xl">
+                What&rsquo;s in your kitchen?
+              </h2>
+              <p className="max-w-md text-sm text-ink-muted sm:text-base">
+                Pick a few ingredients you already have and we&rsquo;ll find
+                recipes that use them. Save the keepers and drop them into your
+                weekly plan.
+              </p>
+            </div>
+
+            <ol className="flex flex-col gap-2 text-left text-xs text-ink-muted sm:flex-row sm:gap-5 sm:text-sm">
+              {HOW_IT_WORKS.map((step, index) => (
+                <li
+                  key={step}
+                  className="flex items-center gap-2 whitespace-nowrap"
+                >
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-pastel-blue-tint text-[0.65rem] font-semibold text-blue-950 dark:text-blue-100">
+                    {index + 1}
+                  </span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm">
+              <span className="text-ink-muted">Try:</span>
+              {EXAMPLE_INGREDIENTS.map((ingredient) => (
+                <button
+                  key={ingredient}
+                  type="button"
+                  onClick={() => onAddIngredient(ingredient)}
+                  className="rounded-md border border-line bg-surface-raised px-3 py-1 transition-colors hover:border-pastel-blue hover:bg-pastel-blue-tint"
+                >
+                  {ingredient}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
         {recipesData?.from && recipesData.count === 0 && (
@@ -227,9 +279,9 @@ const Recipes: React.FC<RecipesProps> = ({
             <Image
               src={chefConfusedImg}
               alt="chef confused"
-              className="size-24 rounded md:size-40 xl:size-48"
+              className="size-24 rounded-md md:size-40 xl:size-48"
             />
-            <p className="text-center">
+            <p className="text-center text-ink-muted">
               No recipes matched. Try a different combination!
             </p>
           </div>
@@ -237,12 +289,12 @@ const Recipes: React.FC<RecipesProps> = ({
 
         {recipesData?.from && recipesData.count > 0 && (
           <>
-            <p className="mb-4 text-xs sm:text-sm md:text-base">
+            <p className="mb-4 text-xs text-ink-muted sm:text-sm md:text-base">
               Found{" "}
-              <span className="font-bold">
+              <span className="font-semibold text-ink">
                 {recipesData.count.toLocaleString()}
               </span>{" "}
-              {recipesData.count > 1 ? "recipes" : "recipe"}!
+              {recipesData.count > 1 ? "recipes" : "recipe"}
             </p>
 
             <div className="grid w-full gap-6 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
@@ -264,7 +316,9 @@ const Recipes: React.FC<RecipesProps> = ({
       {isLoadingRecipes && (
         <div className="mt-5 flex flex-col items-center">
           <Bowl />
-          <p className="text-xs md:text-sm">Looking up some recipes...</p>
+          <p className="text-xs text-ink-muted md:text-sm">
+            Looking up some recipes...
+          </p>
         </div>
       )}
 
@@ -280,7 +334,7 @@ const Recipes: React.FC<RecipesProps> = ({
         !hasMoreFilterDraws &&
         !!recipesData?.hits?.length &&
         !isLoadingRecipes && (
-          <p className="mt-5 text-xs text-gray-400 md:text-sm">
+          <p className="mt-5 text-xs text-ink-muted md:text-sm">
             That&rsquo;s every recipe we could find for these filters — try
             adjusting them for more.
           </p>

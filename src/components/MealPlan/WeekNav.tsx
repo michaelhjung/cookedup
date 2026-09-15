@@ -25,7 +25,7 @@ const WeekNav: React.FC<WeekNavProps> = ({ weekStart, onChange }) => {
         type="button"
         onClick={() => onChange(addDays(weekStart, -7))}
         aria-label="Previous week"
-        className="rounded-full p-1.5 transition-colors hover:bg-[var(--pastel-brown)]/15"
+        className="rounded-full p-1.5 transition-colors hover:bg-pastel-brown-tint"
       >
         <ChevronLeft className="size-4 sm:size-5" />
       </button>
@@ -38,7 +38,7 @@ const WeekNav: React.FC<WeekNavProps> = ({ weekStart, onChange }) => {
         type="button"
         onClick={() => onChange(addDays(weekStart, 7))}
         aria-label="Next week"
-        className="rounded-full p-1.5 transition-colors hover:bg-[var(--pastel-brown)]/15"
+        className="rounded-full p-1.5 transition-colors hover:bg-pastel-brown-tint"
       >
         <ChevronRight className="size-4 sm:size-5" />
       </button>
@@ -48,12 +48,12 @@ const WeekNav: React.FC<WeekNavProps> = ({ weekStart, onChange }) => {
         onClick={() => onChange(startOfWeek(todayISO()))}
         disabled={isCurrentWeek}
         className={`
-          flex items-center gap-1 rounded-3xl border px-2.5 py-1 text-xs
+          flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs
           transition-colors
           ${
             isCurrentWeek ?
-              "cursor-not-allowed border-transparent text-gray-400"
-            : "cursor-pointer border-zinc-400/50 text-gray-500 hover:border-[var(--pastel-blue)] hover:text-[var(--pastel-blue)]"
+              "cursor-not-allowed border-transparent text-ink-muted"
+            : "cursor-pointer border-line text-ink-muted hover:border-pastel-blue hover:text-pastel-blue"
           }
         `}
       >

@@ -117,8 +117,8 @@ const Popover: React.FC<PopoverProps> = ({
       className={`
         fixed z-50
         max-h-[80vh] overflow-y-auto
-        rounded-md border border-zinc-500/20
-        bg-[var(--background-color)]
+        rounded-md border border-line
+        bg-surface-raised
         p-3
         shadow-xl
       `}

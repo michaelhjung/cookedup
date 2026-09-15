@@ -53,20 +53,20 @@ const WeekGrid: React.FC<WeekGridProps> = ({
     entries.filter((entry) => entry.date === date && entry.slot === slotId);
 
   return (
-    <div className="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] gap-px overflow-hidden rounded-lg border border-zinc-500/15 bg-zinc-500/15">
+    <div className="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] gap-px overflow-hidden rounded-lg border border-line bg-line">
       {/* Header row: an empty corner, then the seven days */}
-      <div className="bg-[var(--background-color)]" />
+      <div className="bg-surface-raised" />
       {dates.map((date) => (
         <div
           key={date}
           className={`
-            bg-[var(--background-color)]
+            bg-surface-raised
             px-1 py-2
             text-center
-            ${date === today ? "text-[var(--pastel-blue)]" : ""}
+            ${date === today ? "text-pastel-blue" : ""}
           `}
         >
-          <p className="text-[0.6rem] uppercase tracking-wide text-gray-400">
+          <p className="text-[0.6rem] uppercase tracking-wide text-ink-muted">
             {weekdayLabel(date)}
           </p>
           <p
@@ -79,11 +79,11 @@ const WeekGrid: React.FC<WeekGridProps> = ({
 
       {slots.map((slot) => (
         <React.Fragment key={slot.id}>
-          <div className="flex flex-col justify-center bg-[var(--background-color)] px-1 py-2 text-right">
+          <div className="flex flex-col justify-center bg-surface-raised px-1 py-2 text-right">
             <p className="text-[0.6rem] font-semibold leading-tight">
               {slot.label}
             </p>
-            <p className="text-[0.55rem] text-gray-400">
+            <p className="text-[0.55rem] text-ink-muted">
               {formatSlotTime(slot.time)}
             </p>
           </div>
@@ -91,7 +91,7 @@ const WeekGrid: React.FC<WeekGridProps> = ({
           {dates.map((date) => (
             <div
               key={`${slot.id}-${date}`}
-              className="bg-[var(--background-color)]"
+              className="bg-surface-raised"
             >
               <SlotCell
                 date={date}

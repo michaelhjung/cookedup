@@ -4,14 +4,14 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="mt-6 flex flex-col items-center justify-center">
-      <div className="flex flex-col items-center text-xs sm:text-sm">
-        <p className="flex items-center gap-1 tracking-wide">
+    <footer className="mt-5 flex flex-col items-center justify-center border-t border-line pt-4">
+      <div className="flex flex-col items-center text-xs text-ink-muted sm:text-sm">
+        <p className="flex items-center gap-1">
           <span>Crafted with</span>
-          <Heart className="heart w-5 h-5 text-red-300 hover:text-red-500 transition animate-pulse" />
+          <Heart className="heart size-4 fill-pastel-orange text-pastel-orange transition-colors hover:fill-red-500 hover:text-red-500" />
           <span>by</span>
           <a
-            className="font-semibold hover:underline"
+            className="font-semibold text-ink hover:underline"
             href="https://www.michaelhjung.com"
             target="_blank"
             rel="noopener"
@@ -19,7 +19,7 @@ const Footer = () => {
             Michael Jung
           </a>
         </p>
-        <span className="mt-1 text-[0.65rem] sm:text-xs opacity-50 tracking-tight">
+        <span className="mt-1 text-[0.65rem] opacity-70 sm:text-xs">
           Copyright &copy; 2024-{new Date().getFullYear()} Michael Jung. All
           rights reserved.
           {" · "}

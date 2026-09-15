@@ -54,7 +54,7 @@ const SharedPlanView: React.FC<SharedPlanViewProps> = ({
   return (
     <main className="mx-auto flex w-full max-w-6xl grow flex-col gap-4">
       <div className="flex flex-col items-center gap-1 text-center">
-        <p className="text-[0.65rem] uppercase tracking-widest text-gray-400">
+        <p className="text-[0.65rem] uppercase tracking-widest text-ink-muted">
           Shared meal plan
         </p>
         <h1 className="text-xl font-semibold sm:text-2xl">{name}</h1>
@@ -66,13 +66,13 @@ const SharedPlanView: React.FC<SharedPlanViewProps> = ({
             href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-3xl bg-[var(--pastel-blue)] px-4 py-2 text-xs font-semibold text-blue-900 transition-transform hover:scale-105"
+            className="rounded-md bg-pastel-blue px-4 py-2 text-xs font-semibold text-blue-950 transition hover:brightness-95"
           >
             Add to Google Calendar
           </a>
           <a
             href={webcalUrl}
-            className="rounded-3xl bg-[var(--pastel-orange)]/70 px-4 py-2 text-xs font-semibold text-orange-900 transition-transform hover:scale-105"
+            className="rounded-md bg-pastel-orange-tint px-4 py-2 text-xs font-semibold text-orange-900 dark:text-orange-100 transition hover:brightness-95"
           >
             Add to Apple / Outlook
           </a>
@@ -110,7 +110,7 @@ const SharedPlanView: React.FC<SharedPlanViewProps> = ({
         />
       }
 
-      <p className="text-center text-[0.65rem] text-gray-400">
+      <p className="text-center text-[0.65rem] text-ink-muted">
         This is a read-only view. Calendar apps refresh subscribed feeds on
         their own schedule, so updates can take a few hours to appear.
       </p>
