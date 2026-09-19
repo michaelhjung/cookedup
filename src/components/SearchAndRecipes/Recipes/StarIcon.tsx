@@ -112,7 +112,10 @@ const StarIcon: React.FC<StarIconProps> = ({
   };
 
   return (
-    <Tooltip text={tooltipText}>
+    <Tooltip
+      text={tooltipText}
+      align="start"
+    >
       <button
         type="button"
         aria-label={isSaved ? "Remove from saved recipes" : "Save recipe"}

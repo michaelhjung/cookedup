@@ -65,13 +65,16 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       target="_blank"
       rel="noopener noreferrer"
       className={`
-        group flex flex-col overflow-hidden
+        group flex flex-col
         rounded-lg border border-line bg-surface-raised
         transition-colors hover:border-line-strong
         ${isHighlighted ? "flash-ring ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}
       `}
     >
-      <div className="relative aspect-[16/10] w-full bg-well">
+      {/* Clips its own corners (7px: the card's 8px minus the border) so
+          the card doesn't need overflow-hidden, which would cut off the
+          action tooltips below. */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-[7px] bg-well">
         <Image
           src={images.LARGE?.url || images.REGULAR?.url || images.SMALL?.url}
           alt={label}

@@ -11,12 +11,13 @@ interface TooltipProps {
   // tooltip would get cut off.
   position?: "top" | "bottom";
   // How the box lines up horizontally with its trigger. "center" (the
-  // default) centers it; "end" hangs it off the trigger's right edge, for
-  // triggers that sit against the right edge of a scrolling ancestor —
-  // there a centered box spills past the edge, and since any ancestor
-  // with overflow-y:auto clips on x too, it gets cut off and grows the
-  // ancestor a horizontal scrollbar. The arrow stays on the trigger.
-  align?: "center" | "end";
+  // default) centers it; "start"/"end" hang it off the trigger's left or
+  // right edge, for triggers that sit against that edge of a scrolling
+  // ancestor — there a centered box spills past the edge, and since any
+  // ancestor with overflow-y:auto clips on x too, it gets cut off and
+  // grows the ancestor a horizontal scrollbar. The arrow stays on the
+  // trigger.
+  align?: "start" | "center" | "end";
 }
 
 // The arrow is its own element anchored to the trigger rather than a
@@ -78,10 +79,11 @@ const Tooltip: React.FC<TooltipProps> = ({
           />
           <div
             className={`
-              min-w-24
+              min-w-36 max-w-56
               absolute z-30
               ${below ? "top-full" : "bottom-full"}
               ${align === "end" ? "right-0" : ""}
+              ${align === "start" ? "left-0" : ""}
               rounded-md
               bg-ink
               px-2 py-1
