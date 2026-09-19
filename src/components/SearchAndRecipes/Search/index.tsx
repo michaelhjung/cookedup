@@ -331,6 +331,8 @@ const Search: React.FC<SearchProps> = ({
             searchInputRef={searchInputRef}
             ingredientRefs={ingredientRefs}
             handleSelectIngredient={handleSelectIngredient}
+            hasSelection={hasSelection}
+            onSearch={handleSearch}
           />
 
           {showIngredientsList && (

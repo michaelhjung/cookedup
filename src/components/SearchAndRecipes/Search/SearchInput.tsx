@@ -13,6 +13,10 @@ interface SearchInputProps {
   searchInputRef: React.RefObject<HTMLInputElement | null>;
   ingredientRefs: React.RefObject<(HTMLDivElement | null)[]>;
   handleSelectIngredient: (_ingredient: string) => void;
+  // Whether any ingredient or filter is selected — gates Enter-to-search
+  // and the placeholder hint that advertises it.
+  hasSelection: boolean;
+  onSearch: () => void;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
@@ -25,6 +29,8 @@ const SearchInput: React.FC<SearchInputProps> = ({
   searchInputRef,
   ingredientRefs,
   handleSelectIngredient,
+  hasSelection,
+  onSearch,
 }) => {
   const handleSearchFocusAndClick = (
     e:
@@ -45,7 +51,19 @@ const SearchInput: React.FC<SearchInputProps> = ({
     switch (e.key) {
       case "Enter": {
         const searchInputValue = searchInput.trim().toLowerCase();
-        if (searchInputValue) handleSelectIngredient(searchInputValue);
+        if (searchInputValue) {
+          handleSelectIngredient(searchInputValue);
+          break;
+        }
+
+        // Empty box + something selected: run the search from right
+        // here, so the flow is type → Enter → type → Enter → Enter with
+        // no trip down to the pinned Search button. Focus stays on the
+        // input after a pick, so this is one keystroke away.
+        if (!hasSelection) break;
+        setShowIngredientsList(false);
+        setFocusedIngredientIndex(0);
+        onSearch();
         break;
       }
       case "ArrowUp":
@@ -84,7 +102,9 @@ const SearchInput: React.FC<SearchInputProps> = ({
         `}
         type="text"
         value={searchInput}
-        placeholder="Add an ingredient…"
+        placeholder={
+          hasSelection ? "Add more · Enter to search" : "Add an ingredient…"
+        }
         onChange={handleSearchInputChange}
         onFocus={handleSearchFocusAndClick}
         onKeyDown={handleSearchInputKeyDown}
