@@ -17,9 +17,14 @@ interface RecipeCardProps {
 }
 
 /**
- * One bordered box: image, title, a single line of facts, and a
- * hairline footer with the two actions. The whole card is the link to
- * the recipe; the footer buttons stop the click from following it.
+ * One bordered box: image, title, a single line of facts, and the two
+ * actions. The whole card is the link to the recipe; the action buttons
+ * stop the click from following it.
+ *
+ * Below `sm` the card is a list row (thumbnail on the left, actions in
+ * a column on the right) so several recipes fit in the short results
+ * pane a phone leaves under the search sidebar; from `sm` up it is the
+ * vertical card with the hairline action footer.
  */
 const RecipeCard: React.FC<RecipeCardProps> = ({
   hit,
@@ -65,41 +70,55 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       target="_blank"
       rel="noopener noreferrer"
       className={`
-        group flex flex-col
+        group flex flex-row sm:flex-col
         rounded-lg border border-line bg-surface-raised
-        transition-colors hover:border-line-strong
+        transition-[border-color,transform] hover:border-line-strong
+        active:scale-[0.99] sm:active:scale-100
         ${isHighlighted ? "flash-ring ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}
       `}
     >
       {/* Clips its own corners (7px: the card's 8px minus the border) so
           the card doesn't need overflow-hidden, which would cut off the
-          action tooltips below. */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-[7px] bg-well">
+          action tooltips below. As a row the thumbnail stretches to the
+          row's height and rounds the left edge; as a card it is a fixed
+          16:10 band across the top. */}
+      <div
+        className={`
+          relative shrink-0 overflow-hidden bg-well
+          w-24 self-stretch rounded-l-[7px]
+          sm:aspect-[16/10] sm:w-full sm:self-auto sm:rounded-l-none sm:rounded-t-[7px]
+        `}
+      >
         <Image
           src={images.LARGE?.url || images.REGULAR?.url || images.SMALL?.url}
           alt={label}
           fill
           quality={85}
+          sizes="(max-width: 640px) 96px, 320px"
           className="object-cover"
         />
       </div>
 
-      <div className="flex flex-col gap-1 px-3.5 pt-3 pb-3">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 px-3 py-2.5 sm:flex-none sm:justify-start sm:px-3.5 sm:pt-3 sm:pb-3">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight">
           {label}
         </h3>
-        <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-ink-muted tabular-nums">
-          {facts.map((fact, index) => (
-            <React.Fragment key={fact}>
-              {index > 0 && <span className="opacity-50">·</span>}
-              <span>{fact}</span>
-            </React.Fragment>
+        {/* Sized so all three facts stay on one line in the phone row. */}
+        <p className="flex flex-wrap items-center gap-x-2 text-[11px] text-ink-muted tabular-nums sm:gap-x-3 sm:text-xs">
+          {facts.map((fact) => (
+            <span key={fact}>{fact}</span>
           ))}
         </p>
         <p className="truncate text-xs text-ink-muted">{source}</p>
       </div>
 
-      <div className="mt-auto flex items-center gap-0.5 border-t border-line px-2.5 py-1.5">
+      <div
+        className={`
+          flex shrink-0 items-center gap-0.5
+          flex-col justify-center border-l border-line px-1.5
+          sm:mt-auto sm:flex-row sm:justify-start sm:border-l-0 sm:border-t sm:px-2.5 sm:py-1.5
+        `}
+      >
         <StarIcon
           hit={hit}
           user={user}
@@ -110,7 +129,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           hit={hit}
           user={user}
         />
-        <span className="ml-auto flex items-center gap-1 text-xs text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="ml-auto hidden items-center gap-1 text-xs text-ink-muted opacity-0 transition-opacity group-hover:opacity-100 sm:flex">
           Open
           <ArrowUpRight className="size-3.5" />
         </span>

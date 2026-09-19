@@ -293,7 +293,7 @@ const Recipes: React.FC<RecipesProps> = ({
               </span>
             </p>
 
-            <div className="grid w-full gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+            <div className="grid w-full grid-cols-1 gap-2.5 sm:gap-4 sm:[grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
               {recipesData.hits.map((hit: Hit) => (
                 <RecipeCard
                   key={hit.recipe.url}

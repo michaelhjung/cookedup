@@ -49,6 +49,9 @@ interface SearchProps {
   setHighlightedRecipeUrl: React.Dispatch<React.SetStateAction<string | null>>;
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
+  // Fired once a search (or the saved view) has put results on screen,
+  // so the parent can tuck this sidebar away on phones.
+  onResultsLoaded: () => void;
 }
 
 const Search: React.FC<SearchProps> = ({
@@ -65,6 +68,7 @@ const Search: React.FC<SearchProps> = ({
   setFilterGeneration,
   setHighlightedRecipeUrl,
   isSidebarOpen,
+  onResultsLoaded,
 }) => {
   const { openAuthModal } = useAuth();
   const [ingredients, setIngredients] = useState<{
@@ -190,6 +194,7 @@ const Search: React.FC<SearchProps> = ({
         // scroll loader follows `_links.next.href` as-is.
         setRecipesData(data);
         setRecipesSource("ingredients");
+        onResultsLoaded();
       } else {
         // Filters-only random draw: no real cursor (`_links.next` is
         // always absent from Edamam for `random=true`), so `_links` is
@@ -202,6 +207,7 @@ const Search: React.FC<SearchProps> = ({
         setActiveFilterKeys(selectedFilterKeys);
         setFilterGeneration((prev) => prev + 1);
         setRecipesSource("filter");
+        onResultsLoaded();
       }
     } catch (error) {
       console.error("An error occurred while searching recipes:", error);
@@ -246,6 +252,7 @@ const Search: React.FC<SearchProps> = ({
       setRecipesSource("saved");
       setIsLoadingRecipes(false);
       setErrorFetchingRecipes(false);
+      onResultsLoaded();
     } catch (err) {
       console.error("An error occurred while fetching saved recipes:", err);
       setIsLoadingRecipes(false);

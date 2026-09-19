@@ -1,6 +1,6 @@
 "use client";
 
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, SearchIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import Recipes from "@components/SearchAndRecipes/Recipes";
@@ -22,6 +22,11 @@ const SearchAndRecipes = () => {
   const [errorFetchingRecipes, setErrorFetchingRecipes] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  // Phone-only: once results land, the search sidebar (which can take
+  // half the viewport) folds into a one-line summary so the results get
+  // the room. Tapping the summary brings it back. Ignored from `lg` up,
+  // where the sidebar has its own column.
+  const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
 
   // Which flow populated `recipesData`, so Recipes knows how to fetch
   // more of it on scroll (ingredient-search pagination vs. re-drawing
@@ -86,6 +91,12 @@ const SearchAndRecipes = () => {
     fetchSavedRecipes();
   }, [user]);
 
+  const searchSummary =
+    recipesSource === "saved" ? "Saved recipes"
+    : recipesSource === "filter" ?
+      `${activeFilterKeys.length} ${activeFilterKeys.length === 1 ? "filter" : "filters"}`
+    : selectedIngredients.join(", ");
+
   return (
     <div
       className={`
@@ -108,7 +119,33 @@ const SearchAndRecipes = () => {
         : <PanelLeftOpen className="size-4" />}
       </button>
 
-      {/* Search Sidebar */}
+      {/* Collapsed search summary (phones only, once results exist). */}
+      {isSearchCollapsed && (
+        <button
+          type="button"
+          onClick={() => setIsSearchCollapsed(false)}
+          className={`
+            mb-3 flex h-10 w-full shrink-0 items-center gap-2.5
+            rounded-md border border-line bg-surface-raised px-3 text-left
+            transition-colors hover:border-line-strong active:bg-well
+            lg:hidden
+          `}
+        >
+          <SearchIcon
+            strokeWidth={1.75}
+            className="size-4 shrink-0 text-ink-muted"
+          />
+          <span className="min-w-0 flex-1 truncate text-sm text-ink">
+            {searchSummary}
+          </span>
+          <span className="shrink-0 text-[13px] font-medium text-accent">
+            Edit
+          </span>
+        </button>
+      )}
+
+      {/* Search Sidebar. Hidden (not unmounted, it owns the filter
+          selection) on phones while collapsed. */}
       <div
         className={`
           max-h-1/2 lg:max-h-full
@@ -116,6 +153,7 @@ const SearchAndRecipes = () => {
           transition-all duration-300 ease-in-out
           lg:overflow-hidden
           ${isSidebarOpen ? "lg:w-1/3" : "lg:w-0"}
+          ${isSearchCollapsed ? "hidden lg:block" : ""}
         `}
       >
         <Search
@@ -133,6 +171,7 @@ const SearchAndRecipes = () => {
           setHighlightedRecipeUrl={setHighlightedRecipeUrl}
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
+          onResultsLoaded={() => setIsSearchCollapsed(true)}
         />
       </div>
 
