@@ -1,56 +1,66 @@
 @use "../abstracts" as *;
 
 // Runtime tokens. Tailwind picks these up through `@theme inline` in
-// tailwind.css (so `bg-pastel-blue`, `text-ink-muted`, `border-line`
-// etc. all resolve here), and the dark block below swaps their values
+// tailwind.css (so `bg-accent`, `text-ink-muted`, `border-line` etc.
+// all resolve here), and the dark block below swaps their values
 // without Tailwind needing to know about the theme at all.
 :root {
   --surface: #{$light-surface};
   --surface-raised: #{$light-surface-raised};
+  --well: #{$light-well};
   --line: #{$light-line};
+  --line-strong: #{$light-line-strong};
   --text: #{$light-text};
   --text-muted: #{$light-text-muted};
 
-  --bittersweet: #{$light-bittersweet};
-  --cinerous: #{$light-cinerous};
+  --accent: #{$light-accent};
+  --accent-hover: #{$light-accent-hover};
+  --accent-tint: #{$light-accent-tint};
+  --on-accent: #{$light-on-accent};
 
-  --pastel-brown: #{$light-pastel-brown};
-  --pastel-brown-tint: #{$light-pastel-brown-tint};
-  --pastel-blue: #{$light-pastel-blue};
-  --pastel-blue-tint: #{$light-pastel-blue-tint};
-  --pastel-green: #{$light-pastel-green};
-  --pastel-green-tint: #{$light-pastel-green-tint};
-  --pastel-orange: #{$light-pastel-orange};
-  --pastel-orange-tint: #{$light-pastel-orange-tint};
-  --pastel-yellow: #{$light-pastel-yellow};
-  --pastel-yellow-tint: #{$light-pastel-yellow-tint};
+  --danger: #{$light-danger};
+  --danger-tint: #{$light-danger-tint};
+  --success: #{$light-success};
+  --scrim: #{$light-scrim};
 
-  // Still referenced by a few older components; aliases of the tokens
-  // above so nothing has to change in lockstep.
-  --background-color: var(--surface);
-  --card-border-color: var(--line);
+  // Only floating surfaces (popovers, modals, the toast) cast shadows;
+  // cards and buttons sit flat on hairlines. Tinted with the ink so
+  // they read as warm rather than sooty.
+  --shadow-rgb: #{$light-shadow};
+  --elevation-lg:
+    0 8px 24px -8px rgb(var(--shadow-rgb) / 0.14),
+    0 2px 6px -2px rgb(var(--shadow-rgb) / 0.08);
+  --elevation-xl:
+    0 20px 40px -12px rgb(var(--shadow-rgb) / 0.2),
+    0 4px 10px -4px rgb(var(--shadow-rgb) / 0.08);
 }
 
 [data-theme="dark"] {
   --surface: #{$dark-surface};
   --surface-raised: #{$dark-surface-raised};
+  --well: #{$dark-well};
   --line: #{$dark-line};
+  --line-strong: #{$dark-line-strong};
   --text: #{$dark-text};
   --text-muted: #{$dark-text-muted};
 
-  --bittersweet: #{$dark-bittersweet};
-  --cinerous: #{$dark-cinerous};
+  --accent: #{$dark-accent};
+  --accent-hover: #{$dark-accent-hover};
+  --accent-tint: #{$dark-accent-tint};
+  --on-accent: #{$dark-on-accent};
 
-  --pastel-brown: #{$dark-pastel-brown};
-  --pastel-brown-tint: #{$dark-pastel-brown-tint};
-  --pastel-blue: #{$dark-pastel-blue};
-  --pastel-blue-tint: #{$dark-pastel-blue-tint};
-  --pastel-green: #{$dark-pastel-green};
-  --pastel-green-tint: #{$dark-pastel-green-tint};
-  --pastel-orange: #{$dark-pastel-orange};
-  --pastel-orange-tint: #{$dark-pastel-orange-tint};
-  --pastel-yellow: #{$dark-pastel-yellow};
-  --pastel-yellow-tint: #{$dark-pastel-yellow-tint};
+  --danger: #{$dark-danger};
+  --danger-tint: #{$dark-danger-tint};
+  --success: #{$dark-success};
+  --scrim: #{$dark-scrim};
+
+  --shadow-rgb: #{$dark-shadow};
+  --elevation-lg:
+    0 8px 24px -8px rgb(var(--shadow-rgb) / 0.5),
+    0 2px 6px -2px rgb(var(--shadow-rgb) / 0.4);
+  --elevation-xl:
+    0 20px 40px -12px rgb(var(--shadow-rgb) / 0.6),
+    0 4px 10px -4px rgb(var(--shadow-rgb) / 0.4);
 }
 
 body {
@@ -58,10 +68,10 @@ body {
   color: var(--text);
 }
 
-// Inputs pick up the raised surface so they stand off the page in both
-// themes without every field having to say so. Layered so a utility
-// like `bg-transparent` can still override it per field.
 @layer base {
+  // Inputs pick up the raised surface so they stand off the page in both
+  // themes without every field having to say so. Layered so a utility
+  // like `bg-transparent` can still override it per field.
   input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea {
@@ -72,6 +82,41 @@ body {
   ::placeholder {
     color: var(--text-muted);
     opacity: 0.8;
+  }
+
+  // The reset strips the browser's outline from form controls, so
+  // keyboard focus is drawn here instead: an accent ring, offset so it
+  // clears the control's own hairline. `:focus-visible` keeps it off
+  // mouse clicks.
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  // Text fields show focus by darkening their own border instead of a
+  // ring — a terracotta halo around every field you type in is loud.
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: none;
+    border-color: var(--text);
+  }
+
+  // A physical press. `transform` is free to use here because Tailwind
+  // v4's translate/rotate/scale utilities set the individual properties.
+  button:not(:disabled):active,
+  [role="button"]:active {
+    transform: scale(0.98);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 }
 

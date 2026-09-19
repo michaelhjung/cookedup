@@ -39,9 +39,8 @@ const ThemeToggle = () => {
       title={`Theme: ${label}`}
       className={`
         flex size-9 items-center justify-center
-        rounded-md border border-line bg-surface-raised
-        text-ink-muted
-        transition-colors hover:border-pastel-blue hover:text-ink
+        rounded-md text-ink-muted
+        transition-colors hover:bg-well hover:text-ink
       `}
     >
       <Icon className="size-4" />

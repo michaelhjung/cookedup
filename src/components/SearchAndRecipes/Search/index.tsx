@@ -10,7 +10,6 @@ import React, {
   useState,
 } from "react";
 
-import Icon from "@components/Icon";
 import Tooltip from "@components/Tooltip";
 import { useAuth } from "@context/AuthContext";
 import ingredientsList from "@data/ingredients.json";
@@ -280,18 +279,14 @@ const Search: React.FC<SearchProps> = ({
         overflow-y-auto
         transition-opacity duration-300 ease-in-out
         border-line lg:border-r
-        lg:py-1 lg:pr-5 lg:pl-14
+        pt-4 lg:py-5 lg:pr-6 lg:pl-14
         ${isSidebarOpen ? "opacity-100" : "opacity-0"}
       `}
     >
       <div className="mb-3 flex w-full items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Icon
-            type="ingredients"
-            className="size-6 text-pastel-blue"
-          />
-          <h2 className="text-sm font-semibold sm:text-base">Ingredients</h2>
-        </div>
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+          Ingredients
+        </h2>
 
         <Tooltip
           text={user ? "View saved recipes" : "Sign in to view saved recipes"}
@@ -302,21 +297,21 @@ const Search: React.FC<SearchProps> = ({
             type="button"
             aria-label="View saved recipes"
             className={`
-              flex size-8 items-center justify-center rounded-md
-              transition-colors hover:bg-pastel-yellow-tint
-              ${user ? "text-yellow-500" : "text-ink-muted/50"}
+              -mr-2 flex size-8 items-center justify-center rounded-md
+              transition-colors hover:bg-well
+              ${user ? "text-accent" : "text-ink-muted/50"}
             `}
             onClick={handleViewSavedRecipes}
           >
             <Star
-              strokeWidth={1.75}
-              className={`size-5 ${user ? "fill-yellow-400 stroke-yellow-500" : ""}`}
+              strokeWidth={2}
+              className={`size-4 ${user ? "fill-accent" : ""}`}
             />
           </button>
         </Tooltip>
       </div>
 
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col gap-3">
         <SelectedIngredients
           selectedIngredients={selectedIngredients}
           setSelectedIngredients={setSelectedIngredients}
@@ -324,7 +319,7 @@ const Search: React.FC<SearchProps> = ({
 
         <div
           ref={searchWrapperRef}
-          className="relative w-full max-w-xs"
+          className="relative w-full"
         >
           <SearchInput
             ingredients={ingredients}
@@ -365,7 +360,7 @@ const Search: React.FC<SearchProps> = ({
           bottom of the sidebar and reachable no matter how long the
           ingredient/filter selection grows, instead of scrolling out of
           view along with the filters. */}
-      <div className="mt-4 min-h-0 w-full flex-1 overflow-y-auto">
+      <div className="mt-5 min-h-0 w-full flex-1 overflow-y-auto">
         <FilterCategories
           selectedKeys={selectedFilterKeys}
           onToggle={toggleFilterKey}
@@ -373,20 +368,18 @@ const Search: React.FC<SearchProps> = ({
       </div>
 
       {/* Search is the primary action, so it gets the full row; Reset
-          and Pick-one share the quieter row beneath it. Stacked rather
-          than inline because the sidebar is narrow enough at lg that
-          three buttons side by side always wrapped unevenly. */}
-      <div className="mt-3 flex w-full shrink-0 flex-col items-center gap-2 border-t border-line pt-3">
+          and Surprise me share the quieter row beneath it. */}
+      <div className="mt-4 flex w-full shrink-0 flex-col gap-2 border-t border-line pt-4">
         <button
           type="button"
           disabled={!hasSelection || isSearching}
           className={`
-            h-10 w-full max-w-xs rounded-md text-sm font-semibold sm:text-base
-            transition
+            h-9 w-full rounded-md text-sm font-semibold
+            transition-colors
             ${
               !hasSelection || isSearching ?
-                "cursor-not-allowed bg-pastel-brown-tint text-ink-muted/60"
-              : "cursor-pointer bg-pastel-blue text-blue-950 shadow-sm hover:brightness-95 hover:shadow-md"
+                "cursor-not-allowed bg-well text-ink-muted/60"
+              : "cursor-pointer bg-accent text-on-accent hover:bg-accent-hover"
             }
           `}
           onClick={handleSearch}
@@ -394,17 +387,17 @@ const Search: React.FC<SearchProps> = ({
           {isSearching ? "Searching…" : "Search"}
         </button>
 
-        <div className="flex w-full max-w-xs items-center gap-2">
+        <div className="flex w-full items-center gap-2">
           <button
             type="button"
             disabled={!hasSelection}
             className={`
-              h-9 shrink-0 rounded-md border px-4 text-xs sm:text-sm
+              h-8 shrink-0 rounded-md px-3 text-[13px] font-medium
               transition-colors
               ${
                 !hasSelection ?
-                  "cursor-not-allowed border-transparent text-ink-muted/50"
-                : "cursor-pointer border-line text-ink-muted hover:border-red-400 hover:text-red-500"
+                  "cursor-not-allowed text-ink-muted/50"
+                : "cursor-pointer text-ink-muted hover:bg-well hover:text-ink"
               }
             `}
             onClick={handleReset}
@@ -418,12 +411,12 @@ const Search: React.FC<SearchProps> = ({
             disabled={!hasLoadedRecipes}
             title="Pick one of the loaded recipes at random"
             className={`
-              group flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border text-xs sm:text-sm
+              group flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md border text-[13px] font-medium
               transition-colors
               ${
                 !hasLoadedRecipes ?
                   "cursor-not-allowed border-transparent text-ink-muted/50"
-                : "cursor-pointer border-pastel-orange/50 bg-pastel-orange-tint text-red-900 hover:border-pastel-orange dark:text-red-100"
+                : "cursor-pointer border-line bg-surface-raised text-ink hover:border-line-strong"
               }
             `}
             onClick={handlePickRandomLoaded}

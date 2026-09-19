@@ -114,10 +114,10 @@ const TagMultiSelect: React.FC<TagMultiSelectProps> = ({
       */}
       <input
         className={`
-          h-10 w-full max-w-xs rounded-full border-1
+          h-10 w-full max-w-xs rounded-md border
           px-4 text-xs outline-none
           duration-300 ease-in-out
-          focus:border-[var(--pastel-blue)]
+          focus:border-ink
           sm:h-12 sm:text-sm
         `}
         type="text"
@@ -151,13 +151,13 @@ const TagMultiSelect: React.FC<TagMultiSelectProps> = ({
             <button
               key={option.key}
               type="button"
-              className="group flex items-center rounded bg-blue-100 px-2 py-1 text-xs"
+              className="group flex items-center rounded bg-well px-2 py-1 text-xs"
               onClick={() => removeOption(option.key)}
             >
-              <span className="text-[0.65rem] font-semibold text-blue-800 group-hover:text-red-400 sm:text-xs">
+              <span className="text-[11px] font-semibold text-ink group-hover:text-danger sm:text-xs">
                 {option.label}
               </span>
-              <span className="ml-2 text-xl text-blue-500 group-hover:font-semibold group-hover:text-red-400">
+              <span className="ml-2 text-xl text-accent group-hover:font-semibold group-hover:text-danger">
                 ×
               </span>
             </button>

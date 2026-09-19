@@ -6,11 +6,13 @@ import React, { useEffect, useState } from "react";
 import Recipes from "@components/SearchAndRecipes/Recipes";
 import Search from "@components/SearchAndRecipes/Search";
 import { useAuth } from "@context/AuthContext";
+import { useToast } from "@context/ToastContext";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import { supabase } from "@utils/supabase";
 
 const SearchAndRecipes = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [savedRecipes, setSavedRecipes] = useState<Hit[]>([]);
   // Lives here rather than in Search so the results area's empty state
   // can seed it with example ingredients.
@@ -45,10 +47,10 @@ const SearchAndRecipes = () => {
       if (!hash.includes("error")) return;
       const params = new URLSearchParams(hash.substring(1));
       const errorDescription = params.get("error_description");
-      if (errorDescription) alert(errorDescription);
+      if (errorDescription) showToast(errorDescription);
     };
     checkForURLErrors();
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -98,12 +100,12 @@ const SearchAndRecipes = () => {
           instead of visually bleeding through it. */}
       <button
         onClick={toggleSidebar}
-        className="hidden lg:flex fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-md border border-l-0 border-line bg-surface-raised p-1.5 text-ink-muted shadow-md transition-colors hover:text-ink"
+        className="hidden lg:flex fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-md border border-l-0 border-line bg-surface-raised p-1.5 text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
         aria-label="Toggle sidebar"
       >
         {isSidebarOpen ?
-          <PanelLeftClose className="size-5" />
-        : <PanelLeftOpen className="size-5" />}
+          <PanelLeftClose className="size-4" />
+        : <PanelLeftOpen className="size-4" />}
       </button>
 
       {/* Search Sidebar */}

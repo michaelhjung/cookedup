@@ -62,13 +62,13 @@ const CheckboxFilterGroup: React.FC<CheckboxFilterGroupProps> = ({
       {filteredOptions.map((option) => (
         <label
           key={option.key}
-          className="flex cursor-pointer items-start gap-2 text-xs sm:text-sm"
+          className="flex cursor-pointer items-start gap-2 text-[13px] text-ink"
         >
           <input
             type="checkbox"
             checked={selectedKeys.includes(option.key)}
             onChange={() => onToggle(option.key)}
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[var(--pastel-blue)] sm:h-4 sm:w-4"
+            className="mt-0.5 size-3.5 shrink-0 accent-accent"
           />
           {/* Wraps rather than truncates — hiding part of a filter's
               name is worse than a slightly taller row. */}
@@ -83,36 +83,34 @@ const CheckboxFilterGroup: React.FC<CheckboxFilterGroupProps> = ({
     </div>
   );
 
-  const heading = `${groupLabel}${selectedCount > 0 ? ` (${selectedCount} selected)` : ""}`;
+  const status = selectedCount > 0 ? `${selectedCount} selected` : "Any";
 
   if (collapsible) {
     return (
-      // Lighter weight and a muted color than the outer "Filters"
-      // summary (which is bold, full-opacity, on a tinted pill) — the
-      // two tiers read as parent/child by visual weight rather than by
-      // indentation, so this can stay flush with the left rule above it
-      // instead of shrinking the sidebar further.
-      //
-      // Named group ("group/category") — see the matching comment in
-      // FilterCategories/index.tsx for why a bare "group" would let this
-      // chevron rotate in step with the outer "Filters" disclosure
-      // instead of its own.
-      <details className="group/category w-full text-left">
-        <summary className="flex cursor-pointer items-center justify-between gap-2 text-xs font-medium text-ink-muted hover:text-ink sm:text-sm">
-          <span>{heading}</span>
-          <ChevronDown
-            strokeWidth={2}
-            className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-open/category:rotate-180"
-          />
+      // A hairline row: label left, the current selection and a chevron
+      // right. Named group ("group/category") so the chevron follows
+      // this <details> alone and not any ancestor's open state.
+      <details className="group/category w-full border-b border-line text-left">
+        <summary className="flex h-10 cursor-pointer items-center justify-between gap-2 text-[13px] font-medium text-ink">
+          <span>{groupLabel}</span>
+          <span
+            className={`flex items-center gap-1 text-xs ${selectedCount > 0 ? "text-accent" : "text-ink-muted"}`}
+          >
+            {status}
+            <ChevronDown
+              strokeWidth={2}
+              className="size-3.5 shrink-0 text-ink-muted transition-transform duration-200 group-open/category:rotate-180"
+            />
+          </span>
         </summary>
-        <div className="mt-2 flex flex-col gap-2">
+        <div className="flex flex-col gap-2 pb-3">
           {searchable && (
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={`Search ${groupLabel.toLowerCase()}...`}
-              className="h-8 w-full rounded-md border border-line px-3 text-xs outline-none transition-colors focus:border-pastel-blue"
+              placeholder={`Search ${groupLabel.toLowerCase()}…`}
+              className="h-8 w-full rounded-md border border-line px-2.5 text-xs outline-none transition-colors focus:border-ink"
             />
           )}
           {checkboxList}
@@ -123,7 +121,7 @@ const CheckboxFilterGroup: React.FC<CheckboxFilterGroupProps> = ({
 
   return (
     <div className="w-full text-left">
-      <p className="mb-1 text-xs font-semibold sm:text-sm">{heading}</p>
+      <p className="mb-1 text-xs font-semibold sm:text-sm">{groupLabel}</p>
       {checkboxList}
     </div>
   );

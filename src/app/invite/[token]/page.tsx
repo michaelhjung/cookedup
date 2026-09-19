@@ -13,10 +13,13 @@ const InvitePage = async (props: PageProps<"/invite/[token]">) => {
   const { token } = await props.params;
 
   return (
-    <div className="flex min-h-screen flex-col p-4 md:p-6 lg:p-8">
+    <div className="flex min-h-dvh flex-col p-4 md:p-6 lg:p-8">
       <Header />
 
-      <main className="mt-4 flex grow items-center justify-center">
+      <main
+        id="main"
+        className="mt-4 flex grow items-center justify-center"
+      >
         <AcceptInvite token={token} />
       </main>
 

@@ -20,19 +20,26 @@ export const metadata: Metadata = {
 const LAST_UPDATED = "September 14, 2026";
 
 const PrivacyPage = () => (
-  <div className="flex min-h-screen flex-col p-4 md:p-6 lg:p-8">
-    <main className="mx-auto w-full max-w-2xl grow">
+  <div className="flex min-h-dvh flex-col p-4 md:p-6 lg:p-8">
+    <main
+      id="main"
+      className="mx-auto w-full max-w-2xl grow"
+    >
       <Link
         href="/"
-        className="text-sm hover:underline"
+        className="text-sm text-ink-muted transition-colors hover:text-ink hover:underline"
       >
-        ← Back to Cooked Up!
+        &larr; Back to Cooked Up!
       </Link>
 
       <article className="mt-6 flex flex-col gap-6 text-sm sm:text-base">
         <header>
-          <h1 className="text-2xl font-bold sm:text-3xl">Privacy Policy</h1>
-          <p className="mt-1 text-xs opacity-60">Last updated {LAST_UPDATED}</p>
+          <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
+            Privacy policy
+          </h1>
+          <p className="mt-1 text-xs text-ink-muted">
+            Last updated {LAST_UPDATED}
+          </p>
         </header>
 
         <p>
@@ -180,7 +187,7 @@ const Section = ({
   children: ReactNode;
 }) => (
   <section className="flex flex-col gap-2">
-    <h2 className="text-lg font-semibold sm:text-xl">{title}</h2>
+    <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
     {children}
   </section>
 );

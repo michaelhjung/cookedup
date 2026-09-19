@@ -80,11 +80,11 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
         className={`
           group flex w-full items-center gap-1.5
           rounded-md border border-line
-          bg-pastel-brown-tint
+          bg-well
           p-1
           text-left
           transition-colors
-          hover:border-pastel-blue hover:bg-pastel-blue-tint
+          hover:border-line-strong
           ${readOnly ? "" : "cursor-grab active:cursor-grabbing"}
           ${draggingEntryId === entry.id ? "opacity-40" : ""}
         `}
@@ -98,7 +98,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
             className="size-6 shrink-0 rounded object-cover sm:size-7"
           />
         )}
-        <span className="line-clamp-2 text-[0.65rem] leading-tight sm:text-xs">
+        <span className="line-clamp-2 text-[11px] font-medium leading-tight sm:text-xs">
           {entry.recipe.recipe.label}
         </span>
       </button>
@@ -116,7 +116,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
             href={entry.recipe.recipe.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-blue-500 hover:underline"
+            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
           >
             <ExternalLink className="size-3.5" />
             Open recipe
@@ -125,7 +125,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
           {!readOnly && (
             <>
               <div className="mt-3 border-t border-line pt-3">
-                <p className="mb-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-ink-muted">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
                   Move to
                 </p>
                 <div className="flex flex-col gap-1.5">
@@ -157,11 +157,11 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                       setIsOpen(false);
                     }}
                     className={`
-                      rounded-md px-2 py-1 text-xs font-semibold
+                      h-8 rounded-md px-2 text-xs font-semibold transition-colors
                       ${
                         hasMoved ?
-                          "cursor-pointer bg-pastel-blue text-blue-950"
-                        : "cursor-not-allowed bg-pastel-brown-tint text-ink-muted"
+                          "cursor-pointer bg-accent text-on-accent hover:bg-accent-hover"
+                        : "cursor-not-allowed bg-well text-ink-muted"
                       }
                     `}
                   >
@@ -176,7 +176,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                   onRemove?.(entry);
                   setIsOpen(false);
                 }}
-                className="mt-3 flex w-full items-center gap-1.5 border-t border-line pt-3 text-xs text-ink-muted hover:text-red-500"
+                className="mt-3 flex w-full items-center gap-1.5 border-t border-line pt-3 text-xs text-ink-muted hover:text-danger"
               >
                 <Trash2 className="size-3.5" />
                 Remove from plan

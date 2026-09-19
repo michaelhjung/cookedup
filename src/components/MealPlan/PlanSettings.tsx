@@ -51,7 +51,7 @@ const CopyableUrl: React.FC<{ label: string; url: string }> = ({
 
   return (
     <div>
-      <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-ink-muted">
+      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
         {label}
       </p>
       <div className="flex gap-1.5">
@@ -59,7 +59,7 @@ const CopyableUrl: React.FC<{ label: string; url: string }> = ({
           readOnly
           value={url}
           onFocus={(event) => event.target.select()}
-          className="min-w-0 flex-1 rounded-md border border-line bg-transparent px-2 py-1.5 text-[0.65rem]"
+          className="min-w-0 flex-1 rounded-md border border-line bg-transparent px-2 py-1.5 text-[11px]"
         />
         <button
           type="button"
@@ -67,10 +67,10 @@ const CopyableUrl: React.FC<{ label: string; url: string }> = ({
             navigator.clipboard.writeText(url).then(() => setCopied(true));
           }}
           aria-label={`Copy ${label}`}
-          className="shrink-0 rounded-md border border-line px-2 transition-colors hover:border-pastel-blue"
+          className="shrink-0 rounded-md border border-line px-2 transition-colors hover:border-line-strong"
         >
           {copied ?
-            <Check className="size-3.5 text-green-500" />
+            <Check className="size-3.5 text-success" />
           : <Copy className="size-3.5" />}
         </button>
       </div>
@@ -269,7 +269,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-scrim backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) requestClose();
       }}
@@ -289,7 +289,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
           {!isOwner && (
-            <p className="rounded-md bg-pastel-brown-tint p-2 text-xs text-ink-muted">
+            <p className="rounded-md bg-well p-2 text-xs text-ink-muted">
               This plan is shared with you as{" "}
               {plan.role === "editor" ? "an editor" : "a viewer"}. Only its
               owner can rename it or change sharing.
@@ -299,22 +299,22 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
           {isOwner && (
             <>
               <div>
-                <label className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-wide text-ink-muted">
+                <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
                   Plan name
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  className="h-9 w-full rounded-md border border-line bg-transparent px-2 text-xs outline-none focus:border-pastel-blue"
+                  className="h-9 w-full rounded-md border border-line bg-transparent px-2 text-xs outline-none focus:border-ink"
                 />
               </div>
 
               <div>
-                <p className="mb-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-ink-muted">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
                   Meals
                 </p>
-                <p className="mb-2 text-[0.65rem] leading-snug text-ink-muted">
+                <p className="mb-2 text-[11px] leading-snug text-ink-muted">
                   Rename, retime, add or remove the meals in this plan &mdash;
                   three snacks, no breakfast, a &ldquo;Meal prep&rdquo; slot,
                   whatever suits you. They always show in time order. Times have
@@ -335,7 +335,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                         onChange={(event) =>
                           updateSlot(slot.id, { label: event.target.value })
                         }
-                        className="min-w-0 flex-1 rounded-md border border-line bg-transparent px-2 py-1 text-xs outline-none focus:border-pastel-blue"
+                        className="min-w-0 flex-1 rounded-md border border-line bg-transparent px-2 py-1 text-xs outline-none focus:border-ink"
                       />
                       <input
                         type="time"
@@ -361,7 +361,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                           ${
                             slots.length === 1 ?
                               "cursor-not-allowed text-ink-muted/50"
-                            : "text-ink-muted hover:text-red-400"
+                            : "text-ink-muted hover:text-danger"
                           }
                         `}
                       >
@@ -374,7 +374,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                 <button
                   type="button"
                   onClick={addSlot}
-                  className="mt-2 flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-pastel-blue hover:text-pastel-blue"
+                  className="mt-2 flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
                 >
                   <Plus className="size-3.5" />
                   Add a meal
@@ -389,11 +389,11 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                     onClick={() => toggleLinkSharing(!plan.shareToken)}
                     disabled={isBusy}
                     className={`
-                      flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[0.65rem]
+                      flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px]
                       ${
                         plan.shareToken ?
-                          "border-line text-ink-muted hover:border-red-400 hover:text-red-400"
-                        : "border-pastel-blue text-pastel-blue"
+                          "border-line text-ink-muted hover:border-danger hover:text-danger"
+                        : "border-accent text-accent"
                       }
                     `}
                   >
@@ -423,18 +423,18 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                         href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-md bg-pastel-blue px-3 py-1.5 text-[0.65rem] font-semibold text-blue-950"
+                        className="rounded-md bg-accent hover:bg-accent-hover px-3 py-1.5 text-[11px] font-semibold text-on-accent"
                       >
                         Add to Google Calendar
                       </a>
                       <a
                         href={webcalUrl}
-                        className="rounded-md bg-pastel-orange-tint px-3 py-1.5 text-[0.65rem] font-semibold text-orange-900 dark:text-orange-100"
+                        className="rounded-md border border-line bg-surface-raised px-3 py-1.5 text-[11px] font-semibold text-ink"
                       >
                         Add to Apple / Outlook
                       </a>
                     </div>
-                    <p className="text-[0.65rem] leading-snug text-ink-muted">
+                    <p className="text-[11px] leading-snug text-ink-muted">
                       Calendar apps refresh subscribed feeds on their own
                       schedule — Google often takes several hours, so changes
                       here won&rsquo;t appear there right away. Turning sharing
@@ -442,7 +442,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                       one.
                     </p>
                   </div>
-                : <p className="text-[0.65rem] text-ink-muted">
+                : <p className="text-[11px] text-ink-muted">
                     Off. Turning this on creates a secret link that shows this
                     plan read-only and can be subscribed to from any calendar
                     app.
@@ -468,7 +468,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                     type="button"
                     onClick={generateInvite}
                     disabled={isBusy}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-pastel-blue px-3 py-1.5 text-xs font-semibold text-pastel-blue disabled:opacity-50"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-accent px-3 py-1.5 text-xs font-semibold text-accent disabled:opacity-50"
                   >
                     <UserPlus className="size-3.5" />
                     Create invite link
@@ -485,18 +485,18 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                 )}
 
                 {shares.length === 0 ?
-                  <p className="text-[0.65rem] text-ink-muted">
+                  <p className="text-[11px] text-ink-muted">
                     Nobody else has this plan yet.
                   </p>
                 : <ul className="space-y-1">
                     {shares.map((share) => (
                       <li
                         key={share.userId}
-                        className="flex items-center justify-between gap-2 rounded bg-pastel-brown-tint/60 px-2 py-1.5"
+                        className="flex items-center justify-between gap-2 rounded bg-well px-2 py-1.5"
                       >
                         <span className="min-w-0 flex-1 truncate text-xs">
                           {share.email ?? "Someone"}
-                          <span className="ml-1.5 text-[0.65rem] text-ink-muted">
+                          <span className="ml-1.5 text-[11px] text-ink-muted">
                             {share.role === "editor" ? "can edit" : "can view"}
                           </span>
                         </span>
@@ -504,7 +504,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                           type="button"
                           onClick={() => revokeShare(share.userId)}
                           aria-label="Remove access"
-                          className="shrink-0 text-ink-muted hover:text-red-400"
+                          className="shrink-0 text-ink-muted hover:text-danger"
                         >
                           <Trash2 className="size-3.5" />
                         </button>
@@ -516,7 +516,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
             </>
           )}
 
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
         </div>
 
         {/* Pinned rather than sitting inline between "Meals" and "Share
@@ -528,7 +528,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
             {isConfirmingExit ?
               <div className="flex flex-col gap-2">
                 <p className="flex items-center gap-1.5 text-xs font-semibold">
-                  <CircleAlert className="size-3.5 shrink-0 text-pastel-orange" />
+                  <CircleAlert className="size-3.5 shrink-0 text-accent" />
                   Save your changes before closing?
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -536,7 +536,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                     type="button"
                     onClick={saveAndClose}
                     disabled={isBusy}
-                    className="flex-1 rounded-md bg-pastel-blue px-3 py-2 text-xs font-semibold text-blue-950 disabled:opacity-50"
+                    className="flex-1 rounded-md bg-accent hover:bg-accent-hover px-3 py-2 text-xs font-semibold text-on-accent disabled:opacity-50"
                   >
                     {isBusy ? "Saving..." : "Save & close"}
                   </button>
@@ -544,7 +544,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                     type="button"
                     onClick={onClose}
                     disabled={isBusy}
-                    className="rounded-md border border-line px-3 py-2 text-xs text-ink-muted transition-colors hover:border-red-400 hover:text-red-400 disabled:opacity-50"
+                    className="rounded-md border border-line px-3 py-2 text-xs text-ink-muted transition-colors hover:border-danger hover:text-danger disabled:opacity-50"
                   >
                     Discard
                   </button>
@@ -559,11 +559,11 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                 </div>
               </div>
             : <div className="flex items-center gap-3">
-                <p className="flex min-w-0 flex-1 items-center gap-1.5 text-[0.65rem] leading-snug text-ink-muted">
+                <p className="flex min-w-0 flex-1 items-center gap-1.5 text-[11px] leading-snug text-ink-muted">
                   {isDirty ?
                     <>
-                      <CircleAlert className="size-3.5 shrink-0 text-pastel-orange" />
-                      <span className="font-semibold text-pastel-orange">
+                      <CircleAlert className="size-3.5 shrink-0 text-accent" />
+                      <span className="font-semibold text-accent">
                         Unsaved changes
                       </span>
                     </>
@@ -579,8 +579,8 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                     transition-all
                     ${
                       isBusy || !isDirty ?
-                        "cursor-not-allowed bg-pastel-brown-tint text-ink-muted"
-                      : "cursor-pointer bg-pastel-blue text-blue-950 shadow-sm hover:brightness-95"
+                        "cursor-not-allowed bg-well text-ink-muted"
+                      : "cursor-pointer bg-accent hover:bg-accent-hover text-on-accent"
                     }
                   `}
                 >

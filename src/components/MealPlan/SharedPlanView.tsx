@@ -52,12 +52,17 @@ const SharedPlanView: React.FC<SharedPlanViewProps> = ({
   const webcalUrl = feedUrl.replace(/^https?:/, "webcal:");
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl grow flex-col gap-4">
+    <main
+      id="main"
+      className="mx-auto flex w-full max-w-6xl grow flex-col gap-4"
+    >
       <div className="flex flex-col items-center gap-1 text-center">
-        <p className="text-[0.65rem] uppercase tracking-widest text-ink-muted">
+        <p className="text-[11px] uppercase tracking-widest text-ink-muted">
           Shared meal plan
         </p>
-        <h1 className="text-xl font-semibold sm:text-2xl">{name}</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          {name}
+        </h1>
       </div>
 
       {origin && (
@@ -66,13 +71,13 @@ const SharedPlanView: React.FC<SharedPlanViewProps> = ({
             href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md bg-pastel-blue px-4 py-2 text-xs font-semibold text-blue-950 transition hover:brightness-95"
+            className="rounded-md bg-accent hover:bg-accent-hover px-4 py-2 text-xs font-semibold text-on-accent transition"
           >
             Add to Google Calendar
           </a>
           <a
             href={webcalUrl}
-            className="rounded-md bg-pastel-orange-tint px-4 py-2 text-xs font-semibold text-orange-900 dark:text-orange-100 transition hover:brightness-95"
+            className="rounded-md border border-line bg-surface-raised px-4 py-2 text-xs font-semibold text-ink transition"
           >
             Add to Apple / Outlook
           </a>
@@ -110,7 +115,7 @@ const SharedPlanView: React.FC<SharedPlanViewProps> = ({
         />
       }
 
-      <p className="text-center text-[0.65rem] text-ink-muted">
+      <p className="text-center text-[11px] text-ink-muted">
         This is a read-only view. Calendar apps refresh subscribed feeds on
         their own schedule, so updates can take a few hours to appear.
       </p>

@@ -5,7 +5,7 @@ import SearchAndRecipes from "@components/SearchAndRecipes";
 const Homepage = () => (
   <div
     className={`
-      flex h-screen flex-col
+      flex h-dvh flex-col
       overflow-hidden
       p-4 md:p-6 lg:p-8
     `}
@@ -15,7 +15,10 @@ const Homepage = () => (
     {/* Pulled back to the viewport's left edge at lg so the search
         sidebar (and its fixed toggle) sit flush against it; the sidebar
         adds its own left clearance. */}
-    <main className="mt-4 flex flex-col grow overflow-hidden lg:-ml-8 lg:flex-row lg:justify-between">
+    <main
+      id="main"
+      className="flex flex-col grow overflow-hidden lg:-ml-8 lg:flex-row lg:justify-between"
+    >
       <SearchAndRecipes />
     </main>
 

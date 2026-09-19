@@ -272,17 +272,17 @@ const MealPlanner = () => {
   if (!user)
     return (
       <div className="flex grow flex-col items-center justify-center gap-2 p-8 text-center">
-        <h2 className="text-lg font-semibold sm:text-xl">
+        <h2 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
           Plan your week of meals
         </h2>
-        <p className="max-w-md text-xs text-ink-muted sm:text-sm">
+        <p className="max-w-md text-sm text-ink-muted sm:text-base">
           Drop recipes onto a calendar, subscribe to it from Google Calendar or
           any other calendar app, and share it with whoever you cook for.
         </p>
         <button
           type="button"
           onClick={openAuthModal}
-          className="mt-2 h-10 rounded-md bg-pastel-blue px-6 text-sm font-semibold text-blue-950 shadow-sm transition hover:brightness-95 hover:shadow-md"
+          className="mt-2 h-9 rounded-md bg-accent px-4 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
         >
           Sign in to get started
         </button>
@@ -292,10 +292,10 @@ const MealPlanner = () => {
   if (!activePlan)
     return (
       <div className="flex grow flex-col items-center justify-center gap-3 p-8 text-center">
-        <h2 className="text-lg font-semibold sm:text-xl">
+        <h2 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
           You don&rsquo;t have a meal plan yet
         </h2>
-        <p className="max-w-md text-xs text-ink-muted sm:text-sm">
+        <p className="max-w-md text-sm text-ink-muted sm:text-base">
           Create one to start dropping recipes onto a calendar you can subscribe
           to and share.
         </p>
@@ -305,13 +305,13 @@ const MealPlanner = () => {
           onClick={handleCreatePlan}
           disabled={isCreating}
           className={`
-            flex items-center gap-1.5
-            rounded-md px-5 py-2.5 text-sm font-semibold
-            transition-all
+            flex h-9 items-center gap-1.5
+            rounded-md px-4 text-sm font-semibold
+            transition-colors
             ${
               isCreating ?
-                "cursor-not-allowed bg-pastel-brown-tint text-ink-muted"
-              : "cursor-pointer bg-pastel-blue text-blue-950 shadow-sm hover:brightness-95 hover:shadow-md"
+                "cursor-not-allowed bg-well text-ink-muted"
+              : "cursor-pointer bg-accent text-on-accent hover:bg-accent-hover"
             }
           `}
         >
@@ -319,19 +319,19 @@ const MealPlanner = () => {
           {isCreating ? "Creating..." : "Create a meal plan"}
         </button>
 
-        {error && <p className="max-w-md text-xs text-red-400">{error}</p>}
+        {error && <p className="max-w-md text-xs text-danger">{error}</p>}
       </div>
     );
 
   return (
     <EntryDragProvider onDrop={handleMove}>
-      <div className="flex size-full min-h-0 flex-col gap-3">
+      <div className="flex size-full min-h-0 flex-col gap-4">
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
           {plans.length > 1 ?
             <select
               value={activePlan.id}
               onChange={(event) => setActivePlanId(event.target.value)}
-              className="rounded-md border border-line bg-surface-raised px-2 py-1 text-sm font-semibold"
+              className="h-8 rounded-md border border-line bg-surface-raised px-2 text-base font-semibold tracking-tight"
             >
               {plans.map((plan) => (
                 <option
@@ -343,7 +343,7 @@ const MealPlanner = () => {
                 </option>
               ))}
             </select>
-          : <h2 className="text-sm font-semibold sm:text-base">
+          : <h2 className="text-lg font-semibold tracking-tight">
               {activePlan.name}
             </h2>
           }
@@ -351,10 +351,10 @@ const MealPlanner = () => {
           <button
             type="button"
             onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-pastel-blue hover:text-pastel-blue"
+            className="flex h-8 items-center gap-1.5 rounded-md border border-line bg-surface-raised px-3 text-[13px] font-medium text-ink transition-colors hover:border-line-strong"
           >
-            <Settings2 className="size-3.5" />
-            Share &amp; settings
+            <Settings2 className="size-3.5 text-ink-muted" />
+            Settings &amp; sharing
           </button>
         </div>
 
@@ -367,11 +367,9 @@ const MealPlanner = () => {
           </div>
         )}
 
-        {error && (
-          <p className="shrink-0 text-center text-xs text-red-400">{error}</p>
-        )}
+        {error && <p className="shrink-0 text-xs text-danger">{error}</p>}
 
-        <div className="min-h-0 flex-1 overflow-y-auto pb-4">
+        <div className="min-h-0 flex-1 overflow-y-auto pb-2">
           {isDesktop === null ?
             null
           : isDesktop ?

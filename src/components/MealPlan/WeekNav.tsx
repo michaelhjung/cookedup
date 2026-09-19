@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
 
 import {
@@ -20,17 +20,17 @@ const WeekNav: React.FC<WeekNavProps> = ({ weekStart, onChange }) => {
   const isCurrentWeek = weekStart === startOfWeek(todayISO());
 
   return (
-    <div className="flex items-center justify-center gap-2 sm:gap-3">
+    <div className="flex items-center gap-2">
       <button
         type="button"
         onClick={() => onChange(addDays(weekStart, -7))}
         aria-label="Previous week"
-        className="rounded-full p-1.5 transition-colors hover:bg-pastel-brown-tint"
+        className="flex size-7 items-center justify-center rounded-md border border-line bg-surface-raised text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
       >
-        <ChevronLeft className="size-4 sm:size-5" />
+        <ChevronLeft className="size-4" />
       </button>
 
-      <span className="min-w-40 text-center text-sm font-semibold sm:min-w-52 sm:text-base">
+      <span className="min-w-40 text-center text-[13px] font-semibold tabular-nums sm:min-w-44">
         {formatWeekRange(weekStart)}
       </span>
 
@@ -38,9 +38,9 @@ const WeekNav: React.FC<WeekNavProps> = ({ weekStart, onChange }) => {
         type="button"
         onClick={() => onChange(addDays(weekStart, 7))}
         aria-label="Next week"
-        className="rounded-full p-1.5 transition-colors hover:bg-pastel-brown-tint"
+        className="flex size-7 items-center justify-center rounded-md border border-line bg-surface-raised text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
       >
-        <ChevronRight className="size-4 sm:size-5" />
+        <ChevronRight className="size-4" />
       </button>
 
       <button
@@ -48,16 +48,15 @@ const WeekNav: React.FC<WeekNavProps> = ({ weekStart, onChange }) => {
         onClick={() => onChange(startOfWeek(todayISO()))}
         disabled={isCurrentWeek}
         className={`
-          flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs
+          ml-1 flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium
           transition-colors
           ${
             isCurrentWeek ?
-              "cursor-not-allowed border-transparent text-ink-muted"
-            : "cursor-pointer border-line text-ink-muted hover:border-pastel-blue hover:text-pastel-blue"
+              "cursor-not-allowed text-ink-muted/50"
+            : "cursor-pointer text-ink-muted hover:bg-well hover:text-ink"
           }
         `}
       >
-        <CalendarDays className="size-3.5" />
         Today
       </button>
     </div>

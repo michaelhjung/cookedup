@@ -25,4 +25,8 @@
   .flash-ring {
     animation: flash-ring 0.6s ease-in-out 2;
   }
+
+  .animate-toast-in {
+    animation: toast-in 0.25s ease-out both;
+  }
 }

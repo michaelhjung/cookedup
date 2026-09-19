@@ -39,7 +39,7 @@ const RecipeRow: React.FC<{ hit: Hit; onSelect: () => void }> = ({
         p-2
         text-left
         transition-colors
-        hover:border-pastel-blue hover:bg-pastel-blue-tint
+        hover:border-line-strong hover:bg-well
       `}
     >
       {image && (
@@ -55,7 +55,7 @@ const RecipeRow: React.FC<{ hit: Hit; onSelect: () => void }> = ({
         <span className="line-clamp-2 block text-xs font-medium sm:text-sm">
           {hit.recipe.label}
         </span>
-        <span className="block truncate text-[0.65rem] text-ink-muted">
+        <span className="block truncate text-[11px] text-ink-muted">
           {hit.recipe.source}
           {hit.recipe.totalTime > 0 ? ` · ${hit.recipe.totalTime} min` : ""}
         </span>
@@ -126,7 +126,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-scrim backdrop-blur-sm sm:items-center"
       onMouseDown={(event) => {
         if (!panelRef.current?.contains(event.target as Node)) onClose();
       }}
@@ -171,7 +171,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
                 transition-colors
                 ${
                   tab === candidate ?
-                    "border-b-2 border-pastel-blue text-pastel-blue"
+                    "border-b-2 border-accent text-accent"
                   : "border-b-2 border-transparent text-ink-muted hover:text-current"
                 }
               `}
@@ -197,7 +197,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
                   value={savedFilter}
                   onChange={(event) => setSavedFilter(event.target.value)}
                   placeholder="Filter your saved recipes..."
-                  className="mb-2 h-9 w-full rounded-md border border-line bg-transparent px-3 text-xs outline-none focus:border-pastel-blue"
+                  className="mb-2 h-9 w-full rounded-md border border-line bg-transparent px-3 text-xs outline-none focus:border-ink"
                 />
               )}
 
@@ -226,7 +226,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="chicken, rice, broccoli..."
-                  className="h-9 flex-1 rounded-md border border-line bg-transparent px-3 text-xs outline-none focus:border-pastel-blue"
+                  className="h-9 flex-1 rounded-md border border-line bg-transparent px-3 text-xs outline-none focus:border-ink"
                 />
                 <button
                   type="submit"
@@ -235,8 +235,8 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
                     rounded-md px-4 text-xs font-semibold
                     ${
                       !query.trim() || isSearching ?
-                        "cursor-not-allowed bg-pastel-brown-tint text-ink-muted"
-                      : "cursor-pointer bg-pastel-blue text-blue-950"
+                        "cursor-not-allowed bg-well text-ink-muted"
+                      : "cursor-pointer bg-accent hover:bg-accent-hover text-on-accent"
                     }
                   `}
                 >
@@ -249,7 +249,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
                   <Ellipsis />
                 </div>
               : searchError ?
-                <p className="p-6 text-center text-xs text-red-400">
+                <p className="p-6 text-center text-xs text-danger">
                   {searchError}
                 </p>
               : results === null ?

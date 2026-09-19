@@ -13,14 +13,17 @@ export const metadata: Metadata = {
 const PlanPage = () => (
   <div
     className={`
-      flex h-screen flex-col
+      flex h-dvh flex-col
       overflow-hidden
       p-4 md:p-6 lg:p-8
     `}
   >
     <Header />
 
-    <main className="mt-4 flex min-h-0 grow flex-col">
+    <main
+      id="main"
+      className="flex min-h-0 grow flex-col pt-5"
+    >
       <MealPlanner />
     </main>
 

@@ -46,13 +46,13 @@ const DayAgenda: React.FC<DayAgendaProps> = ({
         type="button"
         onClick={() => onDateChange(addDays(date, -1))}
         aria-label="Previous day"
-        className="rounded-full p-1.5 transition-colors hover:bg-pastel-brown-tint"
+        className="flex size-8 items-center justify-center rounded-md border border-line bg-surface-raised text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
       >
-        <ChevronLeft className="size-5" />
+        <ChevronLeft className="size-4" />
       </button>
 
       <p
-        className={`text-sm font-semibold ${date === todayISO() ? "text-pastel-blue" : ""}`}
+        className={`text-sm font-semibold tabular-nums ${date === todayISO() ? "text-accent" : ""}`}
       >
         {formatFullDate(date)}
       </p>
@@ -61,9 +61,9 @@ const DayAgenda: React.FC<DayAgendaProps> = ({
         type="button"
         onClick={() => onDateChange(addDays(date, 1))}
         aria-label="Next day"
-        className="rounded-full p-1.5 transition-colors hover:bg-pastel-brown-tint"
+        className="flex size-8 items-center justify-center rounded-md border border-line bg-surface-raised text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
       >
-        <ChevronRight className="size-5" />
+        <ChevronRight className="size-4" />
       </button>
     </div>
 
@@ -71,11 +71,11 @@ const DayAgenda: React.FC<DayAgendaProps> = ({
       {slots.map((slot) => (
         <section
           key={slot.id}
-          className="rounded-lg border border-line p-2"
+          className="rounded-lg border border-line bg-surface-raised p-2"
         >
           <div className="mb-1 flex items-baseline justify-between px-1">
             <h3 className="text-sm font-semibold">{slot.label}</h3>
-            <span className="text-[0.65rem] text-ink-muted">
+            <span className="text-[11px] text-ink-muted tabular-nums">
               {formatSlotTime(slot.time)}
             </span>
           </div>

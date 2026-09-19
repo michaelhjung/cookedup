@@ -22,7 +22,7 @@ const FILTER_CATEGORIES: {
 }[] = [
   {
     param: "mealType",
-    groupLabel: "Meal Type",
+    groupLabel: "Meal type",
     values: ["Breakfast", "Lunch", "Dinner", "Snack", "Teatime"],
   },
   {
@@ -106,7 +106,7 @@ const FILTER_CATEGORIES: {
   },
   {
     param: "dishType",
-    groupLabel: "Dish Type",
+    groupLabel: "Dish type",
     values: [
       "Alcohol Cocktail",
       "Biscuits and cookies",

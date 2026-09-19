@@ -130,7 +130,7 @@ const OptionsDropdown: React.FC<OptionsDropdownProps> = ({
         mt-1
         text-xs sm:text-sm
         overflow-auto
-        bg-[var(--pastel-brown)]/25 p-4
+        bg-well p-4
         backdrop-blur-lg
       `}
     >
@@ -147,8 +147,8 @@ const OptionsDropdown: React.FC<OptionsDropdownProps> = ({
             role="button"
             className={`rounded-lg p-1 outline-none ${
               isSelected ?
-                "cursor-default italic text-gray-400"
-              : "cursor-pointer hover:bg-pastel-brown/35 focus:border-2 focus:border-pastel-brown focus:bg-pastel-brown/35"
+                "cursor-default italic text-ink-muted/60"
+              : "cursor-pointer hover:bg-well focus:border-2 focus:border-ink focus:bg-well"
             }`}
             onClick={() => onSelect(option.key)}
             onKeyDown={(e) => handleKeyDown(e, index)}

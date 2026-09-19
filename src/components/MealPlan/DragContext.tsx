@@ -247,10 +247,10 @@ export const EntryDragProvider: React.FC<EntryDragProviderProps> = ({
             className={`
               pointer-events-none fixed z-[60]
               max-w-48 -translate-x-1/2 -translate-y-1/2
-              rounded-md border border-pastel-blue
+              rounded-md border border-accent
               bg-surface-raised
               px-2 py-1
-              text-[0.65rem] leading-tight
+              text-[11px] leading-tight
               opacity-95 shadow-xl
             `}
           >

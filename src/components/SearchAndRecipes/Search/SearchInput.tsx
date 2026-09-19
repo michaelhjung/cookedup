@@ -75,12 +75,12 @@ const SearchInput: React.FC<SearchInputProps> = ({
       <input
         ref={searchInputRef}
         className={`
-          h-10 w-full sm:h-11
+          h-9 w-full
           rounded-md border border-line
-          pl-4 pr-10
-          text-sm
+          pl-9 pr-3
+          text-[13px]
           transition-colors
-          focus:border-pastel-blue
+          hover:border-line-strong focus:border-ink
         `}
         type="text"
         value={searchInput}
@@ -91,7 +91,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
       />
       <SearchIcon
         strokeWidth={1.75}
-        className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-muted"
+        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-muted"
       />
     </div>
   );

@@ -20,28 +20,26 @@ const SelectedIngredients: React.FC<SelectedIngredientsProps> = ({
   if (selectedIngredients.length === 0) return null;
 
   return (
-    <div className="flex w-full max-w-xs flex-wrap items-center justify-center gap-2">
+    <div className="flex w-full flex-wrap items-center gap-1.5">
       {selectedIngredients.map((ingredient, index) => (
         <button
           key={index}
           type="button"
-          className="group flex items-center gap-1.5 rounded-full bg-pastel-blue-tint py-1 pl-2.5 pr-1.5 text-xs transition-colors hover:bg-red-100 dark:hover:bg-red-950/40"
+          className="group flex h-7 items-center gap-1 rounded-md border border-line bg-surface-raised pl-2.5 pr-1.5 text-xs font-medium lowercase text-ink transition-colors hover:border-danger/40 hover:bg-danger-tint hover:text-danger"
           onClick={() =>
             setSelectedIngredients((prev) =>
               prev.filter((ingred) => ingred !== ingredient),
             )
           }
         >
-          <span className="font-medium lowercase text-blue-900 group-hover:text-red-600 dark:text-blue-100 text-[0.65rem] sm:text-xs">
-            {ingredient}
-          </span>
-          <X className="size-3 text-blue-900/60 group-hover:text-red-600 dark:text-blue-100/60" />
+          {ingredient}
+          <X className="size-3 text-ink-muted group-hover:text-danger" />
         </button>
       ))}
 
       <button
         type="button"
-        className="cursor-pointer text-[0.65rem] text-ink-muted underline-offset-2 hover:text-red-500 hover:underline sm:text-xs"
+        className="ml-1 cursor-pointer text-xs text-ink-muted underline-offset-2 hover:text-danger hover:underline"
         onClick={() => setSelectedIngredients([])}
       >
         Clear all

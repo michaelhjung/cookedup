@@ -1,36 +1,41 @@
 @import "tailwindcss";
 
 /* Bridge the runtime tokens in base/_base.scss into Tailwind so the
-   utilities (`bg-pastel-blue-tint`, `text-ink-muted`, `border-line`,
-   `rounded-md`…) resolve to them. `inline` keeps them as var() refs, so
-   the dark theme just swaps the underlying variables. */
+   utilities (`bg-accent`, `text-ink-muted`, `border-line`, `rounded-md`…)
+   resolve to them. `inline` keeps them as var() refs, so the dark theme
+   just swaps the underlying variables. */
 @theme inline {
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
+  --color-well: var(--well);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-ink: var(--text);
   --color-ink-muted: var(--text-muted);
 
-  --color-bittersweet: var(--bittersweet);
-  --color-cinerous: var(--cinerous);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-tint: var(--accent-tint);
+  --color-on-accent: var(--on-accent);
 
-  --color-pastel-brown: var(--pastel-brown);
-  --color-pastel-brown-tint: var(--pastel-brown-tint);
-  --color-pastel-blue: var(--pastel-blue);
-  --color-pastel-blue-tint: var(--pastel-blue-tint);
-  --color-pastel-green: var(--pastel-green);
-  --color-pastel-green-tint: var(--pastel-green-tint);
-  --color-pastel-orange: var(--pastel-orange);
-  --color-pastel-orange-tint: var(--pastel-orange-tint);
-  --color-pastel-yellow: var(--pastel-yellow);
-  --color-pastel-yellow-tint: var(--pastel-yellow-tint);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-success: var(--success);
+  --color-scrim: var(--scrim);
 
-  /* Three corner sizes for the whole app: sm for tags and small icon
-     buttons, md for inputs and buttons, lg for cards, modals and
-     drawers. Pills (`rounded-full`) are reserved for chips and the
-     segmented nav. */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 14px;
+  /* Only floating surfaces are elevated; `shadow-sm`/`shadow-md` are
+     unset on purpose so nothing flat can pick one up by habit. */
+  --shadow-sm: initial;
+  --shadow-md: initial;
+  --shadow-lg: var(--elevation-lg);
+  --shadow-xl: var(--elevation-xl);
+  --shadow-2xl: var(--elevation-xl);
+
+  /* Three corner sizes: sm for tags and small icon buttons, md for
+     inputs and buttons, lg for cards, modals and drawers. Pills
+     (`rounded-full`) are reserved for the account avatar. */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
 }

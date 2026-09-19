@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 
 import { AuthProvider } from "@context/AuthContext";
+import { ToastProvider } from "@context/ToastContext";
 import "@styles/tailwind.css";
 /* eslint-disable-next-line import/order */
 import "@styles/main.scss";
 
-const montserrat = Montserrat({ subsets: ["latin"] });
+const geist = Geist({ subsets: ["latin"] });
 
 const SITE_URL = "https://www.cookedup.app";
 const TITLE = "Cooked Up!";
@@ -82,7 +83,20 @@ export default function RootLayout({
           data-website-id={`${process.env.NEXT_PUBLIC_UMAMI_ID}`}
         />
       </head>
-      <body className={montserrat.className}>
+      <body className={geist.className}>
+        {/* Keyboard users get a way past the header on every page; it's
+            invisible until focused. Each page's <main> carries id="main". */}
+        <a
+          href="#main"
+          className={`
+            sr-only
+            focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-60
+            focus:rounded-md focus:bg-surface-raised focus:px-4 focus:py-2
+            focus:text-sm focus:font-semibold focus:shadow-lg
+          `}
+        >
+          Skip to content
+        </a>
         <ThemeProvider
           storageKey="theme"
           defaultTheme="system"
@@ -90,7 +104,9 @@ export default function RootLayout({
           enableColorScheme={true}
           attribute="data-theme"
         >
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

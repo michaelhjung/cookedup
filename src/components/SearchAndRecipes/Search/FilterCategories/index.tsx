@@ -7,7 +7,7 @@
 
 "use client";
 
-import { ChevronDown, X } from "lucide-react";
+import { X } from "lucide-react";
 import React from "react";
 
 import {
@@ -31,71 +31,44 @@ const FilterCategories: React.FC<FilterCategoriesProps> = ({
     selectedKeys.includes(option.key),
   );
 
-  // Collapsed by default — the count in the summary lets you see at a
-  // glance whether anything's applied without opening it, and the chip
-  // row below stays visible (outside the <details>) either way so
-  // active filters are never hidden, only the picker UI is.
-  const summaryLabel = `Filters${
-    selectedOptions.length > 0 ? ` (${selectedOptions.length} selected)` : ""
-  }`;
-
   return (
-    <div className="flex w-full flex-col items-center gap-4">
-      {/* Named group ("group/filters") rather than a bare "group" — a
-          bare group's `group-open:` cascades to ANY nested group-open
-          utility below it (including each category's own chevron in
-          CheckboxFilterGroup), rotating every sub-arrow the moment this
-          outer <details> opens, regardless of whether that category
-          itself is open. Naming scopes the open-state match to just
-          this <details>. */}
-      <details className="group/filters w-full max-w-xs text-left">
-        <summary className="flex cursor-pointer items-center justify-between rounded-md bg-pastel-brown-tint px-3 py-2 text-sm font-semibold transition-colors hover:brightness-[0.97] sm:text-base">
-          <span>{summaryLabel}</span>
-          <ChevronDown
-            strokeWidth={2}
-            className="h-4 w-4 shrink-0 transition-transform duration-200 group-open/filters:rotate-180"
+    <div className="flex w-full flex-col gap-3">
+      {/* Each category is its own hairline row — label left, the current
+          selection ("Any" or a count) right — so the sidebar reads as a
+          short settings list rather than a nested tree. */}
+      <div className="flex w-full flex-col border-t border-line">
+        {RANDOM_RECIPE_FILTER_CATEGORIES.map((category) => (
+          <CheckboxFilterGroup
+            key={category.param}
+            groupLabel={category.groupLabel}
+            options={category.options}
+            selectedKeys={selectedKeys}
+            onToggle={onToggle}
+            columns={
+              (
+                category.param === "cuisineType" ||
+                category.param === "dishType"
+              ) ?
+                2
+              : 1
+            }
+            collapsible
+            searchable={category.param === "health"}
           />
-        </summary>
-
-        {/* The left rule (rather than indentation) is what marks these
-            as nested under "Filters" — an actual indent would eat into
-            an already-narrow sidebar. */}
-        <div className="mt-3 flex w-full flex-col gap-4 border-l-2 border-pastel-brown/30 pl-3">
-          {RANDOM_RECIPE_FILTER_CATEGORIES.map((category) => (
-            <CheckboxFilterGroup
-              key={category.param}
-              groupLabel={category.groupLabel}
-              options={category.options}
-              selectedKeys={selectedKeys}
-              onToggle={onToggle}
-              columns={
-                (
-                  category.param === "cuisineType" ||
-                  category.param === "dishType"
-                ) ?
-                  2
-                : 1
-              }
-              collapsible
-              searchable={category.param === "health"}
-            />
-          ))}
-        </div>
-      </details>
+        ))}
+      </div>
 
       {selectedOptions.length > 0 && (
-        <div className="flex w-full max-w-xs flex-wrap justify-center gap-2">
+        <div className="flex w-full flex-wrap gap-1.5">
           {selectedOptions.map((option) => (
             <button
               key={option.key}
               type="button"
-              className="group flex items-center gap-1.5 rounded-full bg-pastel-blue-tint py-1 pl-2.5 pr-1.5 text-xs transition-colors hover:bg-red-100 dark:hover:bg-red-950/40"
+              className="group flex h-6 items-center gap-1 rounded-sm border border-line bg-surface-raised pl-2 pr-1 text-xs font-medium text-ink transition-colors hover:border-danger/40 hover:bg-danger-tint hover:text-danger"
               onClick={() => onToggle(option.key)}
             >
-              <span className="text-[0.65rem] font-medium text-blue-900 group-hover:text-red-600 dark:text-blue-100 sm:text-xs">
-                {option.label}
-              </span>
-              <X className="size-3 text-blue-900/60 group-hover:text-red-600 dark:text-blue-100/60" />
+              {option.label}
+              <X className="size-3 text-ink-muted group-hover:text-danger" />
             </button>
           ))}
         </div>

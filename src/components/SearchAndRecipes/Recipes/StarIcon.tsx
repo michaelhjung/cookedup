@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 
 import Tooltip from "@components/Tooltip";
 import { useAuth } from "@context/AuthContext";
+import { useToast } from "@context/ToastContext";
 import { Hit } from "@interfaces/edamam";
 import { unstarRecipe } from "@lib/mealPlan/client";
 import { supabase } from "@utils/supabase";
@@ -50,6 +51,7 @@ const StarIcon: React.FC<StarIconProps> = ({
   setSavedRecipes,
 }) => {
   const { openAuthModal } = useAuth();
+  const { showToast } = useToast();
   const isSaved = savedRecipes.some(
     (savedHit) => savedHit?.recipe?.url === hit?.recipe?.url,
   );
@@ -62,7 +64,7 @@ const StarIcon: React.FC<StarIconProps> = ({
   // it feels instant regardless of network speed. The actual request is
   // chained off this ref so rapid re-toggling still reaches the server in
   // the order it was clicked, and a failure rolls the optimistic change
-  // back with an alert.
+  // back with a toast.
   const pendingRequestRef = useRef<Promise<void>>(Promise.resolve());
 
   const saveRecipe = (data: Hit) => {
@@ -78,7 +80,7 @@ const StarIcon: React.FC<StarIconProps> = ({
         setSavedRecipes((prev) =>
           prev.filter((savedHit) => savedHit.recipe.url !== data.recipe.url),
         );
-        alert("There was an error while trying to save the recipe.");
+        showToast("We couldn't save that recipe. Try again.");
         console.error(
           "An error occurred while attempting to save the recipe:",
           error,
@@ -100,7 +102,7 @@ const StarIcon: React.FC<StarIconProps> = ({
     pendingRequestRef.current = pendingRequestRef.current.then(() =>
       persistRemoveRecipe(data).catch((error) => {
         setSavedRecipes((prev) => [...prev, data]);
-        alert("There was an error while trying to remove the saved recipe.");
+        showToast("We couldn't remove that recipe. Try again.");
         console.error(
           "An error occurred while attempting to remove the saved recipe:",
           error,
@@ -111,12 +113,14 @@ const StarIcon: React.FC<StarIconProps> = ({
 
   return (
     <Tooltip text={tooltipText}>
-      <Star
-        size={30}
-        strokeWidth={1}
+      <button
+        type="button"
+        aria-label={isSaved ? "Remove from saved recipes" : "Save recipe"}
+        aria-pressed={isSaved}
         className={`
-          cursor-pointer text-2xl
-          ${isSaved ? "fill-yellow-300 stroke-yellow-300" : ""}
+          flex size-7 items-center justify-center rounded-md
+          transition-colors hover:bg-well
+          ${isSaved ? "text-accent" : "text-ink-muted hover:text-ink"}
         `}
         onClick={(e) => {
           e.stopPropagation();
@@ -125,7 +129,12 @@ const StarIcon: React.FC<StarIconProps> = ({
           if (isSaved) removeRecipe(hit);
           else saveRecipe(hit);
         }}
-      />
+      >
+        <Star
+          strokeWidth={2}
+          className={`size-4 ${isSaved ? "fill-accent" : ""}`}
+        />
+      </button>
     </Tooltip>
   );
 };

@@ -1,13 +1,11 @@
 import { User } from "@supabase/supabase-js";
-import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
 import Bowl from "@components/loaders/Bowl";
 import { buildRandomRecipeSearchParams } from "@data/randomRecipeFilters";
 import { Hit, RecipeData } from "@interfaces/edamam";
-import chefConfusedImg from "@public/imgs/chef-confused.png";
-import chefBulb from "@public/logo.png";
 
+import EmptyPlate from "./EmptyPlate";
 import RecipeCard from "./RecipeCard";
 
 // Shown as one-click starters in the empty state so a first visit can
@@ -17,7 +15,7 @@ const EXAMPLE_INGREDIENTS = ["chicken", "eggs", "rice", "tomato", "garlic"];
 const HOW_IT_WORKS = [
   "Add ingredients",
   "Search or filter",
-  "Save or plan your week",
+  "Save, then plan the week",
 ];
 
 type RecipesSource = "ingredients" | "filter" | "saved" | null;
@@ -215,57 +213,53 @@ const Recipes: React.FC<RecipesProps> = ({
     <section
       ref={scrollContainerRef}
       className={`
-        size-full flex flex-col grow items-center
-        transition-all duration-500 ease-in-out p-4
+        size-full flex flex-col grow
+        transition-[padding] duration-500 ease-in-out
         overflow-auto
-        ${isSidebarOpen ? "" : "pl-8"}
+        px-1 pt-5 pb-4 lg:px-2
+        ${isSidebarOpen ? "" : "lg:pl-10"}
       `}
     >
-      <div className="w-full flex flex-col items-center justify-center">
+      <div className="flex w-full flex-col">
         {/* The empty state doubles as the welcome: what the app does and
             how to get a first result in one click. */}
         {!recipesData?.from && !isLoadingRecipes && (
-          <div className="flex max-w-lg flex-col items-center gap-4 pt-4 text-center lg:pt-12">
-            {/* The header already shows the bulb on phones, where the
-                vertical space matters more. */}
-            <Image
-              src={chefBulb}
-              alt=""
-              className="hidden w-20 sm:block"
-            />
-            <div className="flex flex-col gap-1.5">
-              <h2 className="text-lg font-semibold sm:text-2xl">
+          <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-6 pt-6 text-center lg:pt-[14vh]">
+            <div className="flex flex-col gap-3">
+              <h2 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
                 What&rsquo;s in your kitchen?
               </h2>
-              <p className="max-w-md text-sm text-ink-muted sm:text-base">
+              <p className="mx-auto max-w-md text-sm text-ink-muted sm:text-[15px]">
                 Pick a few ingredients you already have and we&rsquo;ll find
                 recipes that use them. Save the keepers and drop them into your
-                weekly plan.
+                week.
               </p>
             </div>
 
-            <ol className="flex flex-col gap-2 text-left text-xs text-ink-muted sm:flex-row sm:gap-5 sm:text-sm">
+            <ol className="grid w-full grid-cols-3 border-y border-line">
               {HOW_IT_WORKS.map((step, index) => (
                 <li
                   key={step}
-                  className="flex items-center gap-2 whitespace-nowrap"
+                  className="flex flex-col items-center gap-0.5 border-l border-line px-2 py-3 first:border-l-0"
                 >
-                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-pastel-blue-tint text-[0.65rem] font-semibold text-blue-950 dark:text-blue-100">
-                    {index + 1}
+                  <span className="text-[11px] font-semibold tracking-[0.08em] text-accent tabular-nums">
+                    {String(index + 1).padStart(2, "0")}
                   </span>
-                  {step}
+                  <span className="text-xs font-medium sm:text-[13px]">
+                    {step}
+                  </span>
                 </li>
               ))}
             </ol>
 
-            <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm">
-              <span className="text-ink-muted">Try:</span>
+            <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">
+              <span className="mr-1 text-ink-muted">Try</span>
               {EXAMPLE_INGREDIENTS.map((ingredient) => (
                 <button
                   key={ingredient}
                   type="button"
                   onClick={() => onAddIngredient(ingredient)}
-                  className="rounded-md border border-line bg-surface-raised px-3 py-1 transition-colors hover:border-pastel-blue hover:bg-pastel-blue-tint"
+                  className="h-7 rounded-md border border-line bg-surface-raised px-2.5 font-medium text-ink transition-colors hover:border-line-strong"
                 >
                   {ingredient}
                 </button>
@@ -275,29 +269,31 @@ const Recipes: React.FC<RecipesProps> = ({
         )}
 
         {recipesData?.from && recipesData.count === 0 && (
-          <div className="my-4 flex flex-col items-center gap-2 text-xs sm:text-sm md:text-base">
-            <Image
-              src={chefConfusedImg}
-              alt="chef confused"
-              className="size-24 rounded-md md:size-40 xl:size-48"
-            />
-            <p className="text-center text-ink-muted">
-              No recipes matched. Try a different combination!
-            </p>
+          <div className="mx-auto flex max-w-sm flex-col items-center gap-4 pt-16 text-center lg:pt-[14vh]">
+            <EmptyPlate className="w-36 sm:w-44" />
+            <div className="flex flex-col gap-1">
+              <p className="text-base font-semibold tracking-tight">
+                Nothing on the menu
+              </p>
+              <p className="text-sm text-ink-muted">
+                No recipes matched. Try a different combination.
+              </p>
+            </div>
           </div>
         )}
 
         {recipesData?.from && recipesData.count > 0 && (
           <>
-            <p className="mb-4 text-xs text-ink-muted sm:text-sm md:text-base">
-              Found{" "}
-              <span className="font-semibold text-ink">
+            <p className="mb-4 flex items-baseline gap-2">
+              <span className="text-xl font-semibold tracking-tight tabular-nums">
                 {recipesData.count.toLocaleString()}
-              </span>{" "}
-              {recipesData.count > 1 ? "recipes" : "recipe"}
+              </span>
+              <span className="text-[13px] text-ink-muted">
+                {recipesData.count === 1 ? "recipe" : "recipes"}
+              </span>
             </p>
 
-            <div className="grid w-full gap-6 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+            <div className="grid w-full gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
               {recipesData.hits.map((hit: Hit) => (
                 <RecipeCard
                   key={hit.recipe.url}
@@ -314,18 +310,17 @@ const Recipes: React.FC<RecipesProps> = ({
       </div>
 
       {isLoadingRecipes && (
-        <div className="mt-5 flex flex-col items-center">
+        <div className="mt-6 flex flex-col items-center">
           <Bowl />
           <p className="text-xs text-ink-muted md:text-sm">
-            Looking up some recipes...
+            Looking up some recipes…
           </p>
         </div>
       )}
 
       {errorFetchingRecipes && (
-        <p className="mt-5 text-xs text-red-500 md:text-sm">
-          Oops! There was an error when searching up recipes... Please try again
-          at another time.
+        <p className="mt-6 text-center text-xs text-danger md:text-sm">
+          We couldn&rsquo;t load recipes. Please try again.
         </p>
       )}
 
@@ -334,7 +329,7 @@ const Recipes: React.FC<RecipesProps> = ({
         !hasMoreFilterDraws &&
         !!recipesData?.hits?.length &&
         !isLoadingRecipes && (
-          <p className="mt-5 text-xs text-ink-muted md:text-sm">
+          <p className="mt-6 text-center text-xs text-ink-muted md:text-sm">
             That&rsquo;s every recipe we could find for these filters — try
             adjusting them for more.
           </p>

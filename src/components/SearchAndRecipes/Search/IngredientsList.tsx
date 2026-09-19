@@ -64,13 +64,13 @@ const IngredientsList: React.FC<IngredientsListProps> = ({
         absolute top-full z-10
         h-40 w-full sm:h-72
         mt-1.5
-        text-xs sm:text-sm
+        text-[13px]
         overflow-auto
-        rounded-md border border-line bg-surface-raised p-2
+        rounded-md border border-line bg-surface-raised p-1.5
         shadow-lg
       `}
     >
-      <p className="px-2 pb-1.5 pt-1 text-[0.65rem] text-ink-muted">
+      <p className="px-2 pb-1.5 pt-1 text-xs text-ink-muted">
         Pick from the list, or type your own and press Enter.
       </p>
 
@@ -92,10 +92,10 @@ const IngredientsList: React.FC<IngredientsListProps> = ({
               ingredientRefs.current[index] = el;
             }}
             role="button"
-            className={`rounded-sm px-2 py-1 lowercase outline-none ${
+            className={`rounded-sm px-2 py-1.5 lowercase outline-none ${
               selectedIngredients.some((ingred) => ingred === ingredient) ?
                 "cursor-default italic text-ink-muted/60"
-              : "cursor-pointer hover:bg-pastel-blue-tint focus:bg-pastel-blue-tint"
+              : "cursor-pointer hover:bg-well focus:bg-well"
             }`}
             onClick={() => handleSelectIngredient(ingredient)}
             onKeyDown={(e) => handleIngredientsListKeyDown(e, ingredient)}

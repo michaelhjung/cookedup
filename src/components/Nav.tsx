@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import React from "react";
 
 const LINKS = [
-  { href: "/", label: "Find Recipes", Icon: Search },
-  { href: "/plan", label: "Meal Plan", Icon: CalendarDays },
+  { href: "/", label: "Find recipes", Icon: Search },
+  { href: "/plan", label: "Meal plan", Icon: CalendarDays },
 ] as const;
 
 interface NavProps {
@@ -15,17 +15,16 @@ interface NavProps {
 }
 
 /**
- * The app was a single page until the planner arrived, so this is its
- * first navigation of any kind. Kept to a small pill row rather than a
- * full nav bar: with two destinations, anything heavier would take up
- * more of the screen than it earns.
+ * Two destinations, marked by an underline on the current one. The
+ * links are as tall as the header so the underline lands on the bar's
+ * own hairline rather than floating above it.
  */
 const Nav = ({ className = "" }: NavProps) => {
   const pathname = usePathname();
 
   return (
-    <nav className={`flex items-center ${className}`}>
-      <div className="flex items-center gap-1 rounded-full bg-pastel-brown-tint p-1">
+    <nav className={`pointer-events-none flex items-center ${className}`}>
+      <div className="pointer-events-auto flex items-center gap-6">
         {LINKS.map(({ href, label, Icon }) => {
           const isActive =
             href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -34,19 +33,23 @@ const Nav = ({ className = "" }: NavProps) => {
             <Link
               key={href}
               href={href}
+              aria-current={isActive ? "page" : undefined}
               className={`
-                flex items-center gap-1.5
-                rounded-full px-3 py-1.5
-                text-xs sm:text-sm
+                flex h-12 items-center gap-1.5 sm:h-14
+                -mb-px border-b-[1.5px]
+                text-sm font-medium
                 transition-colors
                 ${
                   isActive ?
-                    "bg-surface-raised font-semibold text-ink shadow-sm"
-                  : "text-ink-muted hover:text-ink"
+                    "border-accent text-ink"
+                  : "border-transparent text-ink-muted hover:text-ink"
                 }
               `}
             >
-              <Icon className="size-3.5 sm:size-4" />
+              <Icon
+                className="size-4"
+                strokeWidth={2}
+              />
               {label}
             </Link>
           );

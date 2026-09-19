@@ -56,7 +56,9 @@ const AcceptInvite: React.FC<{ token: string }> = ({ token }) => {
   if (!user)
     return (
       <div className="flex max-w-md flex-col items-center gap-2 text-center">
-        <h2 className="text-lg font-semibold">You&rsquo;ve been invited</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          You&rsquo;ve been invited
+        </h2>
         <p className="text-xs text-ink-muted sm:text-sm">
           Someone shared their meal plan with you. Sign in to accept —
           you&rsquo;ll come straight back here.
@@ -64,7 +66,7 @@ const AcceptInvite: React.FC<{ token: string }> = ({ token }) => {
         <button
           type="button"
           onClick={openAuthModal}
-          className="mt-2 h-10 rounded-md bg-pastel-blue px-6 text-sm font-semibold text-blue-950 shadow-sm transition hover:brightness-95 hover:shadow-md"
+          className="mt-2 h-10 rounded-md bg-accent hover:bg-accent-hover px-6 text-sm font-semibold text-on-accent transition"
         >
           Sign in
         </button>
@@ -73,7 +75,7 @@ const AcceptInvite: React.FC<{ token: string }> = ({ token }) => {
 
   return (
     <div className="flex max-w-md flex-col items-center gap-2 text-center">
-      <h2 className="text-lg font-semibold">
+      <h2 className="text-2xl font-bold tracking-tight">
         {status === "invalid" ?
           "This invite isn't valid"
         : "Something went wrong"}

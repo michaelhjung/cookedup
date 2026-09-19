@@ -126,17 +126,20 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
             }
             setIsOpen((previous) => !previous);
           }}
-          className="cursor-pointer"
+          className={`
+            flex size-7 items-center justify-center rounded-md
+            transition-colors hover:bg-well
+            ${justAdded ? "text-success" : "text-ink-muted hover:text-ink"}
+          `}
         >
           {justAdded ?
             <Check
-              size={28}
-              strokeWidth={1.5}
-              className="text-green-500"
+              strokeWidth={2}
+              className="size-4"
             />
           : <CalendarPlus
-              size={28}
-              strokeWidth={1}
+              strokeWidth={2}
+              className="size-4"
             />
           }
         </button>
@@ -156,7 +159,7 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
               </p>
               <Link
                 href="/plan"
-                className="text-xs font-semibold text-pastel-blue hover:underline"
+                className="text-xs font-semibold text-accent hover:underline"
               >
                 Go to Meal Plan →
               </Link>
@@ -205,12 +208,12 @@ const AddToPlanButton: React.FC<AddToPlanButtonProps> = ({ hit, user }) => {
                 type="button"
                 onClick={submit}
                 disabled={isSaving}
-                className="rounded-md bg-pastel-blue px-3 py-1.5 text-xs font-semibold text-blue-950 transition hover:brightness-95 disabled:opacity-50"
+                className="rounded-md bg-accent hover:bg-accent-hover px-3 py-1.5 text-xs font-semibold text-on-accent transition disabled:opacity-50"
               >
                 {isSaving ? "Adding..." : "Add to plan"}
               </button>
 
-              {error && <p className="text-[0.65rem] text-red-400">{error}</p>}
+              {error && <p className="text-[11px] text-danger">{error}</p>}
             </div>
           }
         </Popover>

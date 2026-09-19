@@ -46,7 +46,11 @@ const AuthButton = () => {
     });
 
     setLoading(false);
-    setMessage(error ? "Error sending link. Try again." : "Check your email!");
+    setMessage(
+      error ?
+        "We couldn't send the link. Try again."
+      : "Check your email for a sign-in link.",
+    );
   };
 
   // The callback route sends failures back with ?auth_error=1 rather than
@@ -76,7 +80,7 @@ const AuthButton = () => {
 
   // Reserve the button's footprint while the session loads so the
   // header doesn't reflow once it resolves.
-  if (authLoading) return <div className="h-9 w-9 sm:w-20" />;
+  if (authLoading) return <div className="h-8 w-8 sm:w-20" />;
 
   const initial = user?.email?.[0]?.toUpperCase() ?? "?";
 
@@ -88,10 +92,10 @@ const AuthButton = () => {
           title={user.email}
           onClick={() => (open ? closeAuthModal() : openAuthModal())}
           className={`
-            flex size-9 items-center justify-center
-            rounded-full bg-pastel-green-tint
-            text-sm font-semibold text-pastel-green
-            ring-2 ring-transparent transition hover:ring-pastel-green/40
+            flex size-8 items-center justify-center
+            rounded-full border border-line bg-surface-raised
+            text-xs font-semibold text-ink
+            transition-colors hover:border-line-strong
           `}
         >
           {initial}
@@ -100,10 +104,10 @@ const AuthButton = () => {
           aria-label="Sign in"
           onClick={() => (open ? closeAuthModal() : openAuthModal())}
           className={`
-            flex h-9 items-center justify-center gap-1.5
-            rounded-md bg-pastel-blue px-2.5 sm:px-4
-            text-sm font-semibold text-blue-950
-            shadow-sm transition hover:brightness-95 hover:shadow
+            flex h-8 items-center justify-center gap-1.5
+            rounded-md bg-accent px-2.5 sm:px-3.5
+            text-[13px] font-semibold text-on-accent
+            transition-colors hover:bg-accent-hover
           `}
         >
           <LogIn className="size-4" />
@@ -117,7 +121,7 @@ const AuthButton = () => {
           className={`
             fixed inset-0 z-40
             flex items-center justify-center
-            bg-black/20 p-4 backdrop-blur-sm
+            bg-scrim p-4 backdrop-blur-sm
           `}
         >
           <div
@@ -156,7 +160,7 @@ const AuthButton = () => {
                     closeAuthModal();
                     setMessage("");
                   }}
-                  className="h-10 w-full rounded-md border border-line text-sm font-medium text-ink-muted transition-colors hover:border-red-400 hover:text-red-500"
+                  className="h-10 w-full rounded-md border border-line text-sm font-medium text-ink-muted transition-colors hover:border-danger hover:text-danger"
                 >
                   Sign out
                 </button>
@@ -190,12 +194,12 @@ const AuthButton = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     required
-                    className="h-11 rounded-md border border-line px-3 text-sm transition-colors focus:border-pastel-blue"
+                    className="h-11 rounded-md border border-line px-3 text-sm transition-colors focus:border-ink"
                   />
                   <button
                     type="submit"
                     disabled={loading}
-                    className="h-10 rounded-md bg-pastel-blue text-sm font-semibold text-blue-950 transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
+                    className="h-10 rounded-md bg-accent hover:bg-accent-hover text-sm font-semibold text-on-accent transition disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {loading ? "Sending..." : "Email me a sign-in link"}
                   </button>

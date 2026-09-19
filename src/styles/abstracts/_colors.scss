@@ -1,46 +1,44 @@
-// Each pastel comes in two steps: the "solid" (buttons, active states,
-// the wordmark) and a much lighter "tint" (chips, tags, hover
-// backgrounds). Same hues either way — the split is what lets one
-// primary button read as *the* action without leaving the palette.
+// One warm stone neutral scale and a single terracotta accent. The
+// accent is the only color in the interface: primary buttons, the
+// current-page underline, today's column, the saved star. Everything
+// else is separated by hairlines and tone, never by hue.
 
 // ---------- light ----------
-$light-text: #2a2725;
-$light-text-muted: #6f6a66;
-$light-surface: #f7f5f2;
-$light-surface-raised: #ffffff;
-$light-line: #e2ddd7;
+$light-surface: #f6f5f2; // the page
+$light-surface-raised: #ffffff; // cards, inputs, modals
+$light-well: #edebe6; // recessed fills: chips, disabled, selected rows
+$light-line: #e2dfd8; // hairlines
+$light-line-strong: #c9c4bb; // hovered/focused hairlines
+$light-text: #24221f;
+$light-text-muted: #7a7469;
 
-$light-bittersweet: #f56960;
-$light-cinerous: #92817a;
+$light-accent: #b8562f;
+$light-accent-hover: #a54b27;
+$light-accent-tint: #f6e6de; // drop targets, highlight ring offset
+$light-on-accent: #fff7f2;
 
-$light-pastel-brown: #a98866;
-$light-pastel-brown-tint: #f1e7da;
-$light-pastel-blue: #7fb6e3;
-$light-pastel-blue-tint: #e0edf8;
-$light-pastel-green: #6bbfc5;
-$light-pastel-green-tint: #d6eef0;
-$light-pastel-orange: #f39a93;
-$light-pastel-orange-tint: #fde3e0;
-$light-pastel-yellow: #f5e76e;
-$light-pastel-yellow-tint: #fdf7c4;
+$light-danger: #b3403a;
+$light-danger-tint: #f7e4e2;
+$light-success: #4f7a5a;
+$light-scrim: rgba(36, 34, 31, 0.32);
+$light-shadow: 36 34 31;
 
 // ---------- dark ----------
-$dark-text: #ebe7e2;
-$dark-text-muted: #a49e97;
-$dark-surface: #1c1a19;
-$dark-surface-raised: #262322;
-$dark-line: #3a3633;
+$dark-surface: #171614;
+$dark-surface-raised: #1f1d1b;
+$dark-well: #27251f;
+$dark-line: #302d29;
+$dark-line-strong: #4a463f;
+$dark-text: #ebe7e0;
+$dark-text-muted: #9a948b;
 
-$dark-bittersweet: #f06b65;
-$dark-cinerous: #a3988f;
+$dark-accent: #c9673f;
+$dark-accent-hover: #d8774f;
+$dark-accent-tint: #3a2a22;
+$dark-on-accent: #fff7f2;
 
-$dark-pastel-brown: #c1b09a;
-$dark-pastel-brown-tint: #2f2a25;
-$dark-pastel-blue: #7fb3dc;
-$dark-pastel-blue-tint: #21313f;
-$dark-pastel-green: #5aa6ab;
-$dark-pastel-green-tint: #1e3335;
-$dark-pastel-orange: #e0908a;
-$dark-pastel-orange-tint: #3d2a28;
-$dark-pastel-yellow: #e6e291;
-$dark-pastel-yellow-tint: #3a3823;
+$dark-danger: #e07b74;
+$dark-danger-tint: #3d2624;
+$dark-success: #7fb08a;
+$dark-scrim: rgba(0, 0, 0, 0.6);
+$dark-shadow: 0 0 0;

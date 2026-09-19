@@ -7,7 +7,7 @@ const Bowl = () => (
       type="veggies"
     />
     <Icon
-      className="toss-bowl text-4xl text-pastel-brown sm:text-6xl md:text-7xl lg:text-8xl"
+      className="toss-bowl text-4xl text-ink-muted sm:text-6xl md:text-7xl lg:text-8xl"
       type="bowl"
     />
   </>
