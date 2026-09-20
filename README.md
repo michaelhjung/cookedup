@@ -57,25 +57,110 @@ Pure logic (the ICS builder, date helpers, event assembly, the auth callback and
 
 ## Running it locally
 
+You need Node 22.18+ (the seeder is TypeScript that Node runs directly),
+Docker (OrbStack is fine), and the Supabase CLI, which comes in as a dev
+dependency.
+
 ```bash
 npm install
-cp .env.example .env.local   # fill in the values below
-npm run dev
+npm run db:start          # supabase start — first run pulls containers, be patient
+cp .env.example .env.local
 ```
 
-| Variable                                                    | Purpose                                                   |
-| ----------------------------------------------------------- | --------------------------------------------------------- |
-| `EDAMAM_APP_ID`, `EDAMAM_API_KEY`                           | Edamam Recipe Search API v2 credentials                   |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project                                          |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`      | Google sign-in (optional — the button hides without them) |
-| `CRON_SECRET`                                               | Protects the keep-alive endpoint (optional locally)       |
-| `NEXT_PUBLIC_UMAMI_ID`                                      | Umami analytics (optional)                                |
+`npx supabase status` prints the API URL and the anon/service keys. Put them in
+`.env.local`:
 
-Database schema and storage policies live in [`supabase/setup.sql`](./supabase/setup.sql); run it once in the Supabase SQL editor.
+```
+SUPABASE_URL=http://127.0.0.1:55321
+SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:55321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+(The stack sits on ports 55321–55324 rather than the CLI's 54321 defaults so it
+can run next to another project's.) Then:
 
 ```bash
-npm test        # vitest
-npm run lint
+npm run db:reset          # build the schema from migrations, then seed the demo account
+npm run dev               # http://localhost:3001
+```
+
+| Variable                                               | Purpose                                                   |
+| ------------------------------------------------------ | --------------------------------------------------------- |
+| `EDAMAM_APP_ID`, `EDAMAM_API_KEY`                      | Edamam Recipe Search API v2 credentials                   |
+| `SUPABASE_*`, `NEXT_PUBLIC_SUPABASE_*`                 | The local stack (above); production values live on Vercel |
+| `ALLOW_TEST_LOGIN`                                     | Local only: the "Sign in as demo" button                  |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google sign-in (optional — the button hides without them) |
+| `SUPABASE_DB_PASSWORD`                                 | Production only, read by `npm run db:push`                |
+| `CRON_SECRET`                                          | Protects the keep-alive endpoint (optional locally)       |
+| `NEXT_PUBLIC_UMAMI_ID`                                 | Umami analytics (optional)                                |
+
+### Signing in
+
+**Sign in as demo.** With `ALLOW_TEST_LOGIN=true` in `.env.local`, the sign-in
+modal grows a **Sign in as demo** button that drops you into the seeded
+account. The guard is server-side (`NODE_ENV` must not be production _and_ the
+flag must be set), so on a production build neither the button nor the
+`/api/test/login` route behind it exists.
+
+**Magic link.** Type any address. Locally nothing leaves your machine: the mail
+lands in **Mailpit at http://127.0.0.1:55324**, and the link in it signs you
+in. If a link ever bounces you back signed out, the redirect isn't
+allow-listed: `additional_redirect_urls` in `supabase/config.toml` has to cover
+the app's `/auth/callback` on whatever port you're running.
+
+**Google.** Works locally too once `NEXT_PUBLIC_GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` are in `.env.local` and `http://localhost:3001` is an
+authorised JavaScript origin on the OAuth client. `npm run db:start` loads
+`.env.local` before `supabase start`, which is how the client id reaches the
+local auth server (`[auth.external.google]` in `config.toml`).
+
+### The demo account
+
+`npm run seed:demo` builds an account you can sign straight into, so testing a
+change never starts with starring a page of recipes. `npm run db:reset` runs it
+for you once the schema is rebuilt.
+
+It creates `demo@cookedup.local` with eight recipes in the library (six
+starred, two only ever planned), a plan for the current week with dinners most
+nights and overnight oats repeating every weekday for four weeks, a second
+"Meal prep" plan, and `friend@cookedup.local` joined as an editor through a
+real invite — so sharing, the calendar feed, and the repeat-rule dialogs all
+have something to act on. The password for both is `cookedup-demo`.
+
+Recipes are written in Edamam's `Hit` shape (`scripts/demo-data.ts`) with
+their images uploaded to the local `recipe-images` bucket, the same way a
+starred search result is stored. The images are placeholders in
+`supabase/seed/images/`; drop real photos in under the same names to make the
+demo look the part. The script refuses to run against any host but localhost.
+
+## Database
+
+The schema lives in `supabase/migrations/` and nowhere else: `npm run db:reset`
+rebuilds a local database from those files, and `npm run db:push` applies the
+ones production hasn't seen (it reads `SUPABASE_DB_PASSWORD` from `.env.local`
+and needs `npx supabase link` to have been run once). The files that were
+already on production when the migrations were introduced are frozen; every
+change since is a new dated file:
+
+```bash
+npx supabase migration new add_recipe_notes   # creates supabase/migrations/<timestamp>_add_recipe_notes.sql
+npm run db:migrate                            # applies it locally (db:reset rebuilds from scratch instead)
+npm run db:push                               # then to production
+```
+
+Or edit the schema in the local Studio (http://127.0.0.1:55323) and let
+`npx supabase db diff -f add_recipe_notes` write the migration for you — read
+it before pushing. A function whose signature changes is dropped by its old
+signature and created again; `create or replace` would leave both.
+
+Storage is set up by a migration too (the `recipe-images` bucket and its
+policies), so a fresh database is ready for images without any dashboard
+clicks.
+
+```bash
+npm run verify   # typecheck, lint, prettier, vitest
 npm run build
 ```
 

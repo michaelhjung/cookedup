@@ -23,13 +23,20 @@ interface AuthContextType {
   isAuthModalOpen: boolean;
   openAuthModal: () => void;
   closeAuthModal: () => void;
+  /**
+   * Whether the sign-in modal offers the local "Sign in as demo" button.
+   * Decided by the server layout (see isDemoLoginEnabled) and only
+   * carried here, so the decision never depends on a public env var.
+   */
+  isDemoLoginEnabled: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{
+  children: ReactNode;
+  isDemoLoginEnabled?: boolean;
+}> = ({ children, isDemoLoginEnabled = false }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -73,8 +80,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       isAuthModalOpen,
       openAuthModal,
       closeAuthModal,
+      isDemoLoginEnabled,
     }),
-    [user, loading, isAuthModalOpen, openAuthModal, closeAuthModal],
+    [
+      user,
+      loading,
+      isAuthModalOpen,
+      openAuthModal,
+      closeAuthModal,
+      isDemoLoginEnabled,
+    ],
   );
 
   return (

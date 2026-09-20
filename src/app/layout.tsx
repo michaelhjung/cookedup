@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 
 import { AuthProvider } from "@context/AuthContext";
 import { ToastProvider } from "@context/ToastContext";
+import { isDemoLoginEnabled } from "@lib/auth/demo";
 import "@styles/tailwind.css";
 /* eslint-disable-next-line import/order */
 import "@styles/main.scss";
@@ -104,7 +105,7 @@ export default function RootLayout({
           enableColorScheme={true}
           attribute="data-theme"
         >
-          <AuthProvider>
+          <AuthProvider isDemoLoginEnabled={isDemoLoginEnabled()}>
             <ToastProvider>{children}</ToastProvider>
           </AuthProvider>
         </ThemeProvider>

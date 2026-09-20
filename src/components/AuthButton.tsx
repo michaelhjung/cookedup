@@ -3,6 +3,7 @@
 import { LogIn, X } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 
+import DemoSignIn from "@components/DemoSignIn";
 import GoogleSignInButton, {
   googleSignInEnabled,
 } from "@components/GoogleSignInButton";
@@ -17,6 +18,7 @@ const AuthButton = () => {
     isAuthModalOpen: open,
     openAuthModal,
     closeAuthModal,
+    isDemoLoginEnabled,
   } = useAuth();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -210,6 +212,8 @@ const AuthButton = () => {
                     {message}
                   </p>
                 )}
+
+                {isDemoLoginEnabled && <DemoSignIn />}
               </div>
             }
           </div>
