@@ -34,9 +34,32 @@ You tell it what's in the fridge; it tells you what to cook. No account needed t
 - **Sign in with Google or a magic link**, in light or dark mode, on desktop or phone.
 
 <p align="center">
-  <img src="./.github/readme/empty-light.png" alt="The empty state: what's in your kitchen?" width="68%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/empty-dark.png">
+    <img src="./.github/readme/empty-light.png" alt="The empty state: what's in your kitchen?" width="68%">
+  </picture>
   &nbsp;
-  <img src="./.github/readme/phone-light.png" alt="Search results on a phone" width="20%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/phone-dark.jpg">
+    <img src="./.github/readme/phone-light.jpg" alt="Search results on a phone" width="20%">
+  </picture>
+</p>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/plan-week-dark.png">
+  <img src="./.github/readme/plan-week-light.png" alt="A week of meals planned by slot, with overnight oats repeating every weekday" width="100%">
+</picture>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/plan-month-dark.png">
+    <img src="./.github/readme/plan-month-light.png" alt="The same plan in month view" width="68%">
+  </picture>
+  &nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/phone-plan-dark.png">
+    <img src="./.github/readme/phone-plan-light.png" alt="One day of the plan on a phone" width="18%">
+  </picture>
 </p>
 
 ## How it's built
