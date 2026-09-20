@@ -15,7 +15,8 @@ import { MealPlanEntry, SlotId } from "@lib/mealPlan/types";
 
 export interface DropTarget {
   date: string;
-  slot: SlotId;
+  /** null for a whole-day target (a month cell): the meal keeps its slot. */
+  slot: SlotId | null;
 }
 
 interface DragContextValue {
@@ -58,14 +59,14 @@ const TOUCH_SCROLL_TOLERANCE = 12;
 const targetAt = (x: number, y: number): DropTarget | null => {
   const cell = document
     .elementFromPoint(x, y)
-    ?.closest<HTMLElement>("[data-drop-slot]");
+    ?.closest<HTMLElement>("[data-drop-date]");
 
   if (!cell) return null;
 
   const { dropDate: date, dropSlot: slot } = cell.dataset;
 
-  if (!date || !slot) return null;
-  return { date, slot };
+  if (!date) return null;
+  return { date, slot: slot || null };
 };
 
 interface EntryDragProviderProps {
@@ -182,11 +183,12 @@ export const EntryDragProvider: React.FC<EntryDragProviderProps> = ({
       reset();
 
       if (!engaged || !dropped) return;
-      // Dropping a meal back where it started isn't a move.
-      if (dropped.date === dragged.date && dropped.slot === dragged.slot)
-        return;
 
-      onDropRef.current(dragged, dropped.date, dropped.slot);
+      const slot = dropped.slot ?? dragged.slot;
+      // Dropping a meal back where it started isn't a move.
+      if (dropped.date === dragged.date && slot === dragged.slot) return;
+
+      onDropRef.current(dragged, dropped.date, slot);
     };
 
     window.addEventListener("pointermove", handleMove, { passive: false });

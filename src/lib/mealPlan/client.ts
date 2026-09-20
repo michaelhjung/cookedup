@@ -7,6 +7,12 @@
 // server-side.
 
 import { Hit } from "@interfaces/edamam";
+import { daysBetween } from "@lib/mealPlan/dates";
+import {
+  RepeatRule,
+  RepeatSeries,
+  expandRepeatRule,
+} from "@lib/mealPlan/recurrence";
 import {
   MealPlan,
   MealPlanEntry,
@@ -152,13 +158,33 @@ export const deleteEntriesInSlots = async (
   if (error) throw new Error(error.message);
 };
 
+interface SeriesRow {
+  id: string;
+  frequency: "daily" | "weekly";
+  interval_weeks: number;
+  weekdays: number[];
+  start_date: string;
+  end_date: string;
+}
+
 interface EntryRow {
   id: string;
   date: string;
   slot: string;
   position: number;
   recipes: { data: Hit } | null;
+  series: SeriesRow | null;
 }
+
+const toSeries = (row: SeriesRow | null): RepeatSeries | null =>
+  row && {
+    id: row.id,
+    frequency: row.frequency,
+    intervalWeeks: row.interval_weeks === 2 ? 2 : 1,
+    weekdays: row.weekdays ?? [],
+    startDate: row.start_date,
+    endDate: row.end_date,
+  };
 
 export const fetchEntries = async (
   planId: string,
@@ -167,7 +193,9 @@ export const fetchEntries = async (
 ): Promise<MealPlanEntry[]> => {
   const { data, error } = await supabase
     .from("meal_plan_entries")
-    .select("id, date, slot, position, recipes:recipe_id (data)")
+    .select(
+      "id, date, slot, position, recipes:recipe_id (data), series:series_id (id, frequency, interval_weeks, weekdays, start_date, end_date)",
+    )
     .eq("plan_id", planId)
     .gte("date", startDate)
     .lte("date", endDate)
@@ -184,15 +212,17 @@ export const fetchEntries = async (
       slot: row.slot,
       position: row.position,
       recipe: (row.recipes as { data: Hit }).data,
+      series: toSeries(row.series),
     }));
 };
 
+/** Resolves to the new entry's id, which `createSeries` needs. */
 export const addEntry = async (
   planId: string,
   hit: Hit,
   date: string,
   slot: SlotId,
-): Promise<void> => {
+): Promise<string> => {
   const session = await requireSession();
 
   const response = await fetch(`/api/plans/${planId}/entries`, {
@@ -208,6 +238,98 @@ export const addEntry = async (
     const result = await response.json().catch(() => ({}));
     throw new Error(result.message || "Couldn't add that recipe.");
   }
+
+  const result = await response.json();
+  return result.entry.id as string;
+};
+
+/**
+ * Makes an existing entry the first occurrence of a repeat rule. The
+ * rule is expanded here and the dates handed to one database function,
+ * so the series and all its meals are created together or not at all.
+ */
+export const createSeries = async (
+  entry: Pick<MealPlanEntry, "id" | "date">,
+  rule: RepeatRule,
+): Promise<void> => {
+  const { error } = await supabase.rpc("create_entry_series", {
+    p_entry_id: entry.id,
+    p_frequency: rule.frequency,
+    p_interval_weeks: rule.intervalWeeks,
+    p_weekdays: rule.frequency === "weekly" ? rule.weekdays : [],
+    p_end_date: rule.endDate,
+    p_dates: expandRepeatRule(rule, entry.date),
+  });
+
+  if (error) throw new Error(error.message);
+};
+
+/**
+ * Moves the entry's series from `fromDate` onward so that the entry
+ * itself lands on `date`/`slot`; every later occurrence shifts by the
+ * same amount. Pass the series start as `fromDate` to move all of it.
+ */
+export const shiftSeries = async (
+  entry: MealPlanEntry,
+  fromDate: string,
+  date: string,
+  slot: SlotId,
+): Promise<void> => {
+  if (!entry.series) throw new Error("That meal doesn't repeat.");
+
+  const { error } = await supabase.rpc("shift_series_entries", {
+    p_series_id: entry.series.id,
+    p_from_date: fromDate,
+    p_day_delta: daysBetween(entry.date, date),
+    p_slot: slot,
+  });
+
+  if (error) throw new Error(error.message);
+};
+
+/** Removes every occurrence from `fromDate` onward. */
+export const endSeriesBefore = async (
+  seriesId: string,
+  fromDate: string,
+): Promise<void> => {
+  const { error } = await supabase.rpc("end_series_before", {
+    p_series_id: seriesId,
+    p_from_date: fromDate,
+  });
+
+  if (error) throw new Error(error.message);
+};
+
+/** Removes the whole series; its entries go with it. */
+export const deleteSeries = async (seriesId: string): Promise<void> => {
+  const { error } = await supabase
+    .from("meal_plan_series")
+    .delete()
+    .eq("id", seriesId);
+
+  if (error) throw new Error(error.message);
+};
+
+/**
+ * Copies every meal between `from` and `to` (inclusive) forward by
+ * `dayDelta` days. Resolves to how many were copied; meals already in a
+ * target cell are skipped, not doubled.
+ */
+export const copyEntries = async (
+  planId: string,
+  from: string,
+  to: string,
+  dayDelta: number,
+): Promise<number> => {
+  const { data, error } = await supabase.rpc("copy_plan_entries", {
+    p_plan_id: planId,
+    p_from: from,
+    p_to: to,
+    p_day_delta: dayDelta,
+  });
+
+  if (error) throw new Error(error.message);
+  return typeof data === "number" ? data : 0;
 };
 
 export const moveEntry = async (

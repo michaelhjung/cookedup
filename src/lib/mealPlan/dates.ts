@@ -76,3 +76,48 @@ export const formatFullDate = (iso: string): string =>
     month: "short",
     day: "numeric",
   });
+
+export const startOfMonth = (iso: string): string => `${iso.slice(0, 7)}-01`;
+
+/** Steps whole months from the first of `iso`'s month. */
+export const addMonths = (iso: string, months: number): string => {
+  const date = parseISODate(startOfMonth(iso));
+  date.setMonth(date.getMonth() + months);
+  return toISODate(date);
+};
+
+const endOfMonth = (iso: string): string => addDays(addMonths(iso, 1), -1);
+
+/**
+ * Every date a month view shows: the Monday on or before the 1st through
+ * the Sunday on or after the last day, so rows are always whole weeks.
+ * Four to six rows depending on the month, rather than a fixed six with
+ * a trailing row of next month's days.
+ */
+export const monthGridDates = (monthStartISO: string): string[] => {
+  const first = startOfWeek(startOfMonth(monthStartISO));
+  const last = addDays(startOfWeek(endOfMonth(monthStartISO)), 6);
+  const length = daysBetween(first, last) + 1;
+
+  return Array.from({ length }, (_, index) => addDays(first, index));
+};
+
+/** "September 2026" */
+export const formatMonthLabel = (iso: string): string =>
+  parseISODate(iso).toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  });
+
+/**
+ * Signed whole days from `from` to `to`. Measured in UTC so a DST change
+ * inside the range (a 23- or 25-hour day) can't skew the division.
+ */
+export const daysBetween = (from: string, to: string): number => {
+  const utc = (iso: string) => {
+    const [year, month, day] = iso.split("-").map(Number);
+    return Date.UTC(year, month - 1, day);
+  };
+
+  return Math.round((utc(to) - utc(from)) / 86_400_000);
+};

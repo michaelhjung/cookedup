@@ -5,6 +5,7 @@
 // everything above the fetch layer uses the camelCase shapes here.
 
 import { Hit } from "@interfaces/edamam";
+import { RepeatSeries } from "@lib/mealPlan/recurrence";
 
 /**
  * One meal in a plan's day. Slots are per-plan data rather than a fixed
@@ -49,7 +50,16 @@ export interface MealPlanEntry {
   slot: SlotId;
   position: number;
   recipe: Hit;
+  /**
+   * Set when this meal is one occurrence of a repeat rule. Absent (not
+   * just null) on the shared view and the calendar feed, which never
+   * need it.
+   */
+  series?: RepeatSeries | null;
 }
+
+/** Which occurrences a move or removal of a repeating meal applies to. */
+export type SeriesScope = "one" | "following" | "all";
 
 export interface PlanShare {
   userId: string;

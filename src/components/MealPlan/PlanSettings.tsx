@@ -136,10 +136,18 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
     ]);
   };
 
+  // Re-sorted as soon as a time changes rather than on save, so retiming
+  // a snack to 10am visibly moves it above lunch right away. React keeps
+  // focus on the input being edited when its row moves, since rows are
+  // keyed by slot id. Label edits don't re-sort: two meals at the same
+  // time would otherwise swap places under the cursor mid-word.
   const updateSlot = (id: string, changes: Partial<MealSlotDef>) =>
-    setSlots((previous) =>
-      previous.map((slot) => (slot.id === id ? { ...slot, ...changes } : slot)),
-    );
+    setSlots((previous) => {
+      const next = previous.map((slot) =>
+        slot.id === id ? { ...slot, ...changes } : slot,
+      );
+      return changes.time === undefined ? next : sortSlots(next);
+    });
 
   const removeSlot = (id: string) =>
     setSlots((previous) => previous.filter((slot) => slot.id !== id));

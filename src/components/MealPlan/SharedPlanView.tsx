@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 
+import CalendarNav from "@components/MealPlan/CalendarNav";
 import DayAgenda from "@components/MealPlan/DayAgenda";
 import WeekGrid from "@components/MealPlan/WeekGrid";
-import WeekNav from "@components/MealPlan/WeekNav";
 import { addDays, startOfWeek, todayISO } from "@lib/mealPlan/dates";
 import { MealPlanEntry, MealSlotDef } from "@lib/mealPlan/types";
 
@@ -85,9 +85,10 @@ const SharedPlanView: React.FC<SharedPlanViewProps> = ({
       )}
 
       {isDesktop && (
-        <WeekNav
-          weekStart={weekStart}
-          onChange={(next) => {
+        <CalendarNav
+          view="week"
+          cursor={weekStart}
+          onCursorChange={(next) => {
             setWeekStart(next);
             setSelectedDate(next);
           }}

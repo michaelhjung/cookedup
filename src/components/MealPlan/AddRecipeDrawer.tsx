@@ -5,16 +5,22 @@ import Image from "next/image";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import Ellipsis from "@components/loaders/Ellipsis";
+import RepeatRuleEditor from "@components/MealPlan/RepeatRuleEditor";
 import { Hit, RecipeData } from "@interfaces/edamam";
 import { formatFullDate } from "@lib/mealPlan/dates";
-import { MealSlotDef, formatSlotTime } from "@lib/mealPlan/types";
+import { RepeatRule, validateRepeatRule } from "@lib/mealPlan/recurrence";
+import { MealSlotDef, SlotId, formatSlotTime } from "@lib/mealPlan/types";
 
 interface AddRecipeDrawerProps {
   date: string;
   slot: MealSlotDef;
+  /** Every slot in the plan, so the meal can be switched from here. */
+  slots: MealSlotDef[];
   savedRecipes: Hit[];
   // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
-  onSelect: (_hit: Hit) => void;
+  onSlotChange: (_slot: SlotId) => void;
+  /** `rule` is null when the meal shouldn't repeat. */
+  onSelect: (_hit: Hit, _rule: RepeatRule | null) => void;
   onClose: () => void;
 }
 
@@ -72,7 +78,9 @@ const RecipeRow: React.FC<{ hit: Hit; onSelect: () => void }> = ({
 const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
   date,
   slot,
+  slots,
   savedRecipes,
+  onSlotChange,
   onSelect,
   onClose,
 }) => {
@@ -84,6 +92,16 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
   const [results, setResults] = useState<Hit[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
+  const [repeatRule, setRepeatRule] = useState<RepeatRule | null>(null);
+
+  // A recipe can't be added under a rule that won't expand; the list
+  // stays clickable but hands over no rule until it's fixed.
+  const isRuleValid =
+    repeatRule === null || validateRepeatRule(repeatRule, date) === null;
+  const choose = (hit: Hit) => {
+    if (!isRuleValid) return;
+    onSelect(hit, repeatRule);
+  };
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -142,7 +160,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
         `}
       >
         <div className="flex shrink-0 items-start justify-between gap-2 border-b border-line p-4">
-          <div>
+          <div className="min-w-0">
             <h2 className="text-sm font-semibold sm:text-base">
               Add to {slot.label}
             </h2>
@@ -158,6 +176,38 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
           >
             <X className="size-4" />
           </button>
+        </div>
+
+        <div className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 border-b border-line px-4 py-3 text-xs">
+          <label
+            htmlFor="add-recipe-slot"
+            className="pt-2 text-ink-muted"
+          >
+            Meal
+          </label>
+          <select
+            id="add-recipe-slot"
+            value={slot.id}
+            onChange={(event) => onSlotChange(event.target.value)}
+            className="h-8 w-full rounded-md border border-line bg-surface-raised px-2 text-xs outline-none focus:border-ink"
+          >
+            {slots.map((candidate) => (
+              <option
+                key={candidate.id}
+                value={candidate.id}
+              >
+                {candidate.label} · {formatSlotTime(candidate.time)}
+              </option>
+            ))}
+          </select>
+
+          <span className="pt-2 text-ink-muted">Repeat</span>
+          <RepeatRuleEditor
+            startDate={date}
+            rule={repeatRule}
+            onChange={setRepeatRule}
+            dense
+          />
         </div>
 
         <div className="flex shrink-0 gap-1 border-b border-line px-4 pt-3">
@@ -211,7 +261,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
                   <RecipeRow
                     key={hit.recipe.url}
                     hit={hit}
-                    onSelect={() => onSelect(hit)}
+                    onSelect={() => choose(hit)}
                   />
                 ))
               }
@@ -264,7 +314,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
                   <RecipeRow
                     key={hit.recipe.url}
                     hit={hit}
-                    onSelect={() => onSelect(hit)}
+                    onSelect={() => choose(hit)}
                   />
                 ))
               }

@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   addDays,
+  addMonths,
+  daysBetween,
+  formatMonthLabel,
   formatWeekRange,
+  monthGridDates,
   parseISODate,
+  startOfMonth,
   startOfWeek,
   toISODate,
   weekDates,
@@ -96,5 +101,52 @@ describe("formatWeekRange", () => {
 
   it("names both years when the week straddles New Year", () => {
     expect(formatWeekRange("2026-12-28")).toBe("Dec 28, 2026 – Jan 3, 2027");
+  });
+});
+
+describe("month helpers", () => {
+  it("finds the first of the month", () => {
+    expect(startOfMonth("2026-09-19")).toBe("2026-09-01");
+  });
+
+  it("steps whole months, clamping to the first", () => {
+    expect(addMonths("2026-09-01", 1)).toBe("2026-10-01");
+    expect(addMonths("2026-01-01", -1)).toBe("2025-12-01");
+    expect(addMonths("2026-12-01", 2)).toBe("2027-02-01");
+  });
+
+  it("builds a Monday-first grid that covers the whole month in full weeks", () => {
+    // September 2026 starts on a Tuesday and ends on a Wednesday.
+    const dates = monthGridDates("2026-09-01");
+    expect(dates[0]).toBe("2026-08-31");
+    expect(dates[dates.length - 1]).toBe("2026-10-04");
+    expect(dates.length).toBe(35);
+  });
+
+  it("uses four rows when the month fits exactly", () => {
+    // February 2027 starts on a Monday and has 28 days.
+    expect(monthGridDates("2027-02-01").length).toBe(28);
+  });
+
+  it("uses six rows when the month spills that far", () => {
+    // August 2026 starts on a Saturday and has 31 days.
+    expect(monthGridDates("2026-08-01").length).toBe(42);
+  });
+
+  it("labels a month", () => {
+    expect(formatMonthLabel("2026-09-01")).toBe("September 2026");
+  });
+});
+
+describe("daysBetween", () => {
+  it("counts signed whole days", () => {
+    expect(daysBetween("2026-03-02", "2026-03-09")).toBe(7);
+    expect(daysBetween("2026-03-09", "2026-03-02")).toBe(-7);
+    expect(daysBetween("2026-03-02", "2026-03-02")).toBe(0);
+  });
+
+  it("isn't thrown off by a DST change inside the range", () => {
+    // US DST starts 2026-03-08; a naive millisecond division rounds wrong.
+    expect(daysBetween("2026-03-07", "2026-03-10")).toBe(3);
   });
 });

@@ -5,6 +5,7 @@ import React from "react";
 
 import SlotCell from "@components/MealPlan/SlotCell";
 import { addDays, formatFullDate, todayISO } from "@lib/mealPlan/dates";
+import { RepeatRule } from "@lib/mealPlan/recurrence";
 import {
   MealPlanEntry,
   MealSlotDef,
@@ -22,6 +23,7 @@ interface DayAgendaProps {
   onAdd?: (_date: string, _slot: SlotId) => void;
   onRemove?: (_entry: MealPlanEntry) => void;
   onMove?: (_entry: MealPlanEntry, _date: string, _slot: SlotId) => void;
+  onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
 }
 
 /**
@@ -39,6 +41,7 @@ const DayAgenda: React.FC<DayAgendaProps> = ({
   onAdd,
   onRemove,
   onMove,
+  onRepeat,
 }) => (
   <div className="flex flex-col gap-3">
     <div className="flex items-center justify-between">
@@ -91,6 +94,7 @@ const DayAgenda: React.FC<DayAgendaProps> = ({
             onAdd={onAdd}
             onRemove={onRemove}
             onMove={onMove}
+            onRepeat={onRepeat}
           />
         </section>
       ))}

@@ -9,6 +9,7 @@ import {
   weekDates,
   weekdayLabel,
 } from "@lib/mealPlan/dates";
+import { RepeatRule } from "@lib/mealPlan/recurrence";
 import {
   MealPlanEntry,
   MealSlotDef,
@@ -25,6 +26,7 @@ interface WeekGridProps {
   onAdd?: (_date: string, _slot: SlotId) => void;
   onRemove?: (_entry: MealPlanEntry) => void;
   onMove?: (_entry: MealPlanEntry, _date: string, _slot: SlotId) => void;
+  onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
 }
 
 /**
@@ -45,6 +47,7 @@ const WeekGrid: React.FC<WeekGridProps> = ({
   onAdd,
   onRemove,
   onMove,
+  onRepeat,
 }) => {
   const dates = weekDates(weekStart);
   const today = todayISO();
@@ -100,6 +103,7 @@ const WeekGrid: React.FC<WeekGridProps> = ({
                 onAdd={onAdd}
                 onRemove={onRemove}
                 onMove={onMove}
+                onRepeat={onRepeat}
               />
             </div>
           ))}

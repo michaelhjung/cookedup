@@ -1,28 +1,113 @@
 "use client";
 
-import { Plus, Settings2 } from "lucide-react";
+import { Copy, Plus, Settings2 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 import Bowl from "@components/loaders/Bowl";
 import AddRecipeDrawer from "@components/MealPlan/AddRecipeDrawer";
+import CalendarNav, {
+  CalendarView,
+  cursorFor,
+} from "@components/MealPlan/CalendarNav";
+import ConfirmDialog from "@components/MealPlan/ConfirmDialog";
 import DayAgenda from "@components/MealPlan/DayAgenda";
 import { EntryDragProvider } from "@components/MealPlan/DragContext";
+import MonthGrid from "@components/MealPlan/MonthGrid";
 import PlanSettings from "@components/MealPlan/PlanSettings";
+import SeriesScopeDialog from "@components/MealPlan/SeriesScopeDialog";
 import WeekGrid from "@components/MealPlan/WeekGrid";
-import WeekNav from "@components/MealPlan/WeekNav";
 import { useAuth } from "@context/AuthContext";
+import { useToast } from "@context/ToastContext";
 import { Hit } from "@interfaces/edamam";
 import {
   addEntry,
+  copyEntries,
   createPlan,
+  createSeries,
+  deleteSeries,
+  endSeriesBefore,
   fetchEntries,
   fetchPlans,
   fetchStarredRecipes,
   moveEntry,
   removeEntry,
+  shiftSeries,
 } from "@lib/mealPlan/client";
-import { addDays, startOfWeek, todayISO } from "@lib/mealPlan/dates";
-import { MealPlan, MealPlanEntry, SlotId, findSlot } from "@lib/mealPlan/types";
+import {
+  addDays,
+  addMonths,
+  daysBetween,
+  formatMonthLabel,
+  formatWeekRange,
+  monthGridDates,
+  startOfWeek,
+  todayISO,
+} from "@lib/mealPlan/dates";
+import { RepeatRule } from "@lib/mealPlan/recurrence";
+import {
+  MealPlan,
+  MealPlanEntry,
+  SeriesScope,
+  SlotId,
+  findSlot,
+} from "@lib/mealPlan/types";
+
+const VIEW_STORAGE_KEY = "cookedup:plan-view";
+
+const readStoredView = (): CalendarView => {
+  try {
+    return localStorage.getItem(VIEW_STORAGE_KEY) === "month" ?
+        "month"
+      : "week";
+  } catch {
+    return "week";
+  }
+};
+
+/** First and last dates the planner needs loaded for what's on screen. */
+const visibleRange = (
+  view: CalendarView,
+  cursor: string,
+): { start: string; end: string } => {
+  if (view === "month") {
+    const dates = monthGridDates(cursor);
+    return { start: dates[0], end: dates[dates.length - 1] };
+  }
+
+  const start = startOfWeek(cursor);
+  return { start, end: addDays(start, 6) };
+};
+
+/**
+ * What "copy the previous period" would copy: last week shifted forward
+ * a week, or last month shifted by whole weeks so meals land on the same
+ * weekdays (a Monday roast stays on a Monday; the alternative, matching
+ * day-of-month, puts it on whatever weekday the 3rd happens to be).
+ */
+const previousPeriod = (view: CalendarView, cursor: string) => {
+  if (view === "month") {
+    const previous = addMonths(cursor, -1);
+    return {
+      from: previous,
+      to: addDays(cursor, -1),
+      dayDelta: daysBetween(startOfWeek(previous), startOfWeek(cursor)),
+      label: formatMonthLabel(previous),
+    };
+  }
+
+  const start = startOfWeek(cursor);
+  return {
+    from: addDays(start, -7),
+    to: addDays(start, -1),
+    dayDelta: 7,
+    label: formatWeekRange(addDays(start, -7)),
+  };
+};
+
+/** A move or removal waiting on a "this / following / all" answer. */
+type PendingSeriesAction =
+  | { action: "move"; entry: MealPlanEntry; date: string; slot: SlotId }
+  | { action: "remove"; entry: MealPlanEntry };
 
 /**
  * Below `lg` the seven-column grid is unusable, so the planner swaps to a
@@ -47,6 +132,7 @@ const useIsDesktop = (): boolean | null => {
 
 const MealPlanner = () => {
   const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { showToast } = useToast();
   const isDesktop = useIsDesktop();
 
   const [plans, setPlans] = useState<MealPlan[]>([]);
@@ -55,7 +141,9 @@ const MealPlanner = () => {
   const [savedRecipes, setSavedRecipes] = useState<Hit[]>([]);
 
   const [selectedDate, setSelectedDate] = useState(todayISO());
-  const [weekStart, setWeekStart] = useState(startOfWeek(todayISO()));
+  const [view, setView] = useState<CalendarView>("week");
+  /** Monday of the visible week, or the 1st of the visible month. */
+  const [cursor, setCursor] = useState(startOfWeek(todayISO()));
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -66,6 +154,33 @@ const MealPlanner = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [pendingSeries, setPendingSeries] =
+    useState<PendingSeriesAction | null>(null);
+  const [isConfirmingCopy, setIsConfirmingCopy] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
+
+  // The last view used is remembered per browser; it's a preference,
+  // not data, so localStorage is the right home for it.
+  useEffect(() => {
+    setView(readStoredView());
+  }, []);
+
+  const changeView = (next: CalendarView) => {
+    setView(next);
+    setCursor(cursorFor(next, selectedDate));
+    try {
+      localStorage.setItem(VIEW_STORAGE_KEY, next);
+    } catch {
+      // Private mode or blocked storage: the view still switches.
+    }
+  };
+
+  // Below `lg` there's only the day agenda, which always works a week at
+  // a time regardless of which view the desktop had chosen.
+  const activeView: CalendarView =
+    isDesktop && view === "month" ? "month" : "week";
+  const range = visibleRange(activeView, cursor);
+  const isInRange = (date: string) => date >= range.start && date <= range.end;
 
   const activePlan = plans.find((plan) => plan.id === activePlanId) ?? null;
   const canEdit = activePlan?.role !== "viewer";
@@ -172,17 +287,12 @@ const MealPlanner = () => {
     if (!activePlanId) return;
 
     try {
-      const weekEntries = await fetchEntries(
-        activePlanId,
-        weekStart,
-        addDays(weekStart, 6),
-      );
-      setEntries(weekEntries);
+      setEntries(await fetchEntries(activePlanId, range.start, range.end));
     } catch (caught) {
       console.error("Failed to load plan entries:", caught);
-      setError("Couldn't load this week's meals.");
+      setError("Couldn't load the meals for this period.");
     }
-  }, [activePlanId, weekStart]);
+  }, [activePlanId, range.start, range.end]);
 
   useEffect(() => {
     loadEntries();
@@ -192,73 +302,201 @@ const MealPlanner = () => {
   // fetched range always contains the day being shown.
   const changeSelectedDate = (date: string) => {
     setSelectedDate(date);
-    setWeekStart(startOfWeek(date));
+    setCursor(cursorFor(activeView, date));
   };
 
-  const changeWeek = (nextWeekStart: string) => {
-    setWeekStart(nextWeekStart);
-    setSelectedDate(nextWeekStart);
+  const changeCursor = (next: string) => {
+    setCursor(next);
+    setSelectedDate(next);
   };
 
-  const handleAdd = async (hit: Hit) => {
+  // From the month view, a day number opens that week.
+  const openDay = (date: string) => {
+    setSelectedDate(date);
+    setView("week");
+    setCursor(startOfWeek(date));
+    try {
+      localStorage.setItem(VIEW_STORAGE_KEY, "week");
+    } catch {
+      // See changeView.
+    }
+  };
+
+  const reportError = (caught: unknown, fallback: string) => {
+    console.error(fallback, caught);
+    setError(
+      caught instanceof Error && caught.message ?
+        `${fallback} ${caught.message}`
+      : fallback,
+    );
+  };
+
+  const handleAdd = async (hit: Hit, rule: RepeatRule | null) => {
     if (!addTarget || !activePlanId) return;
 
     setIsAdding(true);
     setError("");
 
     try {
-      await addEntry(activePlanId, hit, addTarget.date, addTarget.slot);
+      const entryId = await addEntry(
+        activePlanId,
+        hit,
+        addTarget.date,
+        addTarget.slot,
+      );
+
+      // The first occurrence is added like any meal, then expanded. If
+      // expanding fails the single meal is still there, so the error
+      // says exactly that rather than implying nothing happened.
+      if (rule) {
+        try {
+          await createSeries({ id: entryId, date: addTarget.date }, rule);
+        } catch (caught) {
+          reportError(caught, "Added the meal, but couldn't make it repeat.");
+        }
+      }
+
       // Refetched rather than appended: the server assigns the entry id
       // and its position within the slot, and guessing either would make
       // the next remove or move act on a row that doesn't exist.
       await loadEntries();
       setAddTarget(null);
     } catch (caught) {
-      console.error("Failed to add recipe to plan:", caught);
-      setError(
-        caught instanceof Error ? caught.message : "Couldn't add that recipe.",
-      );
+      reportError(caught, "Couldn't add that recipe.");
     } finally {
       setIsAdding(false);
     }
   };
 
-  const handleRemove = async (entry: MealPlanEntry) => {
-    const snapshot = entries;
-    setEntries((previous) =>
-      previous.filter((candidate) => candidate.id !== entry.id),
-    );
-
+  const handleRepeat = async (entry: MealPlanEntry, rule: RepeatRule) => {
+    setError("");
     try {
-      await removeEntry(entry.id);
+      await createSeries(entry, rule);
+      await loadEntries();
     } catch (caught) {
-      console.error("Failed to remove plan entry:", caught);
-      setEntries(snapshot);
-      setError("Couldn't remove that meal.");
+      reportError(caught, "Couldn't make that meal repeat.");
     }
   };
 
-  const handleMove = async (
-    entry: MealPlanEntry,
-    date: string,
-    slot: SlotId,
-  ) => {
+  const removeWithScope = async (entry: MealPlanEntry, scope: SeriesScope) => {
     const snapshot = entries;
+    const series = entry.series;
+
+    // Optimistic: drop exactly the rows the database is about to.
     setEntries((previous) =>
-      previous.map((candidate) =>
-        candidate.id === entry.id ? { ...candidate, date, slot } : candidate,
-      ),
+      previous.filter((candidate) => {
+        if (candidate.id === entry.id) return false;
+        if (scope === "one" || !series || candidate.series?.id !== series.id)
+          return true;
+        return scope === "following" ? candidate.date < entry.date : false;
+      }),
     );
 
     try {
-      await moveEntry(entry.id, date, slot);
-      // Moving out of the visible week means the entry should vanish from
-      // it, which only a refetch gets right.
-      if (date < weekStart || date > addDays(weekStart, 6)) await loadEntries();
+      if (scope === "one" || !series) await removeEntry(entry.id);
+      else if (scope === "following")
+        await endSeriesBefore(series.id, entry.date);
+      else await deleteSeries(series.id);
     } catch (caught) {
-      console.error("Failed to move plan entry:", caught);
       setEntries(snapshot);
-      setError("Couldn't move that meal.");
+      reportError(caught, "Couldn't remove that meal.");
+    }
+  };
+
+  const moveWithScope = async (
+    entry: MealPlanEntry,
+    date: string,
+    slot: SlotId,
+    scope: SeriesScope,
+  ) => {
+    const snapshot = entries;
+
+    if (scope === "one" || !entry.series) {
+      setEntries((previous) =>
+        previous.map((candidate) =>
+          candidate.id === entry.id ? { ...candidate, date, slot } : candidate,
+        ),
+      );
+
+      try {
+        await moveEntry(entry.id, date, slot);
+        // Moving out of the visible range means the entry should vanish
+        // from it, which only a refetch gets right.
+        if (!isInRange(date)) await loadEntries();
+      } catch (caught) {
+        setEntries(snapshot);
+        reportError(caught, "Couldn't move that meal.");
+      }
+      return;
+    }
+
+    // Shifting a series re-creates its rows, so the ids on screen are
+    // stale the moment it succeeds: no optimistic update, just a reload.
+    try {
+      await shiftSeries(
+        entry,
+        scope === "all" ? entry.series.startDate : entry.date,
+        date,
+        slot,
+      );
+      await loadEntries();
+    } catch (caught) {
+      reportError(caught, "Couldn't move those meals.");
+    }
+  };
+
+  // A meal that repeats gets the "this / following / all" question
+  // first; the answer comes back through handleSeriesScope.
+  const handleRemove = (entry: MealPlanEntry) => {
+    if (entry.series) setPendingSeries({ action: "remove", entry });
+    else removeWithScope(entry, "one");
+  };
+
+  const handleMove = (entry: MealPlanEntry, date: string, slot: SlotId) => {
+    if (entry.series) setPendingSeries({ action: "move", entry, date, slot });
+    else moveWithScope(entry, date, slot, "one");
+  };
+
+  const handleSeriesScope = (scope: SeriesScope) => {
+    if (!pendingSeries) return;
+    setPendingSeries(null);
+
+    if (pendingSeries.action === "remove")
+      removeWithScope(pendingSeries.entry, scope);
+    else
+      moveWithScope(
+        pendingSeries.entry,
+        pendingSeries.date,
+        pendingSeries.slot,
+        scope,
+      );
+  };
+
+  const copySource = previousPeriod(activeView, cursor);
+
+  const handleCopyPrevious = async () => {
+    if (!activePlanId) return;
+
+    setIsCopying(true);
+    setError("");
+    try {
+      const copied = await copyEntries(
+        activePlanId,
+        copySource.from,
+        copySource.to,
+        copySource.dayDelta,
+      );
+      await loadEntries();
+      setIsConfirmingCopy(false);
+      showToast(
+        copied === 0 ?
+          "Nothing new to copy from " + copySource.label + "."
+        : `Copied ${copied} ${copied === 1 ? "meal" : "meals"} from ${copySource.label}.`,
+      );
+    } catch (caught) {
+      reportError(caught, "Couldn't copy those meals.");
+    } finally {
+      setIsCopying(false);
     }
   };
 
@@ -360,10 +598,23 @@ const MealPlanner = () => {
 
         {isDesktop && (
           <div className="shrink-0">
-            <WeekNav
-              weekStart={weekStart}
-              onChange={changeWeek}
-            />
+            <CalendarNav
+              view={activeView}
+              cursor={cursor}
+              onCursorChange={changeCursor}
+              onViewChange={changeView}
+            >
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmingCopy(true)}
+                  className="flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-ink-muted transition-colors hover:bg-well hover:text-ink"
+                >
+                  <Copy className="size-3.5" />
+                  Copy last {activeView}
+                </button>
+              )}
+            </CalendarNav>
           </div>
         )}
 
@@ -372,17 +623,8 @@ const MealPlanner = () => {
         <div className="min-h-0 flex-1 overflow-y-auto pb-2">
           {isDesktop === null ?
             null
-          : isDesktop ?
-            <WeekGrid
-              weekStart={weekStart}
-              entries={entries}
-              slots={activePlan.slots}
-              readOnly={!canEdit}
-              onAdd={(date, slot) => setAddTarget({ date, slot })}
-              onRemove={handleRemove}
-              onMove={handleMove}
-            />
-          : <DayAgenda
+          : !isDesktop ?
+            <DayAgenda
               date={selectedDate}
               entries={entries}
               slots={activePlan.slots}
@@ -391,6 +633,31 @@ const MealPlanner = () => {
               onAdd={(date, slot) => setAddTarget({ date, slot })}
               onRemove={handleRemove}
               onMove={handleMove}
+              onRepeat={handleRepeat}
+            />
+          : activeView === "month" ?
+            <MonthGrid
+              monthStart={cursor}
+              entries={entries}
+              slots={activePlan.slots}
+              readOnly={!canEdit}
+              onOpenDay={openDay}
+              onAdd={(date) =>
+                setAddTarget({ date, slot: activePlan.slots[0].id })
+              }
+              onRemove={handleRemove}
+              onMove={handleMove}
+              onRepeat={handleRepeat}
+            />
+          : <WeekGrid
+              weekStart={cursor}
+              entries={entries}
+              slots={activePlan.slots}
+              readOnly={!canEdit}
+              onAdd={(date, slot) => setAddTarget({ date, slot })}
+              onRemove={handleRemove}
+              onMove={handleMove}
+              onRepeat={handleRepeat}
             />
           }
         </div>
@@ -399,9 +666,39 @@ const MealPlanner = () => {
           <AddRecipeDrawer
             date={addTarget.date}
             slot={addTargetSlot}
+            slots={activePlan.slots}
             savedRecipes={savedRecipes}
+            onSlotChange={(slot) => setAddTarget({ ...addTarget, slot })}
             onSelect={isAdding ? () => {} : handleAdd}
             onClose={() => setAddTarget(null)}
+          />
+        )}
+
+        {pendingSeries && (
+          <SeriesScopeDialog
+            entry={pendingSeries.entry}
+            action={pendingSeries.action}
+            onChoose={handleSeriesScope}
+            onCancel={() => setPendingSeries(null)}
+          />
+        )}
+
+        {isConfirmingCopy && (
+          <ConfirmDialog
+            title={`Copy last ${activeView}?`}
+            body={
+              <>
+                Every meal from{" "}
+                <strong className="text-ink">{copySource.label}</strong> will be
+                added to this {activeView}
+                {activeView === "month" ? " on the same weekdays" : ""}. Meals
+                already planned here are kept.
+              </>
+            }
+            confirmLabel="Copy meals"
+            isBusy={isCopying}
+            onConfirm={handleCopyPrevious}
+            onCancel={() => setIsConfirmingCopy(false)}
           />
         )}
 

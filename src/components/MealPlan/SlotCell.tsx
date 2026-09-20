@@ -5,6 +5,7 @@ import React from "react";
 
 import { useEntryDrag } from "@components/MealPlan/DragContext";
 import PlannedRecipeChip from "@components/MealPlan/PlannedRecipeChip";
+import { RepeatRule } from "@lib/mealPlan/recurrence";
 import { MealPlanEntry, MealSlotDef, SlotId } from "@lib/mealPlan/types";
 
 interface SlotCellProps {
@@ -17,6 +18,7 @@ interface SlotCellProps {
   onAdd?: (_date: string, _slot: SlotId) => void;
   onRemove?: (_entry: MealPlanEntry) => void;
   onMove?: (_entry: MealPlanEntry, _date: string, _slot: SlotId) => void;
+  onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
 }
 
 /**
@@ -34,6 +36,7 @@ const SlotCell: React.FC<SlotCellProps> = ({
   onAdd,
   onRemove,
   onMove,
+  onRepeat,
 }) => {
   const { target } = useEntryDrag();
   const isDropTarget = target?.date === date && target?.slot === slot;
@@ -59,6 +62,7 @@ const SlotCell: React.FC<SlotCellProps> = ({
           readOnly={readOnly}
           onRemove={onRemove}
           onMove={onMove}
+          onRepeat={onRepeat}
         />
       ))}
 

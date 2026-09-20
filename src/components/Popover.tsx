@@ -73,6 +73,16 @@ const Popover: React.FC<PopoverProps> = ({
     reposition();
   }, [reposition]);
 
+  // Content that grows after opening (a form section expanding) can push
+  // the panel past the bottom edge; measure again whenever it resizes.
+  useEffect(() => {
+    if (!panel) return;
+
+    const observer = new ResizeObserver(() => reposition());
+    observer.observe(panel);
+    return () => observer.disconnect();
+  }, [panel, reposition]);
+
   useEffect(() => {
     if (!anchor) return;
 
