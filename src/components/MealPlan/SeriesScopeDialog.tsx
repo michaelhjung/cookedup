@@ -9,7 +9,8 @@ import { MealPlanEntry, SeriesScope } from "@lib/mealPlan/types";
 
 interface SeriesScopeDialogProps {
   entry: MealPlanEntry;
-  action: "move" | "remove";
+  /** Editing the rule can't apply to one meal, so it offers two scopes. */
+  action: "move" | "remove" | "edit";
   // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
   onChoose: (_scope: SeriesScope) => void;
   onCancel: () => void;
@@ -36,9 +37,14 @@ const SeriesScopeDialog: React.FC<SeriesScopeDialogProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [onCancel]);
 
-  const verb = action === "move" ? "Move" : "Remove";
+  const verb =
+    action === "move" ? "Move"
+    : action === "remove" ? "Remove"
+    : "Change";
   const options: { scope: SeriesScope; label: string }[] = [
-    { scope: "one", label: "This meal only" },
+    ...(action === "edit" ?
+      []
+    : [{ scope: "one" as const, label: "This meal only" }]),
     { scope: "following", label: "This and following meals" },
     { scope: "all", label: "All meals in the series" },
   ];

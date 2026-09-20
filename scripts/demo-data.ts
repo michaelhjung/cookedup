@@ -286,16 +286,19 @@ export interface DemoMeal {
   recipe: DemoRecipeKey;
 }
 
-/** This week's plan. Weekday breakfasts come from a repeat rule instead. */
+/**
+ * This week's plan; `day` counts from Sunday, like the calendar's
+ * columns. Weekday breakfasts come from a repeat rule instead.
+ */
 export const DEMO_WEEK: DemoMeal[] = [
   { day: 0, slot: "dinner", recipe: "tomatoBasilPasta" },
-  { day: 1, slot: "lunch", recipe: "greekSalad" },
-  { day: 1, slot: "dinner", recipe: "veggieStirFry" },
-  { day: 2, slot: "dinner", recipe: "blackBeanTacos" },
-  { day: 3, slot: "lunch", recipe: "blackBeanTacos" },
-  { day: 3, slot: "dinner", recipe: "misoSalmon" },
-  { day: 4, slot: "dinner", recipe: "lemonGarlicChicken" },
-  { day: 5, slot: "breakfast", recipe: "shakshuka" },
-  { day: 5, slot: "lunch", recipe: "greekSalad" },
-  { day: 6, slot: "dinner", recipe: "tomatoBasilPasta" },
+  { day: 1, slot: "dinner", recipe: "tomatoBasilPasta" },
+  { day: 2, slot: "lunch", recipe: "greekSalad" },
+  { day: 2, slot: "dinner", recipe: "veggieStirFry" },
+  { day: 3, slot: "dinner", recipe: "blackBeanTacos" },
+  { day: 4, slot: "lunch", recipe: "blackBeanTacos" },
+  { day: 4, slot: "dinner", recipe: "misoSalmon" },
+  { day: 5, slot: "dinner", recipe: "lemonGarlicChicken" },
+  { day: 6, slot: "breakfast", recipe: "shakshuka" },
+  { day: 6, slot: "lunch", recipe: "greekSalad" },
 ];

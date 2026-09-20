@@ -29,15 +29,13 @@ export const addDays = (iso: string, days: number): string => {
 };
 
 /**
- * The Monday on or before `iso`. Weeks start Monday because a meal
- * planner is used to plan a working week, not a Sunday-first calendar
- * month.
+ * The Sunday on or before `iso`. Weeks start Sunday, matching the wall
+ * calendars and phone calendars most people plan against.
  */
 export const startOfWeek = (iso: string): string => {
   const date = parseISODate(iso);
-  // getDay(): 0 = Sunday. Sunday belongs to the week that began 6 days ago.
-  const offset = (date.getDay() + 6) % 7;
-  return addDays(iso, -offset);
+  // getDay(): 0 = Sunday, so it is also the offset back to the week start.
+  return addDays(iso, -date.getDay());
 };
 
 export const weekDates = (weekStartISO: string): string[] =>
@@ -89,8 +87,8 @@ export const addMonths = (iso: string, months: number): string => {
 const endOfMonth = (iso: string): string => addDays(addMonths(iso, 1), -1);
 
 /**
- * Every date a month view shows: the Monday on or before the 1st through
- * the Sunday on or after the last day, so rows are always whole weeks.
+ * Every date a month view shows: the Sunday on or before the 1st through
+ * the Saturday on or after the last day, so rows are always whole weeks.
  * Four to six rows depending on the month, rather than a fixed six with
  * a trailing row of next month's days.
  */

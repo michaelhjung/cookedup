@@ -59,20 +59,20 @@ describe("addDays", () => {
 });
 
 describe("startOfWeek", () => {
-  it("returns the Monday on or before the given date", () => {
-    // 2026-03-02 is a Monday; 2026-03-08 is the Sunday that ends its week.
-    expect(startOfWeek("2026-03-02")).toBe("2026-03-02");
-    expect(startOfWeek("2026-03-05")).toBe("2026-03-02");
-    expect(startOfWeek("2026-03-08")).toBe("2026-03-02");
+  it("returns the Sunday on or before the given date", () => {
+    // 2026-03-01 is a Sunday; 2026-03-07 is the Saturday that ends its week.
+    expect(startOfWeek("2026-03-01")).toBe("2026-03-01");
+    expect(startOfWeek("2026-03-05")).toBe("2026-03-01");
+    expect(startOfWeek("2026-03-07")).toBe("2026-03-01");
   });
 
-  it("treats Sunday as the end of the previous week, not the start of a new one", () => {
-    expect(startOfWeek("2026-03-08")).not.toBe("2026-03-08");
+  it("treats Saturday as the end of the week, not Sunday", () => {
+    expect(startOfWeek("2026-03-08")).toBe("2026-03-08");
   });
 
   it("is idempotent", () => {
-    const monday = startOfWeek("2026-06-17");
-    expect(startOfWeek(monday)).toBe(monday);
+    const sunday = startOfWeek("2026-06-17");
+    expect(startOfWeek(sunday)).toBe(sunday);
   });
 });
 
@@ -115,17 +115,17 @@ describe("month helpers", () => {
     expect(addMonths("2026-12-01", 2)).toBe("2027-02-01");
   });
 
-  it("builds a Monday-first grid that covers the whole month in full weeks", () => {
+  it("builds a Sunday-first grid that covers the whole month in full weeks", () => {
     // September 2026 starts on a Tuesday and ends on a Wednesday.
     const dates = monthGridDates("2026-09-01");
-    expect(dates[0]).toBe("2026-08-31");
-    expect(dates[dates.length - 1]).toBe("2026-10-04");
+    expect(dates[0]).toBe("2026-08-30");
+    expect(dates[dates.length - 1]).toBe("2026-10-03");
     expect(dates.length).toBe(35);
   });
 
   it("uses four rows when the month fits exactly", () => {
-    // February 2027 starts on a Monday and has 28 days.
-    expect(monthGridDates("2027-02-01").length).toBe(28);
+    // February 2026 starts on a Sunday and has 28 days.
+    expect(monthGridDates("2026-02-01").length).toBe(28);
   });
 
   it("uses six rows when the month spills that far", () => {

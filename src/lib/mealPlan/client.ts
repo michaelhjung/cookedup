@@ -9,8 +9,11 @@
 import { Hit } from "@interfaces/edamam";
 import { daysBetween } from "@lib/mealPlan/dates";
 import {
+  MonthlyRule,
   RepeatRule,
   RepeatSeries,
+  WEEK_ORDINALS,
+  WeekOrdinal,
   expandRepeatRule,
 } from "@lib/mealPlan/recurrence";
 import {
@@ -160,12 +163,27 @@ export const deleteEntriesInSlots = async (
 
 interface SeriesRow {
   id: string;
-  frequency: "daily" | "weekly";
+  frequency: "daily" | "weekly" | "monthly";
   interval_weeks: number;
   weekdays: number[];
+  month_day: number | null;
+  week_ordinal: number | null;
   start_date: string;
   end_date: string;
 }
+
+const SERIES_COLUMNS =
+  "id, frequency, interval_weeks, weekdays, month_day, week_ordinal, start_date, end_date";
+
+const toMonthlyRule = (row: SeriesRow): MonthlyRule | null => {
+  if (row.frequency !== "monthly") return null;
+  if (row.month_day !== null) return { by: "day", day: row.month_day };
+
+  const ordinal = row.week_ordinal as WeekOrdinal | null;
+  if (ordinal === null || !WEEK_ORDINALS.includes(ordinal)) return null;
+
+  return { by: "weekday", ordinal, weekday: row.weekdays?.[0] ?? 0 };
+};
 
 interface EntryRow {
   id: string;
@@ -181,7 +199,8 @@ const toSeries = (row: SeriesRow | null): RepeatSeries | null =>
     id: row.id,
     frequency: row.frequency,
     intervalWeeks: row.interval_weeks === 2 ? 2 : 1,
-    weekdays: row.weekdays ?? [],
+    weekdays: row.frequency === "weekly" ? (row.weekdays ?? []) : [],
+    monthly: toMonthlyRule(row),
     startDate: row.start_date,
     endDate: row.end_date,
   };
@@ -194,7 +213,7 @@ export const fetchEntries = async (
   const { data, error } = await supabase
     .from("meal_plan_entries")
     .select(
-      "id, date, slot, position, recipes:recipe_id (data), series:series_id (id, frequency, interval_weeks, weekdays, start_date, end_date)",
+      `id, date, slot, position, recipes:recipe_id (data), series:series_id (${SERIES_COLUMNS})`,
     )
     .eq("plan_id", planId)
     .gte("date", startDate)
@@ -244,6 +263,28 @@ export const addEntry = async (
 };
 
 /**
+ * The rule as the series functions want it: only the fields the
+ * frequency uses are sent, so a monthly rule never carries a stale
+ * weekday list from before the cadence was changed.
+ */
+const toRuleParams = (rule: RepeatRule, anchorDate: string) => {
+  const monthly = rule.frequency === "monthly" ? rule.monthly : null;
+
+  return {
+    p_frequency: rule.frequency,
+    p_interval_weeks: rule.frequency === "weekly" ? rule.intervalWeeks : 1,
+    p_weekdays:
+      rule.frequency === "weekly" ? rule.weekdays
+      : monthly?.by === "weekday" ? [monthly.weekday]
+      : [],
+    p_month_day: monthly?.by === "day" ? monthly.day : null,
+    p_week_ordinal: monthly?.by === "weekday" ? monthly.ordinal : null,
+    p_end_date: rule.endDate,
+    p_dates: expandRepeatRule(rule, anchorDate),
+  };
+};
+
+/**
  * Makes an existing entry the first occurrence of a repeat rule. The
  * rule is expanded here and the dates handed to one database function,
  * so the series and all its meals are created together or not at all.
@@ -254,11 +295,27 @@ export const createSeries = async (
 ): Promise<void> => {
   const { error } = await supabase.rpc("create_entry_series", {
     p_entry_id: entry.id,
-    p_frequency: rule.frequency,
-    p_interval_weeks: rule.intervalWeeks,
-    p_weekdays: rule.frequency === "weekly" ? rule.weekdays : [],
-    p_end_date: rule.endDate,
-    p_dates: expandRepeatRule(rule, entry.date),
+    ...toRuleParams(rule, entry.date),
+  });
+
+  if (error) throw new Error(error.message);
+};
+
+/**
+ * Replaces the series' rule from `fromDate` onward. Pass the series
+ * start to rewrite all of it; anything later splits the series so the
+ * earlier meals keep the old rule. The new occurrences are expanded
+ * from `fromDate`.
+ */
+export const updateSeries = async (
+  seriesId: string,
+  fromDate: string,
+  rule: RepeatRule,
+): Promise<void> => {
+  const { error } = await supabase.rpc("update_series_rule", {
+    p_series_id: seriesId,
+    p_from_date: fromDate,
+    ...toRuleParams(rule, fromDate),
   });
 
   if (error) throw new Error(error.message);

@@ -9,8 +9,11 @@ import RepeatRuleEditor from "@components/MealPlan/RepeatRuleEditor";
 import Popover from "@components/Popover";
 import {
   RepeatRule,
+  RepeatSeries,
   defaultRepeatRule,
   describeRepeatRule,
+  expandRepeatRule,
+  isSameRepeatRule,
   validateRepeatRule,
 } from "@lib/mealPlan/recurrence";
 import {
@@ -35,8 +38,21 @@ interface PlannedRecipeChipProps {
   // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
   onRemove?: (_entry: MealPlanEntry) => void;
   onMove?: (_entry: MealPlanEntry, _date: string, _slot: SlotId) => void;
+  /**
+   * Apply a repeat rule to this meal: start a series when it doesn't
+   * repeat yet, or change the series' rule when it does.
+   */
   onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
 }
+
+/** The editable part of a series, without its id and anchor date. */
+const ruleOfSeries = (series: RepeatSeries): RepeatRule => ({
+  frequency: series.frequency,
+  intervalWeeks: series.intervalWeeks,
+  weekdays: series.weekdays,
+  monthly: series.monthly,
+  endDate: series.endDate,
+});
 
 const thumbnailUrl = (entry: MealPlanEntry): string | undefined =>
   entry.recipe.recipe.images?.THUMBNAIL?.url ||
@@ -74,13 +90,23 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
     setMoveDate(entry.date);
     setMoveSlot(entry.slot);
     setRepeatRule(null);
-  }, [entry.date, entry.slot]);
+  }, [entry.date, entry.slot, entry.series?.id]);
 
   const image = thumbnailUrl(entry);
   const hasMoved = moveDate !== entry.date || moveSlot !== entry.slot;
   const isRepeating = Boolean(entry.series);
-  const canApplyRepeat =
+  const isRepeatValid =
     repeatRule !== null && validateRepeatRule(repeatRule, entry.date) === null;
+  // Editing an existing rule: no point in re-saving an unchanged one,
+  // and a rule that puts nothing on the calendar would wipe the series.
+  const isRepeatChanged =
+    repeatRule !== null &&
+    (!entry.series || !isSameRepeatRule(repeatRule, entry.series));
+  const isRepeatEmpty =
+    repeatRule !== null &&
+    isRepeating &&
+    expandRepeatRule(repeatRule, entry.date).length === 0;
+  const canApplyRepeat = isRepeatValid && isRepeatChanged && !isRepeatEmpty;
   const isDragging = draggingEntryId === entry.id;
 
   const handlePointerDown = (event: React.PointerEvent) => {
@@ -241,7 +267,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                 </div>
               </div>
 
-              {!isRepeating && onRepeat && (
+              {onRepeat && (
                 <div className="mt-3 border-t border-line pt-3">
                   {
                     repeatRule ?
@@ -254,7 +280,14 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                           rule={repeatRule}
                           onChange={setRepeatRule}
                           dense
+                          canClear={!isRepeating}
                         />
+                        {isRepeatValid && isRepeatEmpty && (
+                          <p className="mt-1.5 text-[11px] text-danger">
+                            That rule wouldn&rsquo;t put any meals on the
+                            calendar.
+                          </p>
+                        )}
                         <button
                           type="button"
                           disabled={!canApplyRepeat}
@@ -271,7 +304,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                           }
                         `}
                         >
-                          Repeat this meal
+                          {isRepeating ? "Update repeat" : "Repeat this meal"}
                         </button>
                       </>
                       // Collapsed until asked for, so the popover stays short
@@ -279,12 +312,16 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                     : <button
                         type="button"
                         onClick={() =>
-                          setRepeatRule(defaultRepeatRule(entry.date))
+                          setRepeatRule(
+                            entry.series ?
+                              ruleOfSeries(entry.series)
+                            : defaultRepeatRule(entry.date),
+                          )
                         }
                         className="flex w-full items-center gap-1.5 text-xs text-ink-muted hover:text-ink"
                       >
                         <Repeat className="size-3.5" />
-                        Repeat this meal...
+                        {isRepeating ? "Edit repeat..." : "Repeat this meal..."}
                       </button>
 
                   }

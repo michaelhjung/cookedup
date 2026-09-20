@@ -211,11 +211,12 @@ export const seedDemo = async ({
       .single<{ id: string }>(),
   );
 
-  const monday = startOfWeek(today);
+  const sunday = startOfWeek(today);
+  const monday = addDays(sunday, 1);
   const entries = DEMO_WEEK.map((meal) => ({
     plan_id: plan.id,
     recipe_id: recipeIds[meal.recipe],
-    date: addDays(monday, meal.day),
+    date: addDays(sunday, meal.day),
     slot: meal.slot,
     position: 0,
   }));
@@ -247,11 +248,13 @@ export const seedDemo = async ({
     p_frequency: "weekly",
     p_interval_weeks: 1,
     p_weekdays: [1, 2, 3, 4, 5],
+    p_month_day: null,
+    p_week_ordinal: null,
     p_end_date: repeatEnd,
     p_dates: weekdayDates(monday, DEMO.repeatWeeks),
   });
   fail("create_entry_series", seriesError);
-  say(`planned the week of ${monday}`);
+  say(`planned the week of ${sunday}`);
 
   // A second, quieter plan so the plan switcher has something to switch.
   const prepPlan = unwrap(

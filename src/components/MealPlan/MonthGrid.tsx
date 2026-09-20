@@ -24,7 +24,7 @@ interface MonthGridProps {
   onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
 }
 
-const WEEKDAY_HEADERS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /** Meals past this many are folded into a "+N more" line. */
 const VISIBLE_PER_DAY = 4;

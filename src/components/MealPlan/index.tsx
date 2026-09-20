@@ -32,6 +32,7 @@ import {
   moveEntry,
   removeEntry,
   shiftSeries,
+  updateSeries,
 } from "@lib/mealPlan/client";
 import {
   addDays,
@@ -43,7 +44,7 @@ import {
   startOfWeek,
   todayISO,
 } from "@lib/mealPlan/dates";
-import { RepeatRule } from "@lib/mealPlan/recurrence";
+import { RepeatRule, validateRepeatRule } from "@lib/mealPlan/recurrence";
 import {
   MealPlan,
   MealPlanEntry,
@@ -104,10 +105,11 @@ const previousPeriod = (view: CalendarView, cursor: string) => {
   };
 };
 
-/** A move or removal waiting on a "this / following / all" answer. */
+/** A move, removal, or rule change waiting on a "this / following / all" answer. */
 type PendingSeriesAction =
   | { action: "move"; entry: MealPlanEntry; date: string; slot: SlotId }
-  | { action: "remove"; entry: MealPlanEntry };
+  | { action: "remove"; entry: MealPlanEntry }
+  | { action: "edit"; entry: MealPlanEntry; rule: RepeatRule };
 
 /**
  * Below `lg` the seven-column grid is unusable, so the planner swaps to a
@@ -142,7 +144,7 @@ const MealPlanner = () => {
 
   const [selectedDate, setSelectedDate] = useState(todayISO());
   const [view, setView] = useState<CalendarView>("week");
-  /** Monday of the visible week, or the 1st of the visible month. */
+  /** Sunday of the visible week, or the 1st of the visible month. */
   const [cursor, setCursor] = useState(startOfWeek(todayISO()));
 
   const [isLoading, setIsLoading] = useState(true);
@@ -368,7 +370,7 @@ const MealPlanner = () => {
     }
   };
 
-  const handleRepeat = async (entry: MealPlanEntry, rule: RepeatRule) => {
+  const startSeries = async (entry: MealPlanEntry, rule: RepeatRule) => {
     setError("");
     try {
       await createSeries(entry, rule);
@@ -376,6 +378,41 @@ const MealPlanner = () => {
     } catch (caught) {
       reportError(caught, "Couldn't make that meal repeat.");
     }
+  };
+
+  const editWithScope = async (
+    entry: MealPlanEntry,
+    rule: RepeatRule,
+    scope: SeriesScope,
+  ) => {
+    if (!entry.series) return;
+
+    // "All" re-expands from the series' own first date, which may be
+    // earlier than the meal that was clicked, so the year cap is
+    // re-checked against that anchor.
+    const fromDate = scope === "all" ? entry.series.startDate : entry.date;
+    const problem = validateRepeatRule(rule, fromDate);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+
+    setError("");
+    // Like a move, this rebuilds the series' rows, so a reload is the
+    // only way to get fresh ids.
+    try {
+      await updateSeries(entry.series.id, fromDate, rule);
+      await loadEntries();
+    } catch (caught) {
+      reportError(caught, "Couldn't change how that meal repeats.");
+    }
+  };
+
+  // A meal that already repeats gets the "following / all" question
+  // first; one that doesn't simply becomes a series.
+  const handleRepeat = (entry: MealPlanEntry, rule: RepeatRule) => {
+    if (entry.series) setPendingSeries({ action: "edit", entry, rule });
+    else startSeries(entry, rule);
   };
 
   const removeWithScope = async (entry: MealPlanEntry, scope: SeriesScope) => {
@@ -463,6 +500,8 @@ const MealPlanner = () => {
 
     if (pendingSeries.action === "remove")
       removeWithScope(pendingSeries.entry, scope);
+    else if (pendingSeries.action === "edit")
+      editWithScope(pendingSeries.entry, pendingSeries.rule, scope);
     else
       moveWithScope(
         pendingSeries.entry,

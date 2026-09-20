@@ -18,7 +18,7 @@ export type CalendarView = "week" | "month";
 
 interface CalendarNavProps {
   view: CalendarView;
-  /** The Monday of the visible week, or the 1st of the visible month. */
+  /** The Sunday of the visible week, or the 1st of the visible month. */
   cursor: string;
   // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
   onCursorChange: (_cursor: string) => void;

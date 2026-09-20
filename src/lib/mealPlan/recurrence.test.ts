@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_REPEAT_DAYS,
   RepeatRule,
+  dayOfMonthRule,
   describeRepeatRule,
   expandRepeatRule,
+  isSameRepeatRule,
   validateRepeatRule,
+  weekdayOfMonthRule,
 } from "@lib/mealPlan/recurrence";
 
 // 2026-10-01 is a Thursday.
@@ -15,6 +18,7 @@ const rule = (overrides: Partial<RepeatRule>): RepeatRule => ({
   frequency: "weekly",
   intervalWeeks: 1,
   weekdays: [4],
+  monthly: null,
   endDate: "2026-10-31",
   ...overrides,
 });
@@ -60,6 +64,58 @@ describe("expandRepeatRule", () => {
     ]);
   });
 
+  it("counts fortnights from a Sunday-first week", () => {
+    // 2026-10-04 is a Sunday. Monday-first weeks would put it in the
+    // week before the 5th and skip that Monday.
+    expect(
+      expandRepeatRule(
+        rule({ intervalWeeks: 2, weekdays: [0, 1], endDate: "2026-10-24" }),
+        "2026-10-04",
+      ),
+    ).toEqual(["2026-10-04", "2026-10-05", "2026-10-18", "2026-10-19"]);
+  });
+
+  it("repeats on the same day of each month, skipping months that lack it", () => {
+    expect(
+      expandRepeatRule(
+        rule({
+          frequency: "monthly",
+          monthly: { by: "day", day: 31 },
+          endDate: "2027-01-31",
+        }),
+        "2026-10-31",
+      ),
+    ).toEqual(["2026-10-31", "2026-12-31", "2027-01-31"]);
+  });
+
+  it("repeats on the nth weekday of each month", () => {
+    // Second Tuesdays: Oct 13, Nov 10, Dec 8.
+    expect(
+      expandRepeatRule(
+        rule({
+          frequency: "monthly",
+          monthly: { by: "weekday", ordinal: 2, weekday: 2 },
+          endDate: "2026-12-31",
+        }),
+        START,
+      ),
+    ).toEqual(["2026-10-13", "2026-11-10", "2026-12-08"]);
+  });
+
+  it("repeats on the last weekday of each month across a year boundary", () => {
+    // Last Fridays: Nov 27, Dec 25, Jan 29.
+    expect(
+      expandRepeatRule(
+        rule({
+          frequency: "monthly",
+          monthly: { by: "weekday", ordinal: -1, weekday: 5 },
+          endDate: "2027-01-31",
+        }),
+        "2026-11-01",
+      ),
+    ).toEqual(["2026-11-27", "2026-12-25", "2027-01-29"]);
+  });
+
   it("returns nothing when the end is before the start", () => {
     expect(expandRepeatRule(rule({ endDate: "2026-09-30" }), START)).toEqual(
       [],
@@ -101,6 +157,84 @@ describe("validateRepeatRule", () => {
   it("rejects a weekly rule with no weekdays", () => {
     expect(validateRepeatRule(rule({ weekdays: [] }), START)).toMatch(/day/i);
   });
+
+  it("rejects a monthly rule with no day chosen", () => {
+    expect(
+      validateRepeatRule(rule({ frequency: "monthly", monthly: null }), START),
+    ).toMatch(/month/i);
+  });
+
+  it("accepts monthly rules of both kinds", () => {
+    expect(
+      validateRepeatRule(
+        rule({ frequency: "monthly", monthly: { by: "day", day: 14 } }),
+        START,
+      ),
+    ).toBeNull();
+    expect(
+      validateRepeatRule(
+        rule({
+          frequency: "monthly",
+          monthly: { by: "weekday", ordinal: -1, weekday: 0 },
+        }),
+        START,
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("monthly rule defaults", () => {
+  it("takes the day of the month from the start date", () => {
+    expect(dayOfMonthRule("2026-10-14")).toEqual({ by: "day", day: 14 });
+  });
+
+  it("takes the ordinal and weekday from the start date", () => {
+    // 2026-10-13 is the second Tuesday of October.
+    expect(weekdayOfMonthRule("2026-10-13")).toEqual({
+      by: "weekday",
+      ordinal: 2,
+      weekday: 2,
+    });
+  });
+
+  it("calls a fifth occurrence 'last', since not every month has one", () => {
+    // 2026-10-29 is the fifth Thursday of October.
+    expect(weekdayOfMonthRule("2026-10-29")).toEqual({
+      by: "weekday",
+      ordinal: -1,
+      weekday: 4,
+    });
+  });
+});
+
+describe("isSameRepeatRule", () => {
+  it("ignores weekday order and fields the frequency doesn't use", () => {
+    expect(
+      isSameRepeatRule(
+        rule({ weekdays: [1, 5], monthly: { by: "day", day: 1 } }),
+        rule({ weekdays: [5, 1], monthly: null }),
+      ),
+    ).toBe(true);
+    expect(
+      isSameRepeatRule(
+        rule({ frequency: "daily", weekdays: [1] }),
+        rule({ frequency: "daily", weekdays: [2], intervalWeeks: 2 }),
+      ),
+    ).toBe(true);
+  });
+
+  it("notices a real change", () => {
+    expect(isSameRepeatRule(rule({}), rule({ intervalWeeks: 2 }))).toBe(false);
+    expect(isSameRepeatRule(rule({}), rule({ endDate: "2026-11-30" }))).toBe(
+      false,
+    );
+    expect(
+      isSameRepeatRule(
+        rule({ frequency: "monthly", monthly: { by: "day", day: 1 } }),
+        rule({ frequency: "monthly", monthly: { by: "day", day: 2 } }),
+      ),
+    ).toBe(false);
+  });
 });
 
 describe("describeRepeatRule", () => {
@@ -120,5 +254,29 @@ describe("describeRepeatRule", () => {
     expect(describeRepeatRule(rule({ intervalWeeks: 2, weekdays: [0] }))).toBe(
       "Every 2 weeks on Sun until Oct 31, 2026",
     );
+  });
+
+  it("describes monthly rules", () => {
+    expect(
+      describeRepeatRule(
+        rule({ frequency: "monthly", monthly: { by: "day", day: 22 } }),
+      ),
+    ).toBe("Every month on the 22nd until Oct 31, 2026");
+    expect(
+      describeRepeatRule(
+        rule({
+          frequency: "monthly",
+          monthly: { by: "weekday", ordinal: 3, weekday: 3 },
+        }),
+      ),
+    ).toBe("Every month on the 3rd Wednesday until Oct 31, 2026");
+    expect(
+      describeRepeatRule(
+        rule({
+          frequency: "monthly",
+          monthly: { by: "weekday", ordinal: -1, weekday: 6 },
+        }),
+      ),
+    ).toBe("Every month on the last Saturday until Oct 31, 2026");
   });
 });
