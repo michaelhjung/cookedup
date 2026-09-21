@@ -190,9 +190,19 @@ interface EntryRow {
   date: string;
   slot: string;
   position: number;
+  title: string | null;
   recipes: { data: Hit } | null;
   series: SeriesRow | null;
 }
+
+/**
+ * A row is renderable when it has a slot and something to call itself:
+ * a recipe whose JSON is intact, or a custom title. Anything else is a
+ * stale or hand-edited row and is left out rather than shown blank.
+ */
+const isRenderableRow = (row: EntryRow): boolean =>
+  Boolean(row.slot) &&
+  (Boolean(row.recipes?.data?.recipe) || Boolean(row.title));
 
 const toSeries = (row: SeriesRow | null): RepeatSeries | null =>
   row && {
@@ -213,7 +223,7 @@ export const fetchEntries = async (
   const { data, error } = await supabase
     .from("meal_plan_entries")
     .select(
-      `id, date, slot, position, recipes:recipe_id (data), series:series_id (${SERIES_COLUMNS})`,
+      `id, date, slot, position, title, recipes:recipe_id (data), series:series_id (${SERIES_COLUMNS})`,
     )
     .eq("plan_id", planId)
     .gte("date", startDate)
@@ -224,15 +234,68 @@ export const fetchEntries = async (
   if (error) throw new Error(error.message);
 
   return ((data ?? []) as unknown as EntryRow[])
-    .filter((row) => Boolean(row.slot) && row.recipes?.data?.recipe)
+    .filter(isRenderableRow)
     .map((row) => ({
       id: row.id,
       date: row.date,
       slot: row.slot,
       position: row.position,
-      recipe: (row.recipes as { data: Hit }).data,
+      recipe: row.recipes?.data ?? null,
+      title: row.recipes ? null : row.title,
       series: toSeries(row.series),
     }));
+};
+
+/**
+ * How many meals already sit in a cell, so a new one appends after them.
+ * A gap left by a removal is harmless.
+ */
+const countEntriesInCell = async (
+  planId: string,
+  date: string,
+  slot: SlotId,
+): Promise<number> => {
+  const { count, error } = await supabase
+    .from("meal_plan_entries")
+    .select("id", { count: "exact", head: true })
+    .eq("plan_id", planId)
+    .eq("date", date)
+    .eq("slot", slot);
+
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+};
+
+/**
+ * Plans a free-text meal ("Leftovers") with no recipe behind it. Unlike
+ * `addEntry` there's no image to persist, so this writes straight
+ * through RLS. Resolves to the new entry's id.
+ */
+export const addCustomEntry = async (
+  planId: string,
+  title: string,
+  date: string,
+  slot: SlotId,
+): Promise<string> => {
+  const trimmed = title.trim();
+  if (!trimmed) throw new Error("Give the meal a name.");
+
+  const position = await countEntriesInCell(planId, date, slot);
+
+  const { data, error } = await supabase
+    .from("meal_plan_entries")
+    .insert({ plan_id: planId, title: trimmed, date, slot, position })
+    .select("id")
+    .single();
+
+  if (error) {
+    // The custom-title unique index: this meal is already in this cell.
+    if (error.code === "23505")
+      throw new Error("That meal is already planned here.");
+    throw new Error(error.message);
+  }
+
+  return data.id as string;
 };
 
 /** Resolves to the new entry's id, which `createSeries` needs. */

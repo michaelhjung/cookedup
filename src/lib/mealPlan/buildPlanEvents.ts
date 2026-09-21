@@ -9,7 +9,12 @@
 // second one, and adding it should require no changes to the planner,
 // the API routes, or this function.
 
-import { MealPlan, MealPlanEntry, findSlot } from "@lib/mealPlan/types";
+import {
+  MealPlan,
+  MealPlanEntry,
+  findSlot,
+  getEntryLabel,
+} from "@lib/mealPlan/types";
 
 export interface PlanEvent {
   /** Stable across regenerations so edits update rather than duplicate. */
@@ -34,10 +39,14 @@ export interface PlanEvent {
  */
 const EVENT_DURATION_MINUTES = 60;
 
-const describeRecipe = (
+const describeEntry = (
   entry: MealPlanEntry,
   planUrl: string | undefined,
 ): string => {
+  // A custom meal has nothing to say beyond its title, which is already
+  // the event's summary.
+  if (!entry.recipe) return planUrl ? `Meal plan: ${planUrl}` : "";
+
   const { recipe } = entry.recipe;
   const lines: string[] = [];
 
@@ -84,9 +93,9 @@ export const buildPlanEvents = (
     return [
       {
         uid: `${entry.id}@cookedup.app`,
-        title: `${slot.label}: ${entry.recipe.recipe.label}`,
-        description: describeRecipe(entry, planUrl),
-        url: entry.recipe.recipe.url,
+        title: `${slot.label}: ${getEntryLabel(entry)}`,
+        description: describeEntry(entry, planUrl),
+        ...(entry.recipe && { url: entry.recipe.recipe.url }),
         date: entry.date,
         startTime: slot.time,
         durationMinutes: EVENT_DURATION_MINUTES,

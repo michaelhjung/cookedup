@@ -7,7 +7,12 @@ import { useEntryDrag } from "@components/MealPlan/DragContext";
 import PlannedRecipeChip from "@components/MealPlan/PlannedRecipeChip";
 import { dayOfMonth, monthGridDates, todayISO } from "@lib/mealPlan/dates";
 import { RepeatRule } from "@lib/mealPlan/recurrence";
-import { MealPlanEntry, MealSlotDef, SlotId } from "@lib/mealPlan/types";
+import {
+  MealPlanEntry,
+  MealSlotDef,
+  SlotId,
+  getEntryLabel,
+} from "@lib/mealPlan/types";
 
 interface MonthGridProps {
   /** The 1st of the month to show. */
@@ -167,7 +172,7 @@ const MonthGrid: React.FC<MonthGridProps> = ({
       (a, b) =>
         rankOf(a) - rankOf(b) ||
         a.position - b.position ||
-        a.recipe.recipe.label.localeCompare(b.recipe.recipe.label),
+        getEntryLabel(a).localeCompare(getEntryLabel(b)),
     );
 
   return (

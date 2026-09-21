@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Star, X } from "lucide-react";
+import { PencilLine, Search, Star, X } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
@@ -21,10 +21,22 @@ interface AddRecipeDrawerProps {
   onSlotChange: (_slot: SlotId) => void;
   /** `rule` is null when the meal shouldn't repeat. */
   onSelect: (_hit: Hit, _rule: RepeatRule | null) => void;
+  /** A free-text meal with no recipe behind it, e.g. "Leftovers". */
+  onAddCustom: (_title: string, _rule: RepeatRule | null) => void;
   onClose: () => void;
 }
 
-type Tab = "saved" | "search";
+type Tab = "saved" | "search" | "custom";
+
+const TABS: Tab[] = ["saved", "search", "custom"];
+
+/**
+ * One-tap custom meals. These are the things people actually plan that
+ * no recipe search will ever return.
+ */
+const CUSTOM_SUGGESTIONS = ["Leftovers", "Eating out", "Takeout", "Meal prep"];
+
+const CUSTOM_TITLE_MAX_LENGTH = 80;
 
 const RecipeRow: React.FC<{ hit: Hit; onSelect: () => void }> = ({
   hit,
@@ -71,9 +83,10 @@ const RecipeRow: React.FC<{ hit: Hit; onSelect: () => void }> = ({
 };
 
 /**
- * The picker behind every "+" in the planner. Two ways in, because the
- * two are genuinely different jobs: "put that thing I already liked on
- * Tuesday" is a lookup, and "find me something for Tuesday" is a search.
+ * The picker behind every "+" in the planner. Three ways in, because
+ * they're genuinely different jobs: "put that thing I already liked on
+ * Tuesday" is a lookup, "find me something for Tuesday" is a search, and
+ * "Tuesday is leftovers" isn't a recipe at all.
  */
 const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
   date,
@@ -82,6 +95,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
   savedRecipes,
   onSlotChange,
   onSelect,
+  onAddCustom,
   onClose,
 }) => {
   const [tab, setTab] = useState<Tab>(
@@ -92,6 +106,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
   const [results, setResults] = useState<Hit[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
+  const [customTitle, setCustomTitle] = useState("");
   const [repeatRule, setRepeatRule] = useState<RepeatRule | null>(null);
 
   // A recipe can't be added under a rule that won't expand; the list
@@ -101,6 +116,15 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
   const choose = (hit: Hit) => {
     if (!isRuleValid) return;
     onSelect(hit, repeatRule);
+  };
+  const chooseCustom = (title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed || !isRuleValid) return;
+    onAddCustom(trimmed, repeatRule);
+  };
+  const submitCustom = (event: React.FormEvent) => {
+    event.preventDefault();
+    chooseCustom(customTitle);
   };
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -211,7 +235,7 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
         </div>
 
         <div className="flex shrink-0 gap-1 border-b border-line px-4 pt-3">
-          {(["saved", "search"] as Tab[]).map((candidate) => (
+          {TABS.map((candidate) => (
             <button
               key={candidate}
               type="button"
@@ -230,8 +254,12 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
                 <>
                   <Star className="size-3.5" /> Saved ({savedRecipes.length})
                 </>
-              : <>
+              : candidate === "search" ?
+                <>
                   <Search className="size-3.5" /> Search
+                </>
+              : <>
+                  <PencilLine className="size-3.5" /> Custom
                 </>
               }
             </button>
@@ -239,7 +267,62 @@ const AddRecipeDrawer: React.FC<AddRecipeDrawerProps> = ({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          {tab === "saved" ?
+          {tab === "custom" ?
+            <>
+              <form
+                onSubmit={submitCustom}
+                className="mb-3 flex gap-2"
+              >
+                <input
+                  type="text"
+                  value={customTitle}
+                  onChange={(event) => setCustomTitle(event.target.value)}
+                  maxLength={CUSTOM_TITLE_MAX_LENGTH}
+                  placeholder="Leftovers, dinner at Mom's, fasting..."
+                  aria-label="Custom meal"
+                  autoFocus
+                  className="h-9 flex-1 rounded-md border border-line bg-transparent px-3 text-xs outline-none focus:border-ink"
+                />
+                <button
+                  type="submit"
+                  disabled={!customTitle.trim() || !isRuleValid}
+                  className={`
+                    rounded-md px-4 text-xs font-semibold
+                    ${
+                      !customTitle.trim() || !isRuleValid ?
+                        "cursor-not-allowed bg-well text-ink-muted"
+                      : "cursor-pointer bg-accent hover:bg-accent-hover text-on-accent"
+                    }
+                  `}
+                >
+                  Add
+                </button>
+              </form>
+
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+                Quick add
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {CUSTOM_SUGGESTIONS.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => chooseCustom(suggestion)}
+                    disabled={!isRuleValid}
+                    className="rounded-md border border-line px-3 py-1 text-xs transition-colors hover:border-line-strong hover:bg-well disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+
+              <p className="mt-4 text-[11px] leading-snug text-ink-muted">
+                A custom meal is just a name on the calendar — no recipe,
+                ingredients, or link. It can be moved, repeated, and copied like
+                any other meal.
+              </p>
+            </>
+          : tab === "saved" ?
             <>
               {savedRecipes.length > 0 && (
                 <input

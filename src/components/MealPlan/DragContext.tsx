@@ -11,7 +11,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 
-import { MealPlanEntry, SlotId } from "@lib/mealPlan/types";
+import { MealPlanEntry, SlotId, getEntryLabel } from "@lib/mealPlan/types";
 
 export interface DropTarget {
   date: string;
@@ -256,7 +256,7 @@ export const EntryDragProvider: React.FC<EntryDragProviderProps> = ({
               opacity-95 shadow-xl
             `}
           >
-            <span className="line-clamp-2">{entry.recipe.recipe.label}</span>
+            <span className="line-clamp-2">{getEntryLabel(entry)}</span>
           </div>,
           document.body,
         )}

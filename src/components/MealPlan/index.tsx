@@ -20,6 +20,7 @@ import { useAuth } from "@context/AuthContext";
 import { useToast } from "@context/ToastContext";
 import { Hit } from "@interfaces/edamam";
 import {
+  addCustomEntry,
   addEntry,
   copyEntries,
   createPlan,
@@ -333,19 +334,23 @@ const MealPlanner = () => {
     );
   };
 
-  const handleAdd = async (hit: Hit, rule: RepeatRule | null) => {
-    if (!addTarget || !activePlanId) return;
+  /**
+   * Both ways of adding a meal end the same way: the row is inserted,
+   * optionally expanded into a series, and the range is refetched.
+   * `insert` is the only thing that differs.
+   */
+  const addMeal = async (
+    insert: () => Promise<string>,
+    rule: RepeatRule | null,
+    fallback: string,
+  ) => {
+    if (!addTarget) return;
 
     setIsAdding(true);
     setError("");
 
     try {
-      const entryId = await addEntry(
-        activePlanId,
-        hit,
-        addTarget.date,
-        addTarget.slot,
-      );
+      const entryId = await insert();
 
       // The first occurrence is added like any meal, then expanded. If
       // expanding fails the single meal is still there, so the error
@@ -364,10 +369,30 @@ const MealPlanner = () => {
       await loadEntries();
       setAddTarget(null);
     } catch (caught) {
-      reportError(caught, "Couldn't add that recipe.");
+      reportError(caught, fallback);
     } finally {
       setIsAdding(false);
     }
+  };
+
+  const handleAdd = (hit: Hit, rule: RepeatRule | null) => {
+    if (!addTarget || !activePlanId) return;
+
+    return addMeal(
+      () => addEntry(activePlanId, hit, addTarget.date, addTarget.slot),
+      rule,
+      "Couldn't add that recipe.",
+    );
+  };
+
+  const handleAddCustom = (title: string, rule: RepeatRule | null) => {
+    if (!addTarget || !activePlanId) return;
+
+    return addMeal(
+      () => addCustomEntry(activePlanId, title, addTarget.date, addTarget.slot),
+      rule,
+      "Couldn't add that meal.",
+    );
   };
 
   const startSeries = async (entry: MealPlanEntry, rule: RepeatRule) => {
@@ -709,6 +734,7 @@ const MealPlanner = () => {
             savedRecipes={savedRecipes}
             onSlotChange={(slot) => setAddTarget({ ...addTarget, slot })}
             onSelect={isAdding ? () => {} : handleAdd}
+            onAddCustom={isAdding ? () => {} : handleAddCustom}
             onClose={() => setAddTarget(null)}
           />
         )}

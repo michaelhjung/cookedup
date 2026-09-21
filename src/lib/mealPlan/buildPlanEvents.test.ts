@@ -7,6 +7,7 @@ import {
   MealPlanEntry,
   MealSlotDef,
   formatSlotTime,
+  getEntryLabel,
   parseSlots,
   sortSlots,
 } from "@lib/mealPlan/types";
@@ -30,8 +31,12 @@ const entry = (overrides: Partial<MealPlanEntry> = {}): MealPlanEntry => ({
   slot: "dinner",
   position: 0,
   recipe: hit(),
+  title: null,
   ...overrides,
 });
+
+const customEntry = (title = "Leftovers"): MealPlanEntry =>
+  entry({ recipe: null, title });
 
 const plan = { slots: DEFAULT_SLOTS };
 
@@ -120,6 +125,24 @@ describe("buildPlanEvents", () => {
     expect(built.description).not.toContain("Meal plan:");
   });
 
+  it("titles a custom meal with its text", () => {
+    const [built] = buildPlanEvents(plan, [customEntry()]);
+    expect(built.title).toBe("Dinner: Leftovers");
+    expect(built.url).toBeUndefined();
+  });
+
+  it("describes a custom meal with only the plan link", () => {
+    const [bare] = buildPlanEvents(plan, [customEntry()]);
+    const [linked] = buildPlanEvents(
+      plan,
+      [customEntry()],
+      "https://cookedup.app/p/x",
+    );
+
+    expect(bare.description).toBe("");
+    expect(linked.description).toBe("Meal plan: https://cookedup.app/p/x");
+  });
+
   it("maps every entry", () => {
     const events = buildPlanEvents(plan, [
       entry({ id: "a" }),
@@ -130,6 +153,20 @@ describe("buildPlanEvents", () => {
       "a@cookedup.app",
       "b@cookedup.app",
     ]);
+  });
+});
+
+describe("getEntryLabel", () => {
+  it("reads a recipe's label", () => {
+    expect(getEntryLabel(entry())).toBe("Salmon Teriyaki");
+  });
+
+  it("reads a custom meal's title", () => {
+    expect(getEntryLabel(customEntry("Eating out"))).toBe("Eating out");
+  });
+
+  it("never renders blank for a malformed row", () => {
+    expect(getEntryLabel(entry({ recipe: null, title: null }))).toBe("Meal");
   });
 });
 

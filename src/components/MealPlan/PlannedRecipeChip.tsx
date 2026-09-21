@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Repeat, Trash2 } from "lucide-react";
+import { ExternalLink, PencilLine, Repeat, Trash2 } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -22,6 +22,7 @@ import {
   SlotId,
   findSlot,
   formatSlotTime,
+  getEntryLabel,
 } from "@lib/mealPlan/types";
 
 interface PlannedRecipeChipProps {
@@ -55,9 +56,9 @@ const ruleOfSeries = (series: RepeatSeries): RepeatRule => ({
 });
 
 const thumbnailUrl = (entry: MealPlanEntry): string | undefined =>
-  entry.recipe.recipe.images?.THUMBNAIL?.url ||
-  entry.recipe.recipe.images?.SMALL?.url ||
-  entry.recipe.recipe.image;
+  entry.recipe?.recipe.images?.THUMBNAIL?.url ||
+  entry.recipe?.recipe.images?.SMALL?.url ||
+  entry.recipe?.recipe.image;
 
 /**
  * One planned meal. Deliberately not a link: the chip is small enough
@@ -92,6 +93,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
     setRepeatRule(null);
   }, [entry.date, entry.slot, entry.series?.id]);
 
+  const label = getEntryLabel(entry);
   const image = thumbnailUrl(entry);
   const hasMoved = moveDate !== entry.date || moveSlot !== entry.slot;
   const isRepeating = Boolean(entry.series);
@@ -130,7 +132,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
           type="button"
           onPointerDown={handlePointerDown}
           onClick={handleClick}
-          title={entry.recipe.recipe.label}
+          title={label}
           className={`
             flex w-full items-center gap-1
             rounded-sm px-1 py-0.5
@@ -144,9 +146,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
           <span className="shrink-0 text-ink-muted">
             {findSlot(slots, entry.slot)?.label ?? entry.slot}
           </span>
-          <span className="min-w-0 flex-1 truncate font-medium">
-            {entry.recipe.recipe.label}
-          </span>
+          <span className="min-w-0 flex-1 truncate font-medium">{label}</span>
           {isRepeating && (
             <Repeat
               aria-label="Repeats"
@@ -159,7 +159,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
           type="button"
           onPointerDown={handlePointerDown}
           onClick={handleClick}
-          title={entry.recipe.recipe.label}
+          title={label}
           className={`
             group flex w-full items-center gap-1.5
             rounded-md border border-line
@@ -172,7 +172,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
             ${isDragging ? "opacity-40" : ""}
           `}
         >
-          {image && (
+          {image ?
             <Image
               src={image}
               alt=""
@@ -180,9 +180,16 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
               height={28}
               className="size-6 shrink-0 rounded object-cover sm:size-7"
             />
-          )}
+          : !entry.recipe && (
+              // A custom meal has no picture; the pencil marks it as
+              // something typed in rather than a recipe with a broken image.
+              <span className="flex size-6 shrink-0 items-center justify-center rounded bg-surface-raised text-ink-muted sm:size-7">
+                <PencilLine className="size-3.5" />
+              </span>
+            )
+          }
           <span className="line-clamp-2 min-w-0 flex-1 text-[11px] font-medium leading-tight sm:text-xs">
-            {entry.recipe.recipe.label}
+            {label}
           </span>
           {isRepeating && (
             <Repeat
@@ -198,9 +205,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
           anchor={anchor}
           onClose={() => setIsOpen(false)}
         >
-          <p className="mb-2 text-xs font-semibold leading-snug">
-            {entry.recipe.recipe.label}
-          </p>
+          <p className="mb-2 text-xs font-semibold leading-snug">{label}</p>
 
           {entry.series && (
             <p className="mb-2 flex items-start gap-1.5 text-[11px] leading-snug text-ink-muted">
@@ -209,15 +214,21 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
             </p>
           )}
 
-          <a
-            href={entry.recipe.recipe.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
-          >
-            <ExternalLink className="size-3.5" />
-            Open recipe
-          </a>
+          {entry.recipe ?
+            <a
+              href={entry.recipe.recipe.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
+            >
+              <ExternalLink className="size-3.5" />
+              Open recipe
+            </a>
+          : <p className="flex items-center gap-1.5 text-xs text-ink-muted">
+              <PencilLine className="size-3.5" />
+              Custom meal
+            </p>
+          }
 
           {!readOnly && (
             <>

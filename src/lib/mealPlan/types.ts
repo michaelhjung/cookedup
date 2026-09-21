@@ -49,7 +49,13 @@ export interface MealPlanEntry {
   date: string;
   slot: SlotId;
   position: number;
-  recipe: Hit;
+  /**
+   * A planned meal is either a recipe or a free-text title ("Leftovers",
+   * "Eating out") — exactly one of these is set. The database enforces
+   * the same rule.
+   */
+  recipe: Hit | null;
+  title: string | null;
   /**
    * Set when this meal is one occurrence of a repeat rule. Absent (not
    * just null) on the shared view and the calendar feed, which never
@@ -145,6 +151,15 @@ export const formatSlotTime = (time: string, locale?: string): string => {
 /** Ids only need to be unique within one plan's slot list. */
 export const makeSlotId = (): string =>
   `slot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+/**
+ * What to call an entry wherever it's shown: the recipe's name, or the
+ * custom text. The fallback only guards against a row that somehow has
+ * neither, so nothing ever renders as an empty chip.
+ */
+export const getEntryLabel = (
+  entry: Pick<MealPlanEntry, "recipe" | "title">,
+): string => entry.recipe?.recipe.label ?? entry.title ?? "Meal";
 
 export const findSlot = (
   slots: MealSlotDef[],

@@ -215,7 +215,9 @@ export const seedDemo = async ({
   const monday = addDays(sunday, 1);
   const entries = DEMO_WEEK.map((meal) => ({
     plan_id: plan.id,
-    recipe_id: recipeIds[meal.recipe],
+    ...("recipe" in meal ?
+      { recipe_id: recipeIds[meal.recipe] }
+    : { title: meal.title }),
     date: addDays(sunday, meal.day),
     slot: meal.slot,
     position: 0,

@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import { describeRepeatRule } from "@lib/mealPlan/recurrence";
-import { MealPlanEntry, SeriesScope } from "@lib/mealPlan/types";
+import { MealPlanEntry, SeriesScope, getEntryLabel } from "@lib/mealPlan/types";
 
 interface SeriesScopeDialogProps {
   entry: MealPlanEntry;
@@ -67,7 +67,7 @@ const SeriesScopeDialog: React.FC<SeriesScopeDialogProps> = ({
           {verb} repeating meal?
         </h2>
         <p className="mt-1 line-clamp-2 text-xs text-ink-muted">
-          {entry.recipe.recipe.label}
+          {getEntryLabel(entry)}
         </p>
         {entry.series && (
           <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-ink-muted">

@@ -37,6 +37,7 @@ interface SharedPlanPayload {
     slot: string;
     position: number;
     recipe: MealPlanEntry["recipe"];
+    title: string | null;
   }[];
 }
 
@@ -72,13 +73,16 @@ export async function GET(
   const origin = new URL(request.url).origin;
 
   const entries: MealPlanEntry[] = plan.entries
-    .filter((entry) => Boolean(entry.slot) && entry.recipe?.recipe)
+    .filter(
+      (entry) => Boolean(entry.slot) && (entry.recipe?.recipe || entry.title),
+    )
     .map((entry) => ({
       id: entry.id,
       date: entry.date,
       slot: entry.slot,
       position: entry.position,
-      recipe: entry.recipe,
+      recipe: entry.recipe?.recipe ? entry.recipe : null,
+      title: entry.recipe?.recipe ? null : entry.title,
     }));
 
   const calendar = buildCalendar({

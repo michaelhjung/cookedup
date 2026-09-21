@@ -25,6 +25,7 @@ interface SharedPlanPayload {
     slot: string;
     position: number;
     recipe: MealPlanEntry["recipe"];
+    title: string | null;
   }[];
 }
 
@@ -67,13 +68,16 @@ const SharedPlanPage = async (props: PageProps<"/plan/shared/[token]">) => {
   if (!plan) notFound();
 
   const entries: MealPlanEntry[] = plan.entries
-    .filter((entry) => Boolean(entry.slot) && entry.recipe?.recipe)
+    .filter(
+      (entry) => Boolean(entry.slot) && (entry.recipe?.recipe || entry.title),
+    )
     .map((entry) => ({
       id: entry.id,
       date: entry.date,
       slot: entry.slot,
       position: entry.position,
-      recipe: entry.recipe,
+      recipe: entry.recipe?.recipe ? entry.recipe : null,
+      title: entry.recipe?.recipe ? null : entry.title,
     }));
 
   return (

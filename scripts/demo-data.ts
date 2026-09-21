@@ -279,12 +279,14 @@ export const buildDemoHit = (recipe: DemoRecipe, imageUrl: string): Hit => {
   };
 };
 
-/** One planned meal, as a day of the current week (0 = Monday). */
-export interface DemoMeal {
+/**
+ * One planned meal, as a day of the current week. Either a recipe from
+ * the library or a custom title with nothing behind it.
+ */
+export type DemoMeal = {
   day: number;
   slot: "breakfast" | "lunch" | "snack" | "dinner";
-  recipe: DemoRecipeKey;
-}
+} & ({ recipe: DemoRecipeKey } | { title: string });
 
 /**
  * This week's plan; `day` counts from Sunday, like the calendar's
@@ -293,6 +295,7 @@ export interface DemoMeal {
 export const DEMO_WEEK: DemoMeal[] = [
   { day: 0, slot: "dinner", recipe: "tomatoBasilPasta" },
   { day: 1, slot: "dinner", recipe: "tomatoBasilPasta" },
+  { day: 1, slot: "lunch", title: "Leftovers" },
   { day: 2, slot: "lunch", recipe: "greekSalad" },
   { day: 2, slot: "dinner", recipe: "veggieStirFry" },
   { day: 3, slot: "dinner", recipe: "blackBeanTacos" },
@@ -301,4 +304,5 @@ export const DEMO_WEEK: DemoMeal[] = [
   { day: 5, slot: "dinner", recipe: "lemonGarlicChicken" },
   { day: 6, slot: "breakfast", recipe: "shakshuka" },
   { day: 6, slot: "lunch", recipe: "greekSalad" },
+  { day: 6, slot: "dinner", title: "Dinner at Mom's" },
 ];
