@@ -47,6 +47,8 @@ interface RecipesProps {
   activeFilterKeys: string[];
   filterGeneration: number;
   highlightedRecipeUrl: string | null;
+  /** Rendered above the results, e.g. the "from your pantry" note. */
+  notice?: React.ReactNode;
   // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
   onAddIngredient: (_ingredient: string) => void;
 }
@@ -66,6 +68,7 @@ const Recipes: React.FC<RecipesProps> = ({
   activeFilterKeys,
   filterGeneration,
   highlightedRecipeUrl,
+  notice,
   onAddIngredient,
 }) => {
   const scrollContainerRef = useRef<HTMLElement | null>(null);
@@ -221,6 +224,8 @@ const Recipes: React.FC<RecipesProps> = ({
       `}
     >
       <div className="flex w-full flex-col">
+        {notice}
+
         {/* The empty state doubles as the welcome: what the app does and
             how to get a first result in one click. */}
         {!recipesData?.from && !isLoadingRecipes && (

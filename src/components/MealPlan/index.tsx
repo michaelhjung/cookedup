@@ -19,6 +19,7 @@ import WeekGrid from "@components/MealPlan/WeekGrid";
 import { useAuth } from "@context/AuthContext";
 import { useToast } from "@context/ToastContext";
 import { Hit } from "@interfaces/edamam";
+import { useHousehold } from "@lib/household/useHousehold";
 import {
   addCustomEntry,
   addEntry,
@@ -55,6 +56,7 @@ import {
   SlotId,
   findSlot,
 } from "@lib/mealPlan/types";
+import { useIsDesktop } from "@lib/useIsDesktop";
 
 const VIEW_STORAGE_KEY = "cookedup:plan-view";
 
@@ -115,29 +117,9 @@ type PendingSeriesAction =
   | { action: "edit"; entry: MealPlanEntry; rule: RepeatRule }
   | { action: "retime"; entry: MealPlanEntry; time: string | null };
 
-/**
- * Below `lg` the seven-column grid is unusable, so the planner swaps to a
- * one-day agenda. Resolved with matchMedia rather than CSS visibility so
- * only one of the two ever mounts — rendering both would duplicate every
- * chip, its popover state, and its thumbnail request.
- */
-const useIsDesktop = (): boolean | null => {
-  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 1024px)");
-    const sync = () => setIsDesktop(query.matches);
-
-    sync();
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
-  }, []);
-
-  return isDesktop;
-};
-
 const MealPlanner = () => {
   const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { household, isLoading: isHouseholdLoading } = useHousehold();
   const { showToast } = useToast();
   const isDesktop = useIsDesktop();
 
@@ -213,7 +195,7 @@ const MealPlanner = () => {
     setIsCreating(true);
     setError("");
     try {
-      adoptPlan(await createPlan(user.id));
+      adoptPlan(await createPlan(user.id, household?.id ?? null));
     } catch (caught) {
       console.error("Failed to create meal plan:", caught);
       setError(
@@ -224,12 +206,13 @@ const MealPlanner = () => {
     } finally {
       setIsCreating(false);
     }
-  }, [user, adoptPlan]);
+  }, [user, household, adoptPlan]);
 
   // Load the user's plans, creating a default one the first time so the
-  // planner usually opens straight onto a usable week.
+  // planner usually opens straight onto a usable week. That first plan
+  // belongs to the household if there is one, so it waits for that.
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || isHouseholdLoading) return;
 
     if (!user) {
       setIsLoading(false);
@@ -254,7 +237,7 @@ const MealPlanner = () => {
         // No plans yet. A failure to auto-create isn't fatal — it falls
         // through to the empty state, which offers the same action.
         try {
-          const created = await createPlan(user.id);
+          const created = await createPlan(user.id, household?.id ?? null);
           if (!cancelled) adoptPlan(created);
         } catch (caught) {
           console.error("Failed to create a first meal plan:", caught);
@@ -282,7 +265,7 @@ const MealPlanner = () => {
     return () => {
       cancelled = true;
     };
-  }, [user, authLoading, adoptPlan]);
+  }, [user, authLoading, isHouseholdLoading, household, adoptPlan]);
 
   useEffect(() => {
     if (!user) return;
@@ -688,7 +671,11 @@ const MealPlanner = () => {
                   value={plan.id}
                 >
                   {plan.name}
-                  {plan.role !== "owner" ? " (shared)" : ""}
+                  {plan.householdId ?
+                    " (household)"
+                  : plan.role !== "owner" ?
+                    " (shared)"
+                  : ""}
                 </option>
               ))}
             </select>
@@ -811,6 +798,7 @@ const MealPlanner = () => {
               </>
             }
             confirmLabel="Copy meals"
+            busyLabel="Copying..."
             isBusy={isCopying}
             onConfirm={handleCopyPrevious}
             onCancel={() => setIsConfirmingCopy(false)}
@@ -820,6 +808,7 @@ const MealPlanner = () => {
         {isSettingsOpen && (
           <PlanSettings
             plan={activePlan}
+            household={household}
             onPlanChange={(updated) => {
               setPlans((previous) =>
                 previous.map((plan) =>

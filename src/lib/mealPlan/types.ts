@@ -38,6 +38,8 @@ export interface MealPlan {
   id: string;
   name: string;
   slots: MealSlotDef[];
+  /** Set when the plan belongs to a household rather than one person. */
+  householdId: string | null;
   /** null when link sharing is off. */
   shareToken: string | null;
   role: PlanRole;
@@ -73,12 +75,6 @@ export interface MealPlanEntry {
 
 /** Which occurrences a move or removal of a repeating meal applies to. */
 export type SeriesScope = "one" | "following" | "all";
-
-export interface PlanShare {
-  userId: string;
-  email: string | null;
-  role: Exclude<PlanRole, "owner">;
-}
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 

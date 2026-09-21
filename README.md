@@ -4,7 +4,7 @@
 
 # cookedup
 
-**Find recipes with what's already in your kitchen, then plan your week around them.**
+**Find recipes with what's already in your kitchen, plan your week around them, and keep the pantry stocked.**
 
 [**Live site**](https://www.cookedup.app) &nbsp;•&nbsp; [GitHub](https://github.com/michaelhjung/cookedup)
 
@@ -30,7 +30,10 @@ You tell it what's in the fridge; it tells you what to cook. No account needed t
 - **Save the keepers** — starred recipes live in your library.
 - **Plan the week** — drag saved recipes onto a calendar with fully customizable meal slots (rename, retime, add a second snack, drop breakfast).
 - **Subscribe from any calendar app** — each plan exposes an ICS feed that Google Calendar, Apple Calendar or Outlook can follow.
-- **Share it** — read-only share links for whoever eats with you, and editor invites for whoever cooks with you.
+- **Keep a pantry** — a list of what's in the kitchen, each item Stocked, Low or Out. Long-press or tap to change; the store-walk grouping (produce, bakery, dairy...) is guessed from the name.
+- **Shop from it** — one grocery list per store, filled from what's running low, from what the next week of planned meals needs, or by hand. Checking something off in the aisle marks it Stocked back in the pantry, with an Undo.
+- **Cook from it** — "Find recipes with what I have" runs a search on your stocked items.
+- **Share it** — a household puts plans, pantries and lists in front of everyone who lives with you; anything personal can still be shared one person at a time, as a viewer or an editor. Lists update live as someone else checks things off.
 - **Sign in with Google or a magic link**, in light or dark mode, on desktop or phone.
 
 <p align="center">
@@ -62,6 +65,30 @@ You tell it what's in the fridge; it tells you what to cook. No account needed t
   </picture>
 </p>
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/pantry-dark.png">
+  <img src="./.github/readme/pantry-light.png" alt="A household pantry: items grouped by aisle with Stocked, Low and Out toggles, and a rail of what needs restocking" width="100%">
+</picture>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/grocery-dark.png">
+    <img src="./.github/readme/grocery-light.png" alt="A grocery list with lines from the week's meal plan; checking one off marks it stocked in the pantry" width="68%">
+  </picture>
+  &nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/phone-grocery-dark.png">
+    <img src="./.github/readme/phone-grocery-light.png" alt="The same list on a phone" width="18%">
+  </picture>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/readme/phone-pantry-dark.png">
+    <img src="./.github/readme/phone-pantry-light.png" alt="The pantry on a phone" width="18%">
+  </picture>
+</p>
+
 ## How it's built
 
 Next.js (App Router) on Vercel, Supabase for auth, Postgres and storage, the Edamam Recipe Search API for recipe data. Styling is Tailwind on top of a small set of design tokens (a two-step pastel palette, a three-value radius scale) so light and dark themes are a variable swap rather than parallel class lists.
@@ -74,6 +101,10 @@ A few of the decisions worth knowing about:
 - **The calendar feed is built by hand** (`src/lib/ics/`) — RFC 5545 line folding, escaping and floating (timezone-free) times, so a 6pm dinner is 6pm wherever the subscriber is. The event builder is a seam for pushing to Google Calendar directly later.
 - **Meal slots are data, not an enum.** Each plan stores an ordered `[{ id, label, time }]` array, entries reference a slot id, and rows always render sorted by time — so a plan can have two snacks and no breakfast without a migration.
 - **Filter-mode "load more" is a dedupe loop.** Edamam's random mode has no cursor, so scrolling redraws with the same filters and merges in whatever's new, backing off after a few draws yield nothing unseen.
+- **Sharing is one polymorphic table.** `shares` and `invites` are keyed by `(resource_kind, resource_id)`, so a meal plan, a pantry and a grocery list share one invite flow, one accept RPC and one settings panel. Households sit on top: a plan or list can be flipped to "everyone in the household" without inviting anyone.
+- **Access control lives in Postgres.** Every table is RLS-first, with `security definer` helpers (`can_read_plan`, `can_edit_list`, ...) that resolve owner → household member → explicit share. The browser never sees a row it can't read, and check-off goes through one `check_grocery_line` RPC that updates the pantry in the same transaction and hands back what to revert for Undo.
+- **Grocery lists are live.** Supabase Realtime streams `grocery_list_lines` changes to every open copy of a list, and channel presence shows who else is on it.
+- **Pantry items and recipe ingredients meet on a normalized key** (lowercased, trimmed, singularized), so "Eggs" in the pantry skips "egg" on a generated list and matches Edamam's `food` field when a plan is turned into a list.
 - **A daily Vercel cron pings Supabase** so the free-tier project doesn't get paused for inactivity.
 
 Pure logic (the ICS builder, date helpers, event assembly, the auth callback and Google code exchange) is unit-tested with Vitest; UI is verified in a real browser.
@@ -146,11 +177,16 @@ change never starts with starring a page of recipes. `npm run db:reset` runs it
 for you once the schema is rebuilt.
 
 It creates `demo@cookedup.local` with eight recipes in the library (six
-starred, two only ever planned), a plan for the current week with dinners most
-nights and overnight oats repeating every weekday for four weeks, a second
-"Meal prep" plan, and `friend@cookedup.local` joined as an editor through a
-real invite — so sharing, the calendar feed, and the repeat-rule dialogs all
-have something to act on. The password for both is `cookedup-demo`.
+starred, two only ever planned), a household ("The Demos") with
+`friend@cookedup.local` joined through a real invite, a household plan for the
+current week with dinners most nights and overnight oats repeating every
+weekday for four weeks, a second personal "Meal prep" plan shared with the
+friend, a household pantry of 25 items with a few marked Low or Out (some by
+the friend), and two grocery lists: "Costco", built from the pantry's restock
+items with a couple of lines already checked off by the friend, and a personal
+"Farmers market". So sharing, the calendar feed, the repeat-rule dialogs,
+restocking and live check-off all have something to act on. The password for
+both is `cookedup-demo`.
 
 Recipes are written in Edamam's `Hit` shape (`scripts/demo-data.ts`) with
 their images uploaded to the local `recipe-images` bucket, the same way a

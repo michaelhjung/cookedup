@@ -20,7 +20,6 @@ import {
   MealPlan,
   MealPlanEntry,
   MealSlotDef,
-  PlanShare,
   SlotId,
   parseSlots,
 } from "@lib/mealPlan/types";
@@ -38,82 +37,108 @@ const requireSession = async () => {
 interface PlanRow {
   id: string;
   owner_id: string;
+  household_id: string | null;
   name: string;
   slots: unknown;
   share_token: string | null;
 }
 
+const PLAN_COLUMNS = "id, owner_id, household_id, name, slots, share_token";
+
+const toPlan = (
+  row: PlanRow,
+  userId: string,
+  householdId: string | null,
+  shareRole: "viewer" | "editor" | undefined,
+): MealPlan => ({
+  id: row.id,
+  name: row.name,
+  slots: parseSlots(row.slots),
+  householdId: row.household_id,
+  // Only the owner is allowed to read the share token, and RLS returns
+  // null for everyone else rather than failing the query.
+  shareToken: row.owner_id === userId ? row.share_token : null,
+  role:
+    row.owner_id === userId ? "owner"
+    : row.household_id !== null && row.household_id === householdId ? "editor"
+    : shareRole === "editor" ? "editor"
+    : "viewer",
+});
+
 /**
- * Every plan the user can see: their own plus any shared with them. The
- * role is resolved client-side from ownership and the share rows, both of
- * which RLS has already filtered to what this user may read.
+ * Every plan the user can see: their own, their household's, and any
+ * shared with them. The role is resolved client-side from ownership,
+ * household membership and the share rows, all of which RLS has already
+ * filtered to what this user may read.
  */
 export const fetchPlans = async (userId: string): Promise<MealPlan[]> => {
-  const [{ data: plans, error }, { data: shares }] = await Promise.all([
-    supabase
-      .from("meal_plans")
-      .select("id, owner_id, name, slots, share_token")
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("meal_plan_shares")
-      .select("plan_id, role")
-      .eq("user_id", userId),
-  ]);
+  const [{ data: plans, error }, { data: shares }, { data: membership }] =
+    await Promise.all([
+      supabase
+        .from("meal_plans")
+        .select(PLAN_COLUMNS)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("shares")
+        .select("resource_id, role")
+        .eq("resource_kind", "meal_plan")
+        .eq("user_id", userId),
+      supabase
+        .from("household_members")
+        .select("household_id")
+        .eq("user_id", userId)
+        .maybeSingle(),
+    ]);
 
   if (error) throw new Error(error.message);
 
+  const householdId = (membership?.household_id as string | undefined) ?? null;
   const roleByPlanId = new Map(
-    (shares ?? []).map((share) => [share.plan_id as string, share.role]),
+    (shares ?? []).map((share) => [share.resource_id as string, share.role]),
   );
 
-  return (plans ?? []).map((plan: PlanRow) => ({
-    id: plan.id,
-    name: plan.name,
-    slots: parseSlots(plan.slots),
-    // Only the owner is allowed to read the share token, and RLS returns
-    // null for everyone else rather than failing the query.
-    shareToken: plan.owner_id === userId ? plan.share_token : null,
-    role:
-      plan.owner_id === userId ? "owner"
-      : roleByPlanId.get(plan.id) === "editor" ? "editor"
-      : "viewer",
-  }));
+  return (plans ?? []).map((plan: PlanRow) =>
+    toPlan(plan, userId, householdId, roleByPlanId.get(plan.id)),
+  );
 };
 
 /**
  * Called when a signed-in user has no plans at all, so the planner always
- * has something to render instead of an empty-state dead end.
+ * has something to render instead of an empty-state dead end. A first
+ * plan for someone in a household is the household's.
  */
 export const createPlan = async (
   userId: string,
+  householdId: string | null,
   name = "My Meal Plan",
 ): Promise<MealPlan> => {
   const { data, error } = await supabase
     .from("meal_plans")
-    .insert({ owner_id: userId, name })
-    .select("id, owner_id, name, slots, share_token")
+    .insert({ owner_id: userId, household_id: householdId, name })
+    .select(PLAN_COLUMNS)
     .single();
 
   if (error) throw new Error(error.message);
 
-  return {
-    id: data.id,
-    name: data.name,
-    slots: parseSlots(data.slots),
-    shareToken: data.share_token,
-    role: "owner",
-  };
+  return toPlan(data, userId, householdId, undefined);
 };
 
 export const updatePlan = async (
   planId: string,
-  changes: { name?: string; slots?: MealSlotDef[] },
+  changes: {
+    name?: string;
+    slots?: MealSlotDef[];
+    householdId?: string | null;
+  },
 ): Promise<void> => {
   const { error } = await supabase
     .from("meal_plans")
     .update({
       ...(changes.name !== undefined && { name: changes.name }),
       ...(changes.slots !== undefined && { slots: changes.slots }),
+      ...(changes.householdId !== undefined && {
+        household_id: changes.householdId,
+      }),
     })
     .eq("id", planId);
 
@@ -532,59 +557,6 @@ export const setLinkSharing = async (
   if (error) throw new Error(error.message);
 
   return shareToken;
-};
-
-export const fetchShares = async (planId: string): Promise<PlanShare[]> => {
-  const { data, error } = await supabase
-    .from("meal_plan_shares")
-    .select("user_id, email, role")
-    .eq("plan_id", planId);
-
-  if (error) throw new Error(error.message);
-
-  return (data ?? []).map((share) => ({
-    userId: share.user_id,
-    email: share.email,
-    role: share.role,
-  }));
-};
-
-export const removeShare = async (
-  planId: string,
-  userId: string,
-): Promise<void> => {
-  const { error } = await supabase
-    .from("meal_plan_shares")
-    .delete()
-    .eq("plan_id", planId)
-    .eq("user_id", userId);
-
-  if (error) throw new Error(error.message);
-};
-
-/** Returns the invite token; the caller builds the link around it. */
-export const createInvite = async (
-  planId: string,
-  role: "viewer" | "editor",
-): Promise<string> => {
-  const { data, error } = await supabase
-    .from("meal_plan_invites")
-    .insert({ plan_id: planId, role })
-    .select("token")
-    .single();
-
-  if (error) throw new Error(error.message);
-  return data.token;
-};
-
-/** Resolves to the plan id on success, or null if the invite is dead. */
-export const acceptInvite = async (token: string): Promise<string | null> => {
-  const { data, error } = await supabase.rpc("accept_meal_plan_invite", {
-    p_token: token,
-  });
-
-  if (error) throw new Error(error.message);
-  return (data as string | null) ?? null;
 };
 
 /**

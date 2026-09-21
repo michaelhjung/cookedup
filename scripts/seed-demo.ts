@@ -4,9 +4,9 @@
  * Everything is written the way the app writes it — recipes as library
  * rows in Edamam's shape with their image in the recipe-images bucket,
  * meals as plan entries, the repeating breakfast through the
- * create_entry_series RPC, the second account through an invite it
- * accepts itself — so the demo cannot drift into a shape the product
- * could never produce. Rows are written signed in as their owner, so RLS
+ * create_entry_series RPC, the household through create_household and
+ * an invite the second account accepts itself — so the demo cannot
+ * drift into a shape the product could never produce. Rows are written signed in as their owner, so RLS
  * is exercised rather than bypassed; the service-role key is used only
  * to create and remove the users.
  *
@@ -24,8 +24,10 @@ import {
   startOfWeek,
   todayISO,
 } from "../src/lib/mealPlan/dates.ts";
+import { normalizeItemName } from "../src/lib/pantry/items.ts";
 import {
   buildDemoHit,
+  DEMO_PANTRY,
   DEMO_RECIPES,
   DEMO_WEEK,
   type DemoRecipeKey,
@@ -40,6 +42,8 @@ const DEMO = {
   password: DEMO_LOGIN.password,
   owner: DEMO_LOGIN.email,
   friend: DEMO_SECOND_EMAIL,
+  householdName: "The Demos",
+  pantryName: "Home pantry",
   planName: "This week",
   /** Weekday breakfasts repeat for four weeks from this Monday. */
   repeatWeeks: 4,
@@ -103,7 +107,11 @@ const clearDemoAccounts = async (admin: SupabaseClient): Promise<void> => {
   );
 
   for (const user of demoUsers) {
-    // Plans cascade to their entries, series, shares and invites.
+    // Plans cascade to their entries and series; the delete triggers
+    // drop shares and invites. The household cascades to its members.
+    await admin.from("households").delete().eq("created_by", user.id);
+    await admin.from("grocery_lists").delete().eq("owner_id", user.id);
+    await admin.from("pantries").delete().eq("owner_id", user.id);
     await admin.from("meal_plans").delete().eq("owner_id", user.id);
     await admin.from("recipes").delete().eq("user_id", user.id);
 
@@ -192,6 +200,39 @@ export const seedDemo = async ({
   } = await owner.auth.getUser();
   if (!ownerUser) throw new Error("owner sign-in returned no user");
 
+  // The household first, so the week's plan can belong to it from the
+  // start. The friend joins through an invite link, as anyone would.
+  const { data: householdId, error: householdError } = await owner.rpc(
+    "create_household",
+    { p_name: DEMO.householdName },
+  );
+  fail("create_household", householdError);
+  if (typeof householdId !== "string")
+    throw new Error("create_household: no id returned");
+
+  const householdInvite = unwrap(
+    "create household invite",
+    await owner
+      .from("invites")
+      .insert({
+        resource_kind: "household",
+        resource_id: householdId,
+        role: "member",
+      })
+      .select("token")
+      .single<{ token: string }>(),
+  );
+
+  const friend = await signIn(DEMO.friend);
+  const { data: joinedHousehold, error: joinError } = await friend.rpc(
+    "accept_invite",
+    { p_token: householdInvite.token },
+  );
+  fail("accept household invite", joinError);
+  if ((joinedHousehold as { id?: string } | null)?.id !== householdId)
+    throw new Error("accept household invite: not joined");
+  say(`created household "${DEMO.householdName}" with ${DEMO.friend}`);
+
   const recipeIds = {} as Record<DemoRecipeKey, string>;
   for (const key of Object.keys(DEMO_RECIPES) as DemoRecipeKey[]) {
     recipeIds[key] = await seedRecipe(owner, ownerUser.id, key);
@@ -204,6 +245,7 @@ export const seedDemo = async ({
       .from("meal_plans")
       .insert({
         owner_id: ownerUser.id,
+        household_id: householdId,
         name: DEMO.planName,
         share_token: crypto.randomUUID(),
       })
@@ -288,24 +330,156 @@ export const seedDemo = async ({
     ]);
   fail("insert meal prep entries", prepEntriesError);
 
-  // The friend joins through an invite, exactly as a real editor would.
+  // The week's plan is the household's; the prep plan stays personal
+  // and is shared one-off, so both ways of seeing someone else's plan
+  // are in the demo.
   const invite = unwrap(
-    "create invite",
+    "create plan invite",
     await owner
-      .from("meal_plan_invites")
-      .insert({ plan_id: plan.id, role: "editor" })
+      .from("invites")
+      .insert({
+        resource_kind: "meal_plan",
+        resource_id: prepPlan.id,
+        role: "viewer",
+      })
       .select("token")
       .single<{ token: string }>(),
   );
 
-  const friend = await signIn(DEMO.friend);
   const { data: joined, error: acceptError } = await friend.rpc(
-    "accept_meal_plan_invite",
+    "accept_invite",
     { p_token: invite.token },
   );
-  fail("accept invite", acceptError);
-  if (joined !== plan.id) throw new Error("accept invite: not joined");
-  say(`shared "${DEMO.planName}" with ${DEMO.friend} as an editor`);
+  fail("accept plan invite", acceptError);
+  if ((joined as { id?: string } | null)?.id !== prepPlan.id)
+    throw new Error("accept plan invite: not joined");
+  say(`shared "Meal prep" with ${DEMO.friend} as a viewer`);
+
+  // The household pantry. Some items were marked by the friend, so the
+  // "marked low · friend" sublines have something to show.
+  const {
+    data: { user: friendUser },
+  } = await friend.auth.getUser();
+  if (!friendUser) throw new Error("friend sign-in returned no user");
+
+  const pantry = unwrap(
+    "create pantry",
+    await owner
+      .from("pantries")
+      .insert({
+        owner_id: ownerUser.id,
+        household_id: householdId,
+        name: DEMO.pantryName,
+      })
+      .select("id")
+      .single<{ id: string }>(),
+  );
+
+  const hoursAgo = (hours: number) =>
+    new Date(Date.now() - hours * 3_600_000).toISOString();
+
+  const { error: itemsError } = await owner.from("pantry_items").insert(
+    DEMO_PANTRY.map((item) => ({
+      pantry_id: pantry.id,
+      name: item.name,
+      name_key: normalizeItemName(item.name),
+      category: item.category,
+      status: item.status ?? "stocked",
+      updated_at: hoursAgo(item.hoursAgo ?? 24 * 14),
+      updated_by: item.markedByFriend ? friendUser.id : ownerUser.id,
+    })),
+  );
+  fail("insert pantry items", itemsError);
+  say(`stocked "${DEMO.pantryName}" with ${DEMO_PANTRY.length} items`);
+
+  // A household list filled from the pantry's low and out items, with a
+  // couple already checked off by the friend (through the same function
+  // the app uses, so the pantry restocks as it would in the aisle), and
+  // a personal one shared read-only.
+  const costco = unwrap(
+    "create Costco list",
+    await owner
+      .from("grocery_lists")
+      .insert({
+        owner_id: ownerUser.id,
+        household_id: householdId,
+        pantry_id: pantry.id,
+        name: "Costco",
+      })
+      .select("id")
+      .single<{ id: string }>(),
+  );
+
+  const restock = DEMO_PANTRY.filter(
+    (item) => item.status && item.status !== "stocked",
+  );
+  const { error: linesError } = await owner.rpc("add_lines_to_list", {
+    p_list_id: costco.id,
+    p_lines: restock.map((item) => ({
+      name: item.name,
+      name_key: normalizeItemName(item.name),
+      category: item.category,
+      source: "pantry",
+      source_recipe_names: [],
+    })),
+  });
+  fail("add_lines_to_list", linesError);
+
+  const { data: costcoLines, error: costcoLinesError } = await friend
+    .from("grocery_list_lines")
+    .select("id, name_key")
+    .eq("list_id", costco.id)
+    .in("name_key", ["tortilla", "dish soap"]);
+  fail("read Costco lines", costcoLinesError);
+  for (const line of costcoLines ?? []) {
+    const { error: checkError } = await friend.rpc("check_grocery_line", {
+      p_line_id: line.id,
+      p_apply_restock: true,
+      p_add_new: true,
+    });
+    fail(`check ${line.name_key}`, checkError);
+  }
+
+  const market = unwrap(
+    "create Farmers market list",
+    await owner
+      .from("grocery_lists")
+      .insert({
+        owner_id: ownerUser.id,
+        pantry_id: pantry.id,
+        name: "Farmers market",
+      })
+      .select("id")
+      .single<{ id: string }>(),
+  );
+  const { error: marketError } = await owner.rpc("add_lines_to_list", {
+    p_list_id: market.id,
+    p_lines: [
+      ["Heirloom tomatoes", "Produce"],
+      ["Peaches", "Produce"],
+      ["Sourdough loaf", "Bakery"],
+      ["Local honey", "Pantry staples"],
+    ].map(([name, category]) => ({
+      name,
+      name_key: normalizeItemName(name),
+      category,
+      source: "manual",
+      source_recipe_names: [],
+    })),
+  });
+  fail("add market lines", marketError);
+
+  const { error: marketShareError } = await owner.from("shares").insert({
+    resource_kind: "grocery_list",
+    resource_id: market.id,
+    user_id: friendUser.id,
+    role: "viewer",
+    email: DEMO.friend,
+  });
+  fail("share market list", marketShareError);
+  say(
+    `made lists "Costco" (household) and "Farmers market" (shared read-only)`,
+  );
 
   say(`\nSign in as ${DEMO.owner} / ${DEMO.password}`);
 };

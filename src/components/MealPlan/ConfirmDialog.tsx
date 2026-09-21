@@ -7,6 +7,10 @@ interface ConfirmDialogProps {
   title: string;
   body: React.ReactNode;
   confirmLabel: string;
+  /** Shown on the confirm button while `isBusy`. */
+  busyLabel?: string;
+  /** Red confirm button for actions that remove something. */
+  isDestructive?: boolean;
   isBusy?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -17,6 +21,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   title,
   body,
   confirmLabel,
+  busyLabel = "Working...",
+  isDestructive = false,
   isBusy = false,
   onConfirm,
   onCancel,
@@ -55,9 +61,17 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             autoFocus
             disabled={isBusy}
             onClick={onConfirm}
-            className="h-9 flex-1 rounded-md bg-accent px-3 text-xs font-semibold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className={`
+              h-9 flex-1 rounded-md px-3 text-xs font-semibold text-on-accent
+              transition-colors disabled:opacity-50
+              ${
+                isDestructive ?
+                  "bg-danger hover:opacity-90"
+                : "bg-accent hover:bg-accent-hover"
+              }
+            `}
           >
-            {isBusy ? "Copying..." : confirmLabel}
+            {isBusy ? busyLabel : confirmLabel}
           </button>
           <button
             type="button"

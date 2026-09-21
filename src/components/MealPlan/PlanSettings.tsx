@@ -1,93 +1,41 @@
 "use client";
 
-import {
-  Check,
-  Copy,
-  CircleAlert,
-  Link2,
-  Link2Off,
-  Plus,
-  Trash2,
-  UserPlus,
-  X,
-} from "lucide-react";
+import { CircleAlert, Link2, Link2Off, Plus, Trash2, X } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 
+import CopyableUrl from "@components/CopyableUrl";
+import SharingSection from "@components/SharingSection";
+import { Household } from "@lib/household/client";
 import {
   countEntriesInSlots,
-  createInvite,
   deleteEntriesInSlots,
-  fetchShares,
-  removeShare,
   setLinkSharing,
   updatePlan,
 } from "@lib/mealPlan/client";
 import {
   MealPlan,
   MealSlotDef,
-  PlanShare,
   makeSlotId,
   sortSlots,
 } from "@lib/mealPlan/types";
 
 interface PlanSettingsProps {
   plan: MealPlan;
+  /** The user's household, if any; decides whether "Who can see this" is offered. */
+  household: Household | null;
   // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
   onPlanChange: (_plan: MealPlan) => void;
   onClose: () => void;
 }
 
-const CopyableUrl: React.FC<{ label: string; url: string }> = ({
-  label,
-  url,
-}) => {
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(false), 2000);
-    return () => clearTimeout(timer);
-  }, [copied]);
-
-  return (
-    <div>
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
-        {label}
-      </p>
-      <div className="flex gap-1.5">
-        <input
-          readOnly
-          value={url}
-          onFocus={(event) => event.target.select()}
-          className="min-w-0 flex-1 rounded-md border border-line bg-transparent px-2 py-1.5 text-[11px]"
-        />
-        <button
-          type="button"
-          onClick={() => {
-            navigator.clipboard.writeText(url).then(() => setCopied(true));
-          }}
-          aria-label={`Copy ${label}`}
-          className="shrink-0 rounded-md border border-line px-2 transition-colors hover:border-line-strong"
-        >
-          {copied ?
-            <Check className="size-3.5 text-success" />
-          : <Copy className="size-3.5" />}
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const PlanSettings: React.FC<PlanSettingsProps> = ({
   plan,
+  household,
   onPlanChange,
   onClose,
 }) => {
   const [name, setName] = useState(plan.name);
   const [slots, setSlots] = useState<MealSlotDef[]>(plan.slots);
-  const [shares, setShares] = useState<PlanShare[]>([]);
-  const [inviteRole, setInviteRole] = useState<"viewer" | "editor">("editor");
-  const [inviteUrl, setInviteUrl] = useState("");
   const [error, setError] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [isConfirmingExit, setIsConfirmingExit] = useState(false);
@@ -102,12 +50,12 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
   );
 
   const isOwner = plan.role === "owner";
+  // A household admin can look after a household plan whose owner has
+  // moved on, but only the owner decides whether it's a household plan.
+  const isHouseholdAdmin =
+    household?.role === "admin" && plan.householdId === household.id;
+  const canManage = isOwner || isHouseholdAdmin;
   const origin = typeof window === "undefined" ? "" : window.location.origin;
-
-  useEffect(() => {
-    if (!isOwner) return;
-    fetchShares(plan.id).then(setShares).catch(console.error);
-  }, [plan.id, isOwner]);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -243,32 +191,6 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
     }
   };
 
-  const generateInvite = async () => {
-    setIsBusy(true);
-    setError("");
-    try {
-      const token = await createInvite(plan.id, inviteRole);
-      setInviteUrl(`${origin}/invite/${token}`);
-    } catch (caught) {
-      console.error("Failed to create invite:", caught);
-      setError("Couldn't create an invite link.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const revokeShare = async (userId: string) => {
-    try {
-      await removeShare(plan.id, userId);
-      setShares((previous) =>
-        previous.filter((share) => share.userId !== userId),
-      );
-    } catch (caught) {
-      console.error("Failed to remove share:", caught);
-      setError("Couldn't remove that person.");
-    }
-  };
-
   const feedUrl =
     plan.shareToken ? `${origin}/api/calendar/${plan.shareToken}.ics` : "";
   const webcalUrl = feedUrl.replace(/^https?:/, "webcal:");
@@ -296,15 +218,16 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
         </div>
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
-          {!isOwner && (
+          {!canManage && (
             <p className="rounded-md bg-well p-2 text-xs text-ink-muted">
-              This plan is shared with you as{" "}
-              {plan.role === "editor" ? "an editor" : "a viewer"}. Only its
-              owner can rename it or change sharing.
+              {plan.householdId ?
+                "This plan belongs to your household, so everyone in it can plan meals here. Only its owner can rename it or change sharing."
+              : `This plan is shared with you as ${plan.role === "editor" ? "an editor" : "a viewer"}. Only its owner can rename it or change sharing.`
+              }
             </p>
           )}
 
-          {isOwner && (
+          {canManage && (
             <>
               <div>
                 <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
@@ -389,14 +312,17 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                 </button>
               </div>
 
-              <div className="border-t border-line pt-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-semibold">Share link</p>
-                  <button
-                    type="button"
-                    onClick={() => toggleLinkSharing(!plan.shareToken)}
-                    disabled={isBusy}
-                    className={`
+              {/* The share token is only read for the owner, so a household
+                  admin standing in for them can't see or manage the link. */}
+              {isOwner && (
+                <div className="border-t border-line pt-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-xs font-semibold">Share link</p>
+                    <button
+                      type="button"
+                      onClick={() => toggleLinkSharing(!plan.shareToken)}
+                      disabled={isBusy}
+                      className={`
                       flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px]
                       ${
                         plan.shareToken ?
@@ -404,125 +330,77 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                         : "border-accent text-accent"
                       }
                     `}
-                  >
-                    {plan.shareToken ?
-                      <>
-                        <Link2Off className="size-3" /> Turn off
-                      </>
-                    : <>
-                        <Link2 className="size-3" /> Turn on
-                      </>
-                    }
-                  </button>
-                </div>
-
-                {plan.shareToken ?
-                  <div className="space-y-3">
-                    <CopyableUrl
-                      label="Read-only web view"
-                      url={viewUrl}
-                    />
-                    <CopyableUrl
-                      label="Calendar subscription (.ics)"
-                      url={feedUrl}
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      <a
-                        href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded-md bg-accent hover:bg-accent-hover px-3 py-1.5 text-[11px] font-semibold text-on-accent"
-                      >
-                        Add to Google Calendar
-                      </a>
-                      <a
-                        href={webcalUrl}
-                        className="rounded-md border border-line bg-surface-raised px-3 py-1.5 text-[11px] font-semibold text-ink"
-                      >
-                        Add to Apple / Outlook
-                      </a>
-                    </div>
-                    <p className="text-[11px] leading-snug text-ink-muted">
-                      Calendar apps pull subscribed feeds on their own schedule,
-                      so changes here won&rsquo;t appear there right away. To
-                      refresh sooner: Apple Calendar &mdash; View &rsaquo;
-                      Refresh Calendars (or pull down on iPhone); Outlook
-                      &mdash; Send/Receive; Google Calendar has no refresh and
-                      can take up to a day. Turning sharing off and on again
-                      issues a new link and breaks every old one.
-                    </p>
+                    >
+                      {plan.shareToken ?
+                        <>
+                          <Link2Off className="size-3" /> Turn off
+                        </>
+                      : <>
+                          <Link2 className="size-3" /> Turn on
+                        </>
+                      }
+                    </button>
                   </div>
-                : <p className="text-[11px] text-ink-muted">
-                    Off. Turning this on creates a secret link that shows this
-                    plan read-only and can be subscribed to from any calendar
-                    app.
-                  </p>
-                }
-              </div>
 
-              <div className="border-t border-line pt-4">
-                <p className="mb-2 text-xs font-semibold">People</p>
-
-                <div className="mb-3 flex gap-1.5">
-                  <select
-                    value={inviteRole}
-                    onChange={(event) =>
-                      setInviteRole(event.target.value as "viewer" | "editor")
-                    }
-                    className="rounded-md border border-line bg-surface-raised px-2 py-1.5 text-xs"
-                  >
-                    <option value="editor">Can edit</option>
-                    <option value="viewer">Can view</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={generateInvite}
-                    disabled={isBusy}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-accent px-3 py-1.5 text-xs font-semibold text-accent disabled:opacity-50"
-                  >
-                    <UserPlus className="size-3.5" />
-                    Create invite link
-                  </button>
-                </div>
-
-                {inviteUrl && (
-                  <div className="mb-3">
-                    <CopyableUrl
-                      label="Invite link (send it however you like)"
-                      url={inviteUrl}
-                    />
-                  </div>
-                )}
-
-                {shares.length === 0 ?
-                  <p className="text-[11px] text-ink-muted">
-                    Nobody else has this plan yet.
-                  </p>
-                : <ul className="space-y-1">
-                    {shares.map((share) => (
-                      <li
-                        key={share.userId}
-                        className="flex items-center justify-between gap-2 rounded bg-well px-2 py-1.5"
-                      >
-                        <span className="min-w-0 flex-1 truncate text-xs">
-                          {share.email ?? "Someone"}
-                          <span className="ml-1.5 text-[11px] text-ink-muted">
-                            {share.role === "editor" ? "can edit" : "can view"}
-                          </span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => revokeShare(share.userId)}
-                          aria-label="Remove access"
-                          className="shrink-0 text-ink-muted hover:text-danger"
+                  {plan.shareToken ?
+                    <div className="space-y-3">
+                      <CopyableUrl
+                        label="Read-only web view"
+                        url={viewUrl}
+                      />
+                      <CopyableUrl
+                        label="Calendar subscription (.ics)"
+                        url={feedUrl}
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <a
+                          href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-md bg-accent hover:bg-accent-hover px-3 py-1.5 text-[11px] font-semibold text-on-accent"
                         >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                }
-              </div>
+                          Add to Google Calendar
+                        </a>
+                        <a
+                          href={webcalUrl}
+                          className="rounded-md border border-line bg-surface-raised px-3 py-1.5 text-[11px] font-semibold text-ink"
+                        >
+                          Add to Apple / Outlook
+                        </a>
+                      </div>
+                      <p className="text-[11px] leading-snug text-ink-muted">
+                        Calendar apps pull subscribed feeds on their own
+                        schedule, so changes here won&rsquo;t appear there right
+                        away. To refresh sooner: Apple Calendar &mdash; View
+                        &rsaquo; Refresh Calendars (or pull down on iPhone);
+                        Outlook &mdash; Send/Receive; Google Calendar has no
+                        refresh and can take up to a day. Turning sharing off
+                        and on again issues a new link and breaks every old one.
+                      </p>
+                    </div>
+                  : <p className="text-[11px] text-ink-muted">
+                      Off. Turning this on creates a secret link that shows this
+                      plan read-only and can be subscribed to from any calendar
+                      app.
+                    </p>
+                  }
+                </div>
+              )}
+
+              <SharingSection
+                kind="meal_plan"
+                resourceId={plan.id}
+                noun="plan"
+                householdId={plan.householdId}
+                household={household}
+                isOwner={isOwner}
+                canManage={canManage}
+                onVisibilityChange={async (householdId) => {
+                  await updatePlan(plan.id, { householdId });
+                  onPlanChange({ ...plan, householdId });
+                }}
+                onError={setError}
+              />
             </>
           )}
 
@@ -533,7 +411,7 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
             link", where it scrolled out of view the moment you looked at
             anything below it — which made unsaved edits very easy to
             walk away from. */}
-        {isOwner && (
+        {canManage && (
           <div className="shrink-0 border-t border-line p-4">
             {isConfirmingExit ?
               <div className="flex flex-col gap-2">

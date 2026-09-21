@@ -1,6 +1,7 @@
 "use client";
 
-import { LogIn, X } from "lucide-react";
+import { Home, LogIn, X } from "lucide-react";
+import Link from "next/link";
 import React, { useState, useRef, useEffect } from "react";
 
 import DemoSignIn from "@components/DemoSignIn";
@@ -156,6 +157,14 @@ const AuthButton = () => {
                   Signed in as{" "}
                   <strong className="text-ink">{user.email}</strong>
                 </p>
+                <Link
+                  href="/household"
+                  onClick={closeAuthModal}
+                  className="flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-line text-sm font-medium text-ink transition-colors hover:border-line-strong"
+                >
+                  <Home className="size-4 text-ink-muted" />
+                  Your household
+                </Link>
                 <button
                   onClick={() => {
                     signOut();

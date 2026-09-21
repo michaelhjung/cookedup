@@ -29,4 +29,12 @@
   .animate-toast-in {
     animation: toast-in 0.25s ease-out both;
   }
+
+  .animate-sheet-in {
+    animation: sheet-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .flash-row {
+    animation: flash-row 1.4s ease-out both;
+  }
 }

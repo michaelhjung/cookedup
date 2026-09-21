@@ -237,6 +237,30 @@ export const DEMO_RECIPES: Record<DemoRecipeKey, DemoRecipe> = {
  * The stored row for a demo recipe, with `imageUrl` in every image slot
  * the way persistRecipeImage leaves a starred recipe.
  */
+const MEASURE_WORDS =
+  /^(a|an|of|whole|large|small|medium|fresh|ripe|big|tablespoons?|tbsp|teaspoons?|tsp|cups?|pounds?|lb|lbs|ounces?|oz|cloves?|heads?|cans?|bunch(es)?|handfuls?|pinch(es)?|sprigs?|slices?|pieces?|sticks?|stalks?|jars?)$/i;
+
+/**
+ * Edamam's `food` is the bare ingredient ("chicken thighs"); the demo
+ * only has the written lines, so this pares one down the way Edamam
+ * would: drop the parenthetical and the prep note after the comma, then
+ * the leading quantity and measure words.
+ */
+const foodFromLine = (line: string): string => {
+  const bare = line
+    .replace(/\([^)]*\)/g, "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  const words = bare.split(/\s+/);
+  while (
+    words.length > 1 &&
+    (/^[\d/½¼¾.-]+$/.test(words[0]) || MEASURE_WORDS.test(words[0]))
+  )
+    words.shift();
+  return words.join(" ");
+};
+
 export const buildDemoHit = (recipe: DemoRecipe, imageUrl: string): Hit => {
   const image = { url: imageUrl, width: 640, height: 480 };
 
@@ -258,7 +282,7 @@ export const buildDemoHit = (recipe: DemoRecipe, imageUrl: string): Hit => {
         text,
         quantity: 0,
         measure: "",
-        food: text,
+        food: foodFromLine(text),
         weight: 0,
         foodCategory: "",
         foodId: "",
@@ -305,4 +329,69 @@ export const DEMO_WEEK: DemoMeal[] = [
   { day: 6, slot: "breakfast", recipe: "shakshuka" },
   { day: 6, slot: "lunch", recipe: "greekSalad" },
   { day: 6, slot: "dinner", title: "Dinner at Mom's" },
+];
+
+/** What's in the household pantry, in the state a mid-week kitchen is in. */
+export const DEMO_PANTRY: {
+  name: string;
+  category: string;
+  status?: "stocked" | "low" | "out";
+  /** How long ago it was last touched; stocked items default to a fortnight. */
+  hoursAgo?: number;
+  markedByFriend?: boolean;
+}[] = [
+  { name: "Garlic", category: "Produce" },
+  {
+    name: "Onions",
+    category: "Produce",
+    status: "low",
+    hoursAgo: 70,
+    markedByFriend: true,
+  },
+  { name: "Spinach", category: "Produce", status: "out", hoursAgo: 20 },
+  { name: "Lemons", category: "Produce" },
+  { name: "Avocados", category: "Produce", status: "low", hoursAgo: 5 },
+  { name: "Cherry tomatoes", category: "Produce" },
+  { name: "Sourdough bread", category: "Bakery" },
+  {
+    name: "Tortillas",
+    category: "Bakery",
+    status: "out",
+    hoursAgo: 96,
+    markedByFriend: true,
+  },
+  { name: "Chicken thighs", category: "Meat & seafood" },
+  { name: "Shrimp", category: "Meat & seafood", status: "out", hoursAgo: 30 },
+  {
+    name: "Eggs",
+    category: "Dairy & eggs",
+    status: "low",
+    hoursAgo: 26,
+    markedByFriend: true,
+  },
+  { name: "Butter", category: "Dairy & eggs" },
+  { name: "Greek yogurt", category: "Dairy & eggs" },
+  { name: "Parmesan cheese", category: "Dairy & eggs" },
+  { name: "Olive oil", category: "Pantry staples" },
+  {
+    name: "Basmati rice",
+    category: "Pantry staples",
+    status: "low",
+    hoursAgo: 50,
+  },
+  { name: "Soy sauce", category: "Pantry staples" },
+  {
+    name: "Chicken broth",
+    category: "Pantry staples",
+    status: "low",
+    hoursAgo: 8,
+    markedByFriend: true,
+  },
+  { name: "Rolled oats", category: "Pantry staples" },
+  { name: "Peanut butter", category: "Pantry staples" },
+  { name: "Cumin", category: "Spices" },
+  { name: "Paprika", category: "Spices" },
+  { name: "Frozen peas", category: "Frozen" },
+  { name: "Coffee", category: "Beverages" },
+  { name: "Dish soap", category: "Household", status: "low", hoursAgo: 120 },
 ];

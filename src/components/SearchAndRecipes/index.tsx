@@ -3,6 +3,10 @@
 import { PanelLeftClose, PanelLeftOpen, SearchIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
+import PantryNotice, {
+  PantryHandoff,
+  readPantryHandoff,
+} from "@components/SearchAndRecipes/PantryNotice";
 import Recipes from "@components/SearchAndRecipes/Recipes";
 import Search from "@components/SearchAndRecipes/Search";
 import { useAuth } from "@context/AuthContext";
@@ -45,6 +49,24 @@ const SearchAndRecipes = () => {
   const [highlightedRecipeUrl, setHighlightedRecipeUrl] = useState<
     string | null
   >(null);
+  // Arriving from the pantry's "Find recipes with what I have": the
+  // URL carries the stocked items to search with, plus what was left
+  // out, which the note above the results explains.
+  const [pantryHandoff, setPantryHandoff] = useState<PantryHandoff | null>(
+    null,
+  );
+  const [autoSearchToken, setAutoSearchToken] = useState(0);
+
+  useEffect(() => {
+    const handoff = readPantryHandoff(window.location.search);
+    if (!handoff) return;
+    // Read once; a refresh or back-navigation shouldn't re-run it.
+    window.history.replaceState(null, "", window.location.pathname);
+    setPantryHandoff(handoff);
+    if (handoff.terms.length === 0) return;
+    setSelectedIngredients(handoff.terms);
+    setAutoSearchToken((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     const checkForURLErrors = () => {
@@ -172,6 +194,7 @@ const SearchAndRecipes = () => {
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
           onResultsLoaded={() => setIsSearchCollapsed(true)}
+          autoSearchToken={autoSearchToken}
         />
       </div>
 
@@ -191,6 +214,14 @@ const SearchAndRecipes = () => {
         activeFilterKeys={activeFilterKeys}
         filterGeneration={filterGeneration}
         highlightedRecipeUrl={highlightedRecipeUrl}
+        notice={
+          pantryHandoff && (
+            <PantryNotice
+              handoff={pantryHandoff}
+              onDismiss={() => setPantryHandoff(null)}
+            />
+          )
+        }
         onAddIngredient={(ingredient) =>
           setSelectedIngredients((prev) =>
             prev.includes(ingredient) ? prev : [...prev, ingredient],

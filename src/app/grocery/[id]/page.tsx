@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import AcceptInvite from "@components/AcceptInvite";
 import Footer from "@components/Footer";
+import ListView from "@components/Grocery/ListView";
 import Header from "@components/Header";
 
 export const metadata: Metadata = {
-  title: "Invite | Cooked Up!",
+  title: "Grocery list | Cooked Up!",
   robots: { index: false, follow: false },
 };
 
-const InvitePage = async (props: PageProps<"/invite/[token]">) => {
-  const { token } = await props.params;
+const GroceryListPage = async (props: PageProps<"/grocery/[id]">) => {
+  const { id } = await props.params;
 
   return (
     <div className="flex min-h-dvh flex-col p-4 md:p-6 lg:p-8">
@@ -18,9 +19,11 @@ const InvitePage = async (props: PageProps<"/invite/[token]">) => {
 
       <main
         id="main"
-        className="mt-4 flex grow items-center justify-center"
+        className="flex grow flex-col pt-5"
       >
-        <AcceptInvite token={token} />
+        <Suspense>
+          <ListView listId={id} />
+        </Suspense>
       </main>
 
       <Footer />
@@ -28,4 +31,4 @@ const InvitePage = async (props: PageProps<"/invite/[token]">) => {
   );
 };
 
-export default InvitePage;
+export default GroceryListPage;

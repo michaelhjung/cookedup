@@ -52,6 +52,11 @@ interface SearchProps {
   // Fired once a search (or the saved view) has put results on screen,
   // so the parent can tuck this sidebar away on phones.
   onResultsLoaded: () => void;
+  /**
+   * Bumped by the parent once it has seeded `selectedIngredients` from
+   * the URL (arriving from the pantry), to run the search unprompted.
+   */
+  autoSearchToken: number;
 }
 
 const Search: React.FC<SearchProps> = ({
@@ -69,6 +74,7 @@ const Search: React.FC<SearchProps> = ({
   setHighlightedRecipeUrl,
   isSidebarOpen,
   onResultsLoaded,
+  autoSearchToken,
 }) => {
   const { openAuthModal } = useAuth();
   const [ingredients, setIngredients] = useState<{
@@ -218,6 +224,16 @@ const Search: React.FC<SearchProps> = ({
       setIsSearching(false);
     }
   };
+
+  // The parent seeds the ingredients and bumps the token in the same
+  // render, so by the time this effect runs the closure already sees
+  // them.
+  const handleSearchRef = useRef(handleSearch);
+  handleSearchRef.current = handleSearch;
+  useEffect(() => {
+    if (autoSearchToken === 0) return;
+    handleSearchRef.current();
+  }, [autoSearchToken]);
 
   const handlePickRandomLoaded = () => {
     const hits = recipesData?.hits;

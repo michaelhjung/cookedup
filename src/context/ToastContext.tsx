@@ -11,20 +11,33 @@ import React, {
   ReactNode,
 } from "react";
 
-// Brief, non-blocking failure notices — what `window.alert()` was being
-// used for. Only errors go through here; successes show inline where
-// they happen (the star fills, the check appears) and don't need a
-// banner on top.
+// Brief, non-blocking notices. Errors are the usual case (what
+// `window.alert()` was being used for); successes show inline where
+// they happen. The exception is a notice with an action, like "Onions
+// checked · Undo", where the toast is the only place to put the undo.
 
 const TOAST_DURATION_MS = 5000;
+
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
 
 interface Toast {
   id: number;
   message: string;
+  tone: "error" | "info";
+  action?: ToastAction;
+}
+
+interface ToastOptions {
+  tone?: "error" | "info";
+  action?: ToastAction;
+  durationMs?: number;
 }
 
 interface ToastContextType {
-  showToast: (_message: string) => void;
+  showToast: (_message: string, _options?: ToastOptions) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -40,10 +53,16 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const showToast = useCallback(
-    (message: string) => {
+    (message: string, options: ToastOptions = {}) => {
       const id = nextIdRef.current++;
-      setToasts((previous) => [...previous, { id, message }]);
-      window.setTimeout(() => dismissToast(id), TOAST_DURATION_MS);
+      setToasts((previous) => [
+        ...previous,
+        { id, message, tone: options.tone ?? "error", action: options.action },
+      ]);
+      window.setTimeout(
+        () => dismissToast(id),
+        options.durationMs ?? TOAST_DURATION_MS,
+      );
     },
     [dismissToast],
   );
@@ -58,7 +77,9 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
         <div
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed inset-x-0 bottom-4 z-60 flex flex-col items-center gap-2 px-4"
+          // `--toast-inset` lets a page with its own sticky footer (the
+          // grocery list's add bar) push toasts up above it.
+          className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+var(--toast-inset,0px))] z-60 flex flex-col items-center gap-2 px-4"
         >
           {toasts.map((toast) => (
             <div
@@ -66,15 +87,30 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
               className={`
                 pointer-events-auto
                 flex w-full max-w-sm items-start gap-2.5
-                rounded-md border border-danger/30 bg-surface-raised
+                rounded-md border bg-surface-raised
                 py-2.5 pl-3 pr-2
                 text-sm text-ink
                 shadow-lg
                 animate-toast-in
+                ${toast.tone === "error" ? "border-danger/30" : "border-line"}
               `}
             >
-              <CircleAlert className="mt-0.5 size-4 shrink-0 text-danger" />
+              {toast.tone === "error" && (
+                <CircleAlert className="mt-0.5 size-4 shrink-0 text-danger" />
+              )}
               <p className="grow">{toast.message}</p>
+              {toast.action && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.action?.onClick();
+                    dismissToast(toast.id);
+                  }}
+                  className="shrink-0 rounded-sm px-2 py-1 text-sm font-semibold text-accent transition-colors hover:bg-well"
+                >
+                  {toast.action.label}
+                </button>
+              )}
               <button
                 type="button"
                 aria-label="Dismiss"
