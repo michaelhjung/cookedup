@@ -24,6 +24,7 @@ interface SharedPlanPayload {
     date: string;
     slot: string;
     position: number;
+    time: string | null;
     recipe: MealPlanEntry["recipe"];
     title: string | null;
   }[];
@@ -78,6 +79,7 @@ const SharedPlanPage = async (props: PageProps<"/plan/shared/[token]">) => {
       position: entry.position,
       recipe: entry.recipe?.recipe ? entry.recipe : null,
       title: entry.recipe?.recipe ? null : entry.title,
+      time: entry.time ?? null,
     }));
 
   return (

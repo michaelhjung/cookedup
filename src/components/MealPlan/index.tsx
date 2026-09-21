@@ -32,6 +32,8 @@ import {
   fetchStarredRecipes,
   moveEntry,
   removeEntry,
+  setEntryTime,
+  setSeriesTime,
   shiftSeries,
   updateSeries,
 } from "@lib/mealPlan/client";
@@ -106,11 +108,12 @@ const previousPeriod = (view: CalendarView, cursor: string) => {
   };
 };
 
-/** A move, removal, or rule change waiting on a "this / following / all" answer. */
+/** A change waiting on a "this / following / all" answer. */
 type PendingSeriesAction =
   | { action: "move"; entry: MealPlanEntry; date: string; slot: SlotId }
   | { action: "remove"; entry: MealPlanEntry }
-  | { action: "edit"; entry: MealPlanEntry; rule: RepeatRule };
+  | { action: "edit"; entry: MealPlanEntry; rule: RepeatRule }
+  | { action: "retime"; entry: MealPlanEntry; time: string | null };
 
 /**
  * Below `lg` the seven-column grid is unusable, so the planner swaps to a
@@ -474,14 +477,19 @@ const MealPlanner = () => {
     const snapshot = entries;
 
     if (scope === "one" || !entry.series) {
+      // A time set for one slot doesn't carry to another; `moveEntry`
+      // drops it the same way.
+      const time = slot === entry.slot ? entry.time : null;
       setEntries((previous) =>
         previous.map((candidate) =>
-          candidate.id === entry.id ? { ...candidate, date, slot } : candidate,
+          candidate.id === entry.id ?
+            { ...candidate, date, slot, time }
+          : candidate,
         ),
       );
 
       try {
-        await moveEntry(entry.id, date, slot);
+        await moveEntry(entry, date, slot);
         // Moving out of the visible range means the entry should vanish
         // from it, which only a refetch gets right.
         if (!isInRange(date)) await loadEntries();
@@ -507,6 +515,38 @@ const MealPlanner = () => {
     }
   };
 
+  const retimeWithScope = async (
+    entry: MealPlanEntry,
+    time: string | null,
+    scope: SeriesScope,
+  ) => {
+    const snapshot = entries;
+    const series = entry.series;
+    const fromDate = scope === "all" ? series?.startDate : entry.date;
+
+    // Time isn't part of the repeat rule, so the rows keep their ids and
+    // an optimistic update is safe even across a whole series.
+    setEntries((previous) =>
+      previous.map((candidate) => {
+        if (candidate.id === entry.id) return { ...candidate, time };
+        if (scope === "one" || !series || candidate.series?.id !== series.id)
+          return candidate;
+        return fromDate && candidate.date >= fromDate ?
+            { ...candidate, time }
+          : candidate;
+      }),
+    );
+
+    try {
+      if (scope === "one" || !series || !fromDate)
+        await setEntryTime(entry.id, time);
+      else await setSeriesTime(series.id, fromDate, time);
+    } catch (caught) {
+      setEntries(snapshot);
+      reportError(caught, "Couldn't change that meal's time.");
+    }
+  };
+
   // A meal that repeats gets the "this / following / all" question
   // first; the answer comes back through handleSeriesScope.
   const handleRemove = (entry: MealPlanEntry) => {
@@ -519,6 +559,11 @@ const MealPlanner = () => {
     else moveWithScope(entry, date, slot, "one");
   };
 
+  const handleSetTime = (entry: MealPlanEntry, time: string | null) => {
+    if (entry.series) setPendingSeries({ action: "retime", entry, time });
+    else retimeWithScope(entry, time, "one");
+  };
+
   const handleSeriesScope = (scope: SeriesScope) => {
     if (!pendingSeries) return;
     setPendingSeries(null);
@@ -527,6 +572,8 @@ const MealPlanner = () => {
       removeWithScope(pendingSeries.entry, scope);
     else if (pendingSeries.action === "edit")
       editWithScope(pendingSeries.entry, pendingSeries.rule, scope);
+    else if (pendingSeries.action === "retime")
+      retimeWithScope(pendingSeries.entry, pendingSeries.time, scope);
     else
       moveWithScope(
         pendingSeries.entry,
@@ -698,6 +745,7 @@ const MealPlanner = () => {
               onRemove={handleRemove}
               onMove={handleMove}
               onRepeat={handleRepeat}
+              onSetTime={handleSetTime}
             />
           : activeView === "month" ?
             <MonthGrid
@@ -712,6 +760,7 @@ const MealPlanner = () => {
               onRemove={handleRemove}
               onMove={handleMove}
               onRepeat={handleRepeat}
+              onSetTime={handleSetTime}
             />
           : <WeekGrid
               weekStart={cursor}
@@ -722,6 +771,7 @@ const MealPlanner = () => {
               onRemove={handleRemove}
               onMove={handleMove}
               onRepeat={handleRepeat}
+              onSetTime={handleSetTime}
             />
           }
         </div>

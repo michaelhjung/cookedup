@@ -19,6 +19,8 @@ interface SlotCellProps {
   onRemove?: (_entry: MealPlanEntry) => void;
   onMove?: (_entry: MealPlanEntry, _date: string, _slot: SlotId) => void;
   onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
+  /** `null` puts the meal back on its slot's time. */
+  onSetTime?: (_entry: MealPlanEntry, _time: string | null) => void;
 }
 
 /**
@@ -37,6 +39,7 @@ const SlotCell: React.FC<SlotCellProps> = ({
   onRemove,
   onMove,
   onRepeat,
+  onSetTime,
 }) => {
   const { target } = useEntryDrag();
   const isDropTarget = target?.date === date && target?.slot === slot;
@@ -63,6 +66,7 @@ const SlotCell: React.FC<SlotCellProps> = ({
           onRemove={onRemove}
           onMove={onMove}
           onRepeat={onRepeat}
+          onSetTime={onSetTime}
         />
       ))}
 

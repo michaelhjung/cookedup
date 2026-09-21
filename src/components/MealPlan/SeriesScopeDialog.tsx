@@ -10,7 +10,7 @@ import { MealPlanEntry, SeriesScope, getEntryLabel } from "@lib/mealPlan/types";
 interface SeriesScopeDialogProps {
   entry: MealPlanEntry;
   /** Editing the rule can't apply to one meal, so it offers two scopes. */
-  action: "move" | "remove" | "edit";
+  action: "move" | "remove" | "edit" | "retime";
   // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
   onChoose: (_scope: SeriesScope) => void;
   onCancel: () => void;
@@ -37,10 +37,11 @@ const SeriesScopeDialog: React.FC<SeriesScopeDialogProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [onCancel]);
 
-  const verb =
-    action === "move" ? "Move"
-    : action === "remove" ? "Remove"
-    : "Change";
+  const title =
+    action === "move" ? "Move repeating meal?"
+    : action === "remove" ? "Remove repeating meal?"
+    : action === "retime" ? "Change time of repeating meal?"
+    : "Change repeating meal?";
   const options: { scope: SeriesScope; label: string }[] = [
     ...(action === "edit" ?
       []
@@ -64,7 +65,7 @@ const SeriesScopeDialog: React.FC<SeriesScopeDialogProps> = ({
           id="series-scope-title"
           className="text-sm font-semibold"
         >
-          {verb} repeating meal?
+          {title}
         </h2>
         <p className="mt-1 line-clamp-2 text-xs text-ink-muted">
           {getEntryLabel(entry)}

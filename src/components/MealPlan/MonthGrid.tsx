@@ -27,6 +27,8 @@ interface MonthGridProps {
   onRemove?: (_entry: MealPlanEntry) => void;
   onMove?: (_entry: MealPlanEntry, _date: string, _slot: SlotId) => void;
   onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
+  /** `null` puts the meal back on its slot's time. */
+  onSetTime?: (_entry: MealPlanEntry, _time: string | null) => void;
 }
 
 const WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -46,6 +48,7 @@ interface DayCellProps {
   onRemove?: MonthGridProps["onRemove"];
   onMove?: MonthGridProps["onMove"];
   onRepeat?: MonthGridProps["onRepeat"];
+  onSetTime?: MonthGridProps["onSetTime"];
 }
 
 const DayCell: React.FC<DayCellProps> = ({
@@ -60,6 +63,7 @@ const DayCell: React.FC<DayCellProps> = ({
   onRemove,
   onMove,
   onRepeat,
+  onSetTime,
 }) => {
   const { target, draggingEntryId } = useEntryDrag();
   const isDropTarget = target?.date === date && target.slot === null;
@@ -118,6 +122,7 @@ const DayCell: React.FC<DayCellProps> = ({
           onRemove={onRemove}
           onMove={onMove}
           onRepeat={onRepeat}
+          onSetTime={onSetTime}
         />
       ))}
 
@@ -150,6 +155,7 @@ const MonthGrid: React.FC<MonthGridProps> = ({
   onRemove,
   onMove,
   onRepeat,
+  onSetTime,
 }) => {
   const dates = monthGridDates(monthStart);
   const today = todayISO();
@@ -200,6 +206,7 @@ const MonthGrid: React.FC<MonthGridProps> = ({
           onRemove={onRemove}
           onMove={onMove}
           onRepeat={onRepeat}
+          onSetTime={onSetTime}
         />
       ))}
     </div>

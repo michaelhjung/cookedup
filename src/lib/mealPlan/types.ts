@@ -57,6 +57,13 @@ export interface MealPlanEntry {
   recipe: Hit | null;
   title: string | null;
   /**
+   * Local wall-clock "HH:MM" when this meal happens at a time other than
+   * its slot's; null means "whenever the slot is". Kept nullable rather
+   * than always filled in so that retiming a slot in settings still
+   * moves every meal that wasn't given a time of its own.
+   */
+  time: string | null;
+  /**
    * Set when this meal is one occurrence of a repeat rule. Absent (not
    * just null) on the shared view and the calendar feed, which never
    * need it.
@@ -160,6 +167,15 @@ export const makeSlotId = (): string =>
 export const getEntryLabel = (
   entry: Pick<MealPlanEntry, "recipe" | "title">,
 ): string => entry.recipe?.recipe.label ?? entry.title ?? "Meal";
+
+/**
+ * When a meal actually happens: its own time if it has one, else its
+ * slot's. The slot is the row it sits in; this is the clock.
+ */
+export const getEntryTime = (
+  entry: Pick<MealPlanEntry, "time">,
+  slot: Pick<MealSlotDef, "time">,
+): string => (isValidSlotTime(entry.time) ? entry.time : slot.time);
 
 export const findSlot = (
   slots: MealSlotDef[],

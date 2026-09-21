@@ -191,6 +191,7 @@ interface EntryRow {
   slot: string;
   position: number;
   title: string | null;
+  time: string | null;
   recipes: { data: Hit } | null;
   series: SeriesRow | null;
 }
@@ -223,7 +224,7 @@ export const fetchEntries = async (
   const { data, error } = await supabase
     .from("meal_plan_entries")
     .select(
-      `id, date, slot, position, title, recipes:recipe_id (data), series:series_id (${SERIES_COLUMNS})`,
+      `id, date, slot, position, title, time, recipes:recipe_id (data), series:series_id (${SERIES_COLUMNS})`,
     )
     .eq("plan_id", planId)
     .gte("date", startDate)
@@ -242,6 +243,7 @@ export const fetchEntries = async (
       position: row.position,
       recipe: row.recipes?.data ?? null,
       title: row.recipes ? null : row.title,
+      time: row.time,
       series: toSeries(row.series),
     }));
 };
@@ -452,15 +454,51 @@ export const copyEntries = async (
   return typeof data === "number" ? data : 0;
 };
 
+/**
+ * `time` is the entry's current override, kept on a same-slot move and
+ * dropped when the slot changes: a "19:30" that belonged to dinner means
+ * nothing under lunch. The series function applies the same rule.
+ */
 export const moveEntry = async (
-  entryId: string,
+  entry: Pick<MealPlanEntry, "id" | "slot" | "time">,
   date: string,
   slot: SlotId,
 ): Promise<void> => {
   const { error } = await supabase
     .from("meal_plan_entries")
-    .update({ date, slot })
+    .update({ date, slot, time: slot === entry.slot ? entry.time : null })
+    .eq("id", entry.id);
+
+  if (error) throw new Error(error.message);
+};
+
+/** `null` puts the meal back on its slot's time. */
+export const setEntryTime = async (
+  entryId: string,
+  time: string | null,
+): Promise<void> => {
+  const { error } = await supabase
+    .from("meal_plan_entries")
+    .update({ time })
     .eq("id", entryId);
+
+  if (error) throw new Error(error.message);
+};
+
+/**
+ * Retimes every occurrence from `fromDate` onward. Time isn't part of
+ * the repeat rule, so unlike a move this never has to split the series.
+ */
+export const setSeriesTime = async (
+  seriesId: string,
+  fromDate: string,
+  time: string | null,
+): Promise<void> => {
+  const { error } = await supabase
+    .from("meal_plan_entries")
+    .update({ time })
+    .eq("series_id", seriesId)
+    .gte("date", fromDate);
 
   if (error) throw new Error(error.message);
 };

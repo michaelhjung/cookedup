@@ -8,6 +8,7 @@ import {
   MealSlotDef,
   formatSlotTime,
   getEntryLabel,
+  getEntryTime,
   parseSlots,
   sortSlots,
 } from "@lib/mealPlan/types";
@@ -32,6 +33,7 @@ const entry = (overrides: Partial<MealPlanEntry> = {}): MealPlanEntry => ({
   position: 0,
   recipe: hit(),
   title: null,
+  time: null,
   ...overrides,
 });
 
@@ -62,6 +64,14 @@ describe("buildPlanEvents", () => {
 
     expect(built.title).toBe("Supper: Salmon Teriyaki");
     expect(built.startTime).toBe("19:30");
+  });
+
+  it("prefers the meal's own time over its slot's", () => {
+    const [built] = buildPlanEvents(plan, [entry({ time: "19:30" })]);
+
+    expect(built.startTime).toBe("19:30");
+    // The slot still names the meal; only the clock moves.
+    expect(built.title).toBe("Dinner: Salmon Teriyaki");
   });
 
   it("supports custom slots that aren't one of the defaults", () => {
@@ -167,6 +177,22 @@ describe("getEntryLabel", () => {
 
   it("never renders blank for a malformed row", () => {
     expect(getEntryLabel(entry({ recipe: null, title: null }))).toBe("Meal");
+  });
+});
+
+describe("getEntryTime", () => {
+  const dinner: MealSlotDef = { id: "dinner", label: "Dinner", time: "18:00" };
+
+  it("falls back to the slot's time", () => {
+    expect(getEntryTime(entry(), dinner)).toBe("18:00");
+  });
+
+  it("uses the meal's own time when it has one", () => {
+    expect(getEntryTime(entry({ time: "19:30" }), dinner)).toBe("19:30");
+  });
+
+  it("ignores an override that isn't a valid clock time", () => {
+    expect(getEntryTime(entry({ time: "soon" }), dinner)).toBe("18:00");
   });
 });
 

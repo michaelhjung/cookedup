@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, PencilLine, Repeat, Trash2 } from "lucide-react";
+import { Clock, ExternalLink, PencilLine, Repeat, Trash2 } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -23,6 +23,7 @@ import {
   findSlot,
   formatSlotTime,
   getEntryLabel,
+  getEntryTime,
 } from "@lib/mealPlan/types";
 
 interface PlannedRecipeChipProps {
@@ -44,6 +45,8 @@ interface PlannedRecipeChipProps {
    * repeat yet, or change the series' rule when it does.
    */
   onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
+  /** Give this meal its own time, or `null` to put it back on its slot's. */
+  onSetTime?: (_entry: MealPlanEntry, _time: string | null) => void;
 }
 
 /** The editable part of a series, without its id and anchor date. */
@@ -74,6 +77,7 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
   onRemove,
   onMove,
   onRepeat,
+  onSetTime,
 }) => {
   const { start, draggingEntryId } = useEntryDrag();
   // Set when a press turns into a drag, so releasing over a drop target
@@ -85,17 +89,29 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
   const [moveDate, setMoveDate] = useState(entry.date);
   const [moveSlot, setMoveSlot] = useState<SlotId>(entry.slot);
   const [repeatRule, setRepeatRule] = useState<RepeatRule | null>(null);
+  // null while collapsed, like `repeatRule`.
+  const [timeDraft, setTimeDraft] = useState<string | null>(null);
+
+  const slot = findSlot(slots, entry.slot);
+  const slotTime = slot?.time ?? "12:00";
+  const time = getEntryTime(entry, { time: slotTime });
+  // An override equal to the slot's time is saved as none at all, so
+  // "has its own time" and "shows a different time" mean the same thing.
+  const hasOwnTime = time !== slotTime;
 
   // Reopening after a move elsewhere shouldn't show stale form values.
   useEffect(() => {
     setMoveDate(entry.date);
     setMoveSlot(entry.slot);
     setRepeatRule(null);
-  }, [entry.date, entry.slot, entry.series?.id]);
+    setTimeDraft(null);
+  }, [entry.date, entry.slot, entry.series?.id, entry.time]);
 
   const label = getEntryLabel(entry);
   const image = thumbnailUrl(entry);
   const hasMoved = moveDate !== entry.date || moveSlot !== entry.slot;
+  const isTimeChanged =
+    timeDraft !== null && timeDraft !== time && timeDraft.length === 5;
   const isRepeating = Boolean(entry.series);
   const isRepeatValid =
     repeatRule !== null && validateRepeatRule(repeatRule, entry.date) === null;
@@ -147,6 +163,12 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
             {findSlot(slots, entry.slot)?.label ?? entry.slot}
           </span>
           <span className="min-w-0 flex-1 truncate font-medium">{label}</span>
+          {hasOwnTime && (
+            <Clock
+              aria-label={`At ${formatSlotTime(time)}`}
+              className="size-2.5 shrink-0 text-ink-muted"
+            />
+          )}
           {isRepeating && (
             <Repeat
               aria-label="Repeats"
@@ -188,8 +210,21 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
               </span>
             )
           }
-          <span className="line-clamp-2 min-w-0 flex-1 text-[11px] font-medium leading-tight sm:text-xs">
-            {label}
+          <span className="min-w-0 flex-1">
+            <span className="line-clamp-2 text-[11px] font-medium leading-tight sm:text-xs">
+              {label}
+            </span>
+            {hasOwnTime && (
+              // Shown only when it differs from the row's time, so a
+              // meal at its usual hour carries no extra noise.
+              <span className="mt-0.5 flex items-center gap-1 text-[10px] leading-none text-ink-muted tabular-nums">
+                <Clock
+                  aria-hidden
+                  className="size-2.5 shrink-0"
+                />
+                {formatSlotTime(time)}
+              </span>
+            )}
           </span>
           {isRepeating && (
             <Repeat
@@ -211,6 +246,16 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
             <p className="mb-2 flex items-start gap-1.5 text-[11px] leading-snug text-ink-muted">
               <Repeat className="mt-0.5 size-3 shrink-0" />
               {describeRepeatRule(entry.series)}
+            </p>
+          )}
+
+          {hasOwnTime && slot && (
+            <p className="mb-2 flex items-start gap-1.5 text-[11px] leading-snug text-ink-muted">
+              <Clock className="mt-0.5 size-3 shrink-0" />
+              <span>
+                {formatSlotTime(time)}, instead of {slot.label} at{" "}
+                {formatSlotTime(slotTime)}
+              </span>
             </p>
           )}
 
@@ -277,6 +322,78 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
                   </button>
                 </div>
               </div>
+
+              {onSetTime && slot && (
+                <div className="mt-3 border-t border-line pt-3">
+                  {
+                    timeDraft !== null ?
+                      <>
+                        <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+                          Time
+                        </p>
+                        <div className="flex gap-1.5">
+                          <input
+                            type="time"
+                            value={timeDraft}
+                            onChange={(event) =>
+                              setTimeDraft(event.target.value)
+                            }
+                            aria-label="Time"
+                            className="h-8 min-w-0 flex-1 rounded-md border border-line bg-transparent px-2 text-xs tabular-nums"
+                          />
+                          <button
+                            type="button"
+                            disabled={!isTimeChanged}
+                            onClick={() => {
+                              // Picking the slot's own time means "no
+                              // override", so a later slot retime still
+                              // carries this meal along.
+                              onSetTime(
+                                entry,
+                                timeDraft === slotTime ? null : timeDraft,
+                              );
+                              setIsOpen(false);
+                            }}
+                            className={`
+                            h-8 shrink-0 rounded-md px-3 text-xs font-semibold transition-colors
+                            ${
+                              isTimeChanged ?
+                                "cursor-pointer bg-accent text-on-accent hover:bg-accent-hover"
+                              : "cursor-not-allowed bg-well text-ink-muted"
+                            }
+                          `}
+                          >
+                            Set
+                          </button>
+                        </div>
+                        {hasOwnTime && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onSetTime(entry, null);
+                              setIsOpen(false);
+                            }}
+                            className="mt-1.5 text-[11px] text-ink-muted hover:text-ink"
+                          >
+                            Back to {slot.label} at {formatSlotTime(slotTime)}
+                          </button>
+                        )}
+                      </>
+                      // Collapsed like Repeat: the common case is a meal at
+                      // its usual hour, and the header already says when
+                      // it isn't.
+                    : <button
+                        type="button"
+                        onClick={() => setTimeDraft(time)}
+                        className="flex w-full items-center gap-1.5 text-xs text-ink-muted hover:text-ink"
+                      >
+                        <Clock className="size-3.5" />
+                        Change time...
+                      </button>
+
+                  }
+                </div>
+              )}
 
               {onRepeat && (
                 <div className="mt-3 border-t border-line pt-3">

@@ -24,6 +24,8 @@ interface DayAgendaProps {
   onRemove?: (_entry: MealPlanEntry) => void;
   onMove?: (_entry: MealPlanEntry, _date: string, _slot: SlotId) => void;
   onRepeat?: (_entry: MealPlanEntry, _rule: RepeatRule) => void;
+  /** `null` puts the meal back on its slot's time. */
+  onSetTime?: (_entry: MealPlanEntry, _time: string | null) => void;
 }
 
 /**
@@ -42,6 +44,7 @@ const DayAgenda: React.FC<DayAgendaProps> = ({
   onRemove,
   onMove,
   onRepeat,
+  onSetTime,
 }) => (
   <div className="flex flex-col gap-3">
     <div className="flex items-center justify-between">
@@ -95,6 +98,7 @@ const DayAgenda: React.FC<DayAgendaProps> = ({
             onRemove={onRemove}
             onMove={onMove}
             onRepeat={onRepeat}
+            onSetTime={onSetTime}
           />
         </section>
       ))}

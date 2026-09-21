@@ -14,6 +14,7 @@ import {
   MealPlanEntry,
   findSlot,
   getEntryLabel,
+  getEntryTime,
 } from "@lib/mealPlan/types";
 
 export interface PlanEvent {
@@ -97,7 +98,7 @@ export const buildPlanEvents = (
         description: describeEntry(entry, planUrl),
         ...(entry.recipe && { url: entry.recipe.recipe.url }),
         date: entry.date,
-        startTime: slot.time,
+        startTime: getEntryTime(entry, slot),
         durationMinutes: EVENT_DURATION_MINUTES,
       },
     ];
