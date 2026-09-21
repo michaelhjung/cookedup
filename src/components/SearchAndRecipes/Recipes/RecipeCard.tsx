@@ -5,6 +5,7 @@ import React, { useEffect, useRef } from "react";
 
 import AddToPlanButton from "@components/MealPlan/AddToPlanButton";
 import { Hit } from "@interfaces/edamam";
+import { countPantryMatches } from "@lib/ingredients";
 
 import StarIcon from "./StarIcon";
 
@@ -14,6 +15,8 @@ interface RecipeCardProps {
   savedRecipes: Hit[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<Hit[]>>;
   isHighlighted?: boolean;
+  /** Match keys for what's stocked in the pantry; empty when signed out. */
+  stockedKeys?: Set<string>;
 }
 
 /**
@@ -32,6 +35,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   savedRecipes,
   setSavedRecipes,
   isHighlighted = false,
+  stockedKeys,
 }) => {
   const {
     recipe: {
@@ -42,6 +46,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       images,
       totalTime,
       ingredientLines,
+      ingredients,
     },
   } = hit;
 
@@ -62,6 +67,16 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
     `${Math.round(calories).toLocaleString()} kcal`,
     `${ingredientLines.length} ingredients`,
   ].filter(Boolean);
+
+  // Zero when signed out or the pantry is empty, and then not shown:
+  // "0 in your pantry" on every card would just be noise.
+  const pantryMatches =
+    stockedKeys ?
+      countPantryMatches(
+        ingredients.map((ingredient) => ingredient.food),
+        stockedKeys,
+      )
+    : 0;
 
   return (
     <a
@@ -108,6 +123,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           {facts.map((fact) => (
             <span key={fact}>{fact}</span>
           ))}
+          {pantryMatches > 0 && (
+            <span className="text-ink">{pantryMatches} in your pantry</span>
+          )}
         </p>
         <p className="truncate text-xs text-ink-muted">{source}</p>
       </div>

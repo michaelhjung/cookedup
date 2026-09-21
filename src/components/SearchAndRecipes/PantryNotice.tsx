@@ -50,7 +50,7 @@ const PantryNotice: React.FC<PantryNoticeProps> = ({ handoff, onDismiss }) => {
   const details: string[] = [];
   if (truncated > 0)
     details.push(
-      `The ${terms.length} you updated most recently are in. ${truncated} more ${truncated === 1 ? "was" : "were"} left out to keep the results relevant.`,
+      `Fresh food and what you updated most recently are in. ${truncated} more ${truncated === 1 ? "was" : "were"} left out to keep the results relevant.`,
     );
   if (skipped.length > 0)
     details.push(`Not matched to a recipe ingredient: ${skipped.join(", ")}.`);

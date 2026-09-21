@@ -12,11 +12,15 @@ import Search from "@components/SearchAndRecipes/Search";
 import { useAuth } from "@context/AuthContext";
 import { useToast } from "@context/ToastContext";
 import { Hit, RecipeData } from "@interfaces/edamam";
+import { useStockedKeys } from "@lib/pantry/useStockedKeys";
 import { supabase } from "@utils/supabase";
 
 const SearchAndRecipes = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  // What's stocked in the pantry, for the "in your pantry" count on
+  // each recipe card.
+  const stockedKeys = useStockedKeys();
   const [savedRecipes, setSavedRecipes] = useState<Hit[]>([]);
   // Lives here rather than in Search so the results area's empty state
   // can seed it with example ingredients.
@@ -214,6 +218,7 @@ const SearchAndRecipes = () => {
         activeFilterKeys={activeFilterKeys}
         filterGeneration={filterGeneration}
         highlightedRecipeUrl={highlightedRecipeUrl}
+        stockedKeys={stockedKeys}
         notice={
           pantryHandoff && (
             <PantryNotice

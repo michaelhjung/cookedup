@@ -11,11 +11,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
+import ActionSheet from "@components/ActionSheet";
 import Bowl from "@components/loaders/Bowl";
 import AddItemBar from "@components/Pantry/AddItemBar";
 import ItemSheet from "@components/Pantry/ItemSheet";
 import PantryItemRow from "@components/Pantry/PantryItemRow";
 import PantrySettings from "@components/Pantry/PantrySettings";
+import StarterPicker, { StarterEntry } from "@components/Pantry/StarterPicker";
 import { useAuth } from "@context/AuthContext";
 import { useToast } from "@context/ToastContext";
 import { useHousehold } from "@lib/household/useHousehold";
@@ -23,10 +25,13 @@ import { pickSearchableItems } from "@lib/ingredients";
 import {
   DuplicateItemError,
   addItem,
+  addItems,
   createPantry,
   fetchItems,
   fetchPantries,
+  readStoredPantryId,
   removeItem,
+  storePantryId,
   updateItem,
 } from "@lib/pantry/client";
 import { groupByCategory, pickRestockItems } from "@lib/pantry/items";
@@ -40,27 +45,9 @@ import {
 import { fetchPeople, getDisplayName } from "@lib/sharing/client";
 import { useIsDesktop } from "@lib/useIsDesktop";
 
-const PANTRY_STORAGE_KEY = "cookedup:pantry";
-
 type Filter = "all" | PantryStatus;
 
 const FILTERS: Filter[] = ["all", "stocked", "low", "out"];
-
-const STARTER_ITEMS: { name: string; category: Category }[] = [
-  { name: "Eggs", category: "Dairy & eggs" },
-  { name: "Olive oil", category: "Pantry staples" },
-  { name: "Rice", category: "Pantry staples" },
-  { name: "Garlic", category: "Produce" },
-  { name: "Butter", category: "Dairy & eggs" },
-];
-
-const readStoredPantryId = (): string | null => {
-  try {
-    return localStorage.getItem(PANTRY_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-};
 
 const describePantry = (pantry: Pantry): string =>
   pantry.householdId ? "Household"
@@ -86,6 +73,7 @@ const PantryPage: React.FC = () => {
   const [menuItemId, setMenuItemId] = useState<string | null>(null);
   const [flashItemId, setFlashItemId] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isStarterOpen, setIsStarterOpen] = useState(false);
 
   const activePantry =
     pantries.find((pantry) => pantry.id === activePantryId) ?? null;
@@ -94,11 +82,7 @@ const PantryPage: React.FC = () => {
   const choosePantry = useCallback((pantryId: string) => {
     setActivePantryId(pantryId);
     setFilter("all");
-    try {
-      localStorage.setItem(PANTRY_STORAGE_KEY, pantryId);
-    } catch {
-      // Private mode: the choice just isn't remembered.
-    }
+    storePantryId(pantryId);
   }, []);
 
   // Load the pantries, making one on the first visit so the page never
@@ -257,6 +241,24 @@ const PantryPage: React.FC = () => {
       }
       console.error("Failed to add item:", caught);
       showToast(`Couldn't add ${name}.`);
+    }
+  };
+
+  // The starter picker: one request for the lot, no optimistic rows.
+  // Whatever was already there comes back left out of `saved`.
+  const handleAddMany = async (entries: StarterEntry[]) => {
+    if (!activePantry || !user) return;
+
+    try {
+      const saved = await addItems(activePantry.id, user.id, entries);
+      setItems((previous) => [...previous, ...saved]);
+      setIsStarterOpen(false);
+      showToast(
+        saved.length === 1 ? "Added 1 item." : `Added ${saved.length} items.`,
+      );
+    } catch (caught) {
+      console.error("Failed to add items:", caught);
+      showToast("Couldn't add those.");
     }
   };
 
@@ -474,17 +476,15 @@ const PantryPage: React.FC = () => {
           and turn them into a grocery list when it&rsquo;s time to shop.
         </p>
         {canEdit && (
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {STARTER_ITEMS.map((starter) => (
-              <button
-                key={starter.name}
-                type="button"
-                onClick={() => handleAdd(starter.name, starter.category)}
-                className="h-9 rounded-md border border-line bg-surface-raised px-3 text-sm transition-colors hover:border-line-strong active:translate-y-px"
-              >
-                + {starter.name}
-              </button>
-            ))}
+          <div className="mt-6 w-full max-w-xl rounded-lg border border-line bg-surface-raised p-4 text-left">
+            <h4 className="text-sm font-semibold">Stock the basics</h4>
+            <p className="mt-0.5 mb-4 text-xs text-ink-muted">
+              Tap what you have and add it in one go.
+            </p>
+            <StarterPicker
+              items={items}
+              onAdd={handleAddMany}
+            />
           </div>
         )}
       </div>
@@ -673,6 +673,20 @@ const PantryPage: React.FC = () => {
         </div>
       )}
 
+      {isStarterOpen && (
+        <ActionSheet
+          title="Add the basics"
+          onClose={() => setIsStarterOpen(false)}
+        >
+          <div className="max-h-[65vh] overflow-y-auto px-1 sm:px-2.5">
+            <StarterPicker
+              items={items}
+              onAdd={handleAddMany}
+            />
+          </div>
+        </ActionSheet>
+      )}
+
       {menuItem && (
         <ItemSheet
           item={menuItem}
@@ -726,6 +740,14 @@ const PantryPage: React.FC = () => {
             choosePantry(pantryId);
             setIsSettingsOpen(false);
           }}
+          onAddBasics={
+            canEdit ?
+              () => {
+                setIsSettingsOpen(false);
+                setIsStarterOpen(true);
+              }
+            : undefined
+          }
           onClose={() => setIsSettingsOpen(false)}
         />
       )}

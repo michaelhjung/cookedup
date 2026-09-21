@@ -7,7 +7,12 @@
 // network, so all of it is unit-tested directly.
 
 import { INGREDIENTS, type Ingredient } from "@data/ingredients";
-import { normalizeItemName } from "@lib/pantry/items";
+import { STARTER_PANTRY } from "@data/starterPantry";
+import {
+  type CategoryGroup,
+  groupByCategory,
+  normalizeItemName,
+} from "@lib/pantry/items";
 import type { Category, PantryItem } from "@lib/pantry/types";
 
 export type { Ingredient };
@@ -63,6 +68,84 @@ export const searchIngredients = (query: string): Ingredient[] => {
 
   starts.sort((a, b) => a.name.length - b.name.length);
   return [...starts, ...contains, ...byAlias];
+};
+
+// Every entry by aisle, in store-walk order, for browsing without a
+// query. INGREDIENTS is sorted by name, so each aisle is too.
+const INGREDIENTS_BY_AISLE = groupByCategory(INGREDIENTS);
+const INGREDIENTS_BY_CATEGORY = new Map(
+  INGREDIENTS_BY_AISLE.map((group) => [group.category, group.items]),
+);
+
+// Only aisles that hold ingredients can be browsed or matched by name.
+const MATCHABLE_CATEGORIES = INGREDIENTS_BY_AISLE.map(
+  (group) => group.category,
+);
+const MIN_CATEGORY_QUERY = 3;
+
+/**
+ * The aisle the typed text names, if any: "dai" or "eggs" is Dairy &
+ * eggs, "seafood" is Meat & seafood. A prefix of the aisle's name or
+ * of any word in it, from three letters so "me" doesn't drag the whole
+ * meat counter into every search.
+ */
+export const matchCategory = (query: string): Category | undefined => {
+  const needle = query.trim().toLowerCase();
+  if (needle.length < MIN_CATEGORY_QUERY) return undefined;
+
+  return MATCHABLE_CATEGORIES.find((category) => {
+    const lowered = category.toLowerCase();
+    if (lowered.startsWith(needle)) return true;
+    return lowered
+      .split(" ")
+      .some((word) => word !== "&" && word.startsWith(needle));
+  });
+};
+
+export type BrowseOrder = "aisle" | "alphabetical";
+
+export interface IngredientSection {
+  /** The aisle, or null for the ranked matches / the flat A-Z list. */
+  heading: Category | null;
+  ingredients: Ingredient[];
+}
+
+/**
+ * What the ingredient dropdown shows. With nothing typed it's a browse:
+ * every entry, either by aisle in store-walk order or as one A-Z list.
+ * With a query it's the ranked matches in one section regardless of
+ * the browse order (grouping them would bury the best match under a
+ * heading), followed by the aisle the text names, if it names one,
+ * minus anything already listed. Empty sections are left out, so no
+ * sections at all means nothing matched.
+ */
+export const buildIngredientSections = (
+  query: string,
+  order: BrowseOrder,
+): IngredientSection[] => {
+  if (!query.trim()) {
+    if (order === "alphabetical")
+      return [{ heading: null, ingredients: INGREDIENTS }];
+    return INGREDIENTS_BY_AISLE.map((group) => ({
+      heading: group.category,
+      ingredients: group.items,
+    }));
+  }
+
+  const matches = searchIngredients(query);
+  const sections: IngredientSection[] = [];
+  if (matches.length > 0)
+    sections.push({ heading: null, ingredients: matches });
+
+  const category = matchCategory(query);
+  if (!category) return sections;
+
+  const listed = new Set(matches);
+  const rest = (INGREDIENTS_BY_CATEGORY.get(category) ?? []).filter(
+    (ingredient) => !listed.has(ingredient),
+  );
+  if (rest.length > 0) sections.push({ heading: category, ingredients: rest });
+  return sections;
 };
 
 // First match wins, so more specific words go before general ones:
@@ -161,13 +244,27 @@ export interface SearchableItems {
   truncated: number;
 }
 
+// What drives a "what should I cook" search: the fresh food first, the
+// staples next, and the things that are in every recipe anyway (salt,
+// cumin, wine) last, so a full pantry's capped query isn't ten
+// seasonings. Anything not listed ranks with the last group.
+const SEARCH_PRIORITY: Partial<Record<Category, number>> = {
+  Produce: 0,
+  "Meat & seafood": 0,
+  "Dairy & eggs": 0,
+  Bakery: 0,
+  Frozen: 0,
+  "Pantry staples": 1,
+};
+const LOWEST_SEARCH_PRIORITY = 2;
+
 /**
  * What "Find recipes with what I have" can actually search for: the
  * recipe search only understands the ingredient list, so stocked items
  * are matched against it (aliases included, so "green onions" searches
  * as "scallions") and the rest are reported back so the page can say
- * what was left out. Capped to the most recently updated so the query
- * stays sane in a full pantry.
+ * what was left out. Ranked by the ingredient's aisle, then by most
+ * recently updated, and capped so the query stays sane in a full pantry.
  */
 export const pickSearchableItems = (
   items: PantryItem[],
@@ -177,17 +274,101 @@ export const pickSearchableItems = (
     .filter((item) => item.status === "stocked")
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
-  const terms: string[] = [];
+  const ranked: { term: string; priority: number }[] = [];
   const skipped: string[] = [];
   for (const item of stocked) {
     const known = lookupIngredient(item.nameKey);
-    if (known) terms.push(known.name);
-    else skipped.push(item.name);
+    if (!known) {
+      skipped.push(item.name);
+      continue;
+    }
+    ranked.push({
+      term: known.name,
+      priority: SEARCH_PRIORITY[known.category] ?? LOWEST_SEARCH_PRIORITY,
+    });
   }
+  // Stable sort, so within a tier the newest-first order above holds.
+  ranked.sort((a, b) => a.priority - b.priority);
+  const terms = ranked.map(({ term }) => term);
 
   return {
     terms: terms.slice(0, cap),
     skipped,
     truncated: Math.max(0, terms.length - cap),
   };
+};
+
+// A pantry item and a recipe ingredient are the same thing when they
+// resolve to the same list entry; anything the list doesn't know falls
+// back to its plain normalized name, so a home-made "grandma's hot
+// sauce" still matches itself.
+const toMatchKey = (name: string): string =>
+  lookupIngredient(name)?.name ?? normalizeItemName(name);
+
+/** The stocked items, as the keys recipe ingredients are matched by. */
+export const buildStockedKeys = (items: PantryItem[]): Set<string> =>
+  new Set(
+    items
+      .filter((item) => item.status === "stocked")
+      .map((item) => toMatchKey(item.nameKey)),
+  );
+
+// Edamam phrases foods the list doesn't always know ("large eggs",
+// "boneless skinless chicken breasts"). Those also try their tail,
+// read from the front until the rest is a known entry. A food the list
+// does know is taken as is: "peanut butter" is not butter.
+const toRecipeMatchKeys = (food: string): string[] => {
+  const known = lookupIngredient(food);
+  if (known) return [known.name];
+
+  const words = food.trim().split(/\s+/);
+  for (let start = 1; start < words.length; start++) {
+    const shorter = lookupIngredient(words.slice(start).join(" "));
+    if (shorter) return [normalizeItemName(food), shorter.name];
+  }
+  return [normalizeItemName(food)];
+};
+
+/**
+ * How many of a recipe's ingredients (Edamam's normalized `food`
+ * names) the pantry covers. Counted per ingredient, so it lines up
+ * with the ingredient count shown next to it.
+ */
+export const countPantryMatches = (
+  foods: string[],
+  stockedKeys: Set<string>,
+): number => {
+  if (stockedKeys.size === 0) return 0;
+  return foods.filter((food) =>
+    toRecipeMatchKeys(food).some((key) => stockedKeys.has(key)),
+  ).length;
+};
+
+export interface StarterItem {
+  name: string;
+  category: Category;
+  /** Already in the pantry, stocked or not, so there's nothing to add. */
+  isInPantry: boolean;
+}
+
+/**
+ * The starter list by aisle, with what this pantry already has marked
+ * so the picker can show it as done rather than offer a duplicate.
+ */
+export const buildStarterGroups = (
+  items: PantryItem[],
+): CategoryGroup<StarterItem>[] => {
+  const pantryKeys = new Set(items.map((item) => toMatchKey(item.nameKey)));
+  const starters = STARTER_PANTRY.flatMap((name) => {
+    const known = lookupIngredient(name);
+    if (!known) return [];
+    return [
+      {
+        name: known.name,
+        category: known.category,
+        isInPantry: pantryKeys.has(known.name),
+      },
+    ];
+  });
+  return groupByCategory(starters);
 };

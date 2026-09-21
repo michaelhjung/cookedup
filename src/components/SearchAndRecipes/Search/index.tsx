@@ -14,7 +14,11 @@ import Tooltip from "@components/Tooltip";
 import { useAuth } from "@context/AuthContext";
 import { buildSearchParams } from "@data/randomRecipeFilters";
 import { Hit, RecipeData } from "@interfaces/edamam";
-import { Ingredient, searchIngredients } from "@lib/ingredients";
+import {
+  BrowseOrder,
+  IngredientSection,
+  buildIngredientSections,
+} from "@lib/ingredients";
 import { debounce } from "@utils/index";
 
 import FilterCategories from "./FilterCategories";
@@ -22,7 +26,19 @@ import IngredientsList from "./IngredientsList";
 import SearchInput from "./SearchInput";
 import SelectedIngredients from "./SelectedIngredients";
 
-const ALL_INGREDIENTS = searchIngredients("");
+// How the dropdown lists everything when nothing is typed; remembered
+// per browser.
+const BROWSE_ORDER_STORAGE_KEY = "cookedup:ingredient-order";
+const DEFAULT_BROWSE_ORDER: BrowseOrder = "aisle";
+
+const readStoredBrowseOrder = (): BrowseOrder => {
+  try {
+    const stored = localStorage.getItem(BROWSE_ORDER_STORAGE_KEY);
+    return stored === "alphabetical" ? stored : DEFAULT_BROWSE_ORDER;
+  } catch {
+    return DEFAULT_BROWSE_ORDER;
+  }
+};
 
 // How long the "Surprise me" highlight stays on a card before fading.
 const HIGHLIGHT_DURATION_MS = 2500;
@@ -74,8 +90,16 @@ const Search: React.FC<SearchProps> = ({
   autoSearchToken,
 }) => {
   const { openAuthModal } = useAuth();
-  const [filteredIngredients, setFilteredIngredients] =
-    useState<Ingredient[]>(ALL_INGREDIENTS);
+  const [browseOrder, setBrowseOrder] =
+    useState<BrowseOrder>(DEFAULT_BROWSE_ORDER);
+  const [sections, setSections] = useState<IngredientSection[]>(() =>
+    buildIngredientSections("", DEFAULT_BROWSE_ORDER),
+  );
+  // Rows in one flat sequence, for the input's arrow-key handoff.
+  const flatIngredients = useMemo(
+    () => sections.flatMap((section) => section.ingredients),
+    [sections],
+  );
   const [showIngredientsList, setShowIngredientsList] = useState(false);
   const [selectedFilterKeys, setSelectedFilterKeys] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState("");
@@ -92,10 +116,28 @@ const Search: React.FC<SearchProps> = ({
     null,
   );
 
-  const filterIngredients = useCallback((searchValue: string) => {
-    setFilteredIngredients(searchIngredients(searchValue));
-    setIsLoadingIngredientsList(false);
+  const filterIngredients = useCallback(
+    (searchValue: string) => {
+      setSections(buildIngredientSections(searchValue, browseOrder));
+      setIsLoadingIngredientsList(false);
+    },
+    [browseOrder],
+  );
+
+  // localStorage isn't there on the server, so the stored choice is
+  // read after mount.
+  useEffect(() => {
+    setBrowseOrder(readStoredBrowseOrder());
   }, []);
+
+  const handleBrowseOrderChange = (order: BrowseOrder) => {
+    setBrowseOrder(order);
+    try {
+      localStorage.setItem(BROWSE_ORDER_STORAGE_KEY, order);
+    } catch {
+      // Private mode: the choice just isn't remembered.
+    }
+  };
 
   const debouncedFilter = useMemo(
     () => debounce(filterIngredients, 300),
@@ -125,12 +167,12 @@ const Search: React.FC<SearchProps> = ({
       setIsLoadingIngredientsList(true);
       debouncedFilter(searchInput);
     } else {
-      setFilteredIngredients(ALL_INGREDIENTS);
+      setSections(buildIngredientSections("", browseOrder));
       setIsLoadingIngredientsList(false);
     }
 
     return () => debouncedFilter.cancel();
-  }, [searchInput, debouncedFilter]);
+  }, [searchInput, browseOrder, debouncedFilter]);
 
   useEffect(() => {
     return () => {
@@ -329,7 +371,7 @@ const Search: React.FC<SearchProps> = ({
           className="relative w-full"
         >
           <SearchInput
-            ingredients={filteredIngredients}
+            ingredients={flatIngredients}
             showIngredientsList={showIngredientsList}
             setShowIngredientsList={setShowIngredientsList}
             searchInput={searchInput}
@@ -344,7 +386,10 @@ const Search: React.FC<SearchProps> = ({
 
           {showIngredientsList && (
             <IngredientsList
-              ingredients={filteredIngredients}
+              sections={sections}
+              isBrowsing={!searchInput.trim()}
+              browseOrder={browseOrder}
+              onBrowseOrderChange={handleBrowseOrderChange}
               setShowIngredientsList={setShowIngredientsList}
               selectedIngredients={selectedIngredients}
               isLoadingIngredientsList={isLoadingIngredientsList}

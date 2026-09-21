@@ -23,6 +23,26 @@ interface PantryRow {
 
 const PANTRY_COLUMNS = "id, owner_id, household_id, name";
 
+// Which pantry the user last looked at, so the pantry page reopens on
+// it and the recipe search matches against the same one.
+const PANTRY_STORAGE_KEY = "cookedup:pantry";
+
+export const readStoredPantryId = (): string | null => {
+  try {
+    return localStorage.getItem(PANTRY_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
+export const storePantryId = (pantryId: string): void => {
+  try {
+    localStorage.setItem(PANTRY_STORAGE_KEY, pantryId);
+  } catch {
+    // Private mode: the choice just isn't remembered.
+  }
+};
+
 const toPantry = (
   row: PantryRow,
   userId: string,
@@ -186,6 +206,37 @@ export const addItem = async (
   }
 
   return toItem(data);
+};
+
+/**
+ * Several items in one round trip, all stocked. Anything already in
+ * the pantry (by key) is left alone rather than failing the whole
+ * batch, so racing with a housemate just means fewer rows come back.
+ */
+export const addItems = async (
+  pantryId: string,
+  userId: string,
+  entries: { name: string; category: Category }[],
+): Promise<PantryItem[]> => {
+  if (entries.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("pantry_items")
+    .upsert(
+      entries.map((entry) => ({
+        pantry_id: pantryId,
+        name: entry.name,
+        name_key: normalizeItemName(entry.name),
+        status: "stocked",
+        category: entry.category,
+        updated_by: userId,
+      })),
+      { onConflict: "pantry_id,name_key", ignoreDuplicates: true },
+    )
+    .select(ITEM_COLUMNS);
+
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as ItemRow[]).map(toItem);
 };
 
 export const updateItem = async (

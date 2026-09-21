@@ -47,6 +47,8 @@ interface RecipesProps {
   activeFilterKeys: string[];
   filterGeneration: number;
   highlightedRecipeUrl: string | null;
+  /** Match keys for what's stocked in the pantry; empty when signed out. */
+  stockedKeys: Set<string>;
   /** Rendered above the results, e.g. the "from your pantry" note. */
   notice?: React.ReactNode;
   // ESLint no-unused-vars requires callback params to start with _ if not used in type definition
@@ -68,6 +70,7 @@ const Recipes: React.FC<RecipesProps> = ({
   activeFilterKeys,
   filterGeneration,
   highlightedRecipeUrl,
+  stockedKeys,
   notice,
   onAddIngredient,
 }) => {
@@ -307,6 +310,7 @@ const Recipes: React.FC<RecipesProps> = ({
                   savedRecipes={savedRecipes}
                   setSavedRecipes={setSavedRecipes}
                   isHighlighted={hit.recipe.url === highlightedRecipeUrl}
+                  stockedKeys={stockedKeys}
                 />
               ))}
             </div>

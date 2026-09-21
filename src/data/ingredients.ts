@@ -554,7 +554,7 @@ const GROUPS: { category: Category; items: Entry[] }[] = [
       { name: "yogurt", aliases: ["plain yogurt"] },
 
       // Butter and eggs
-      "butter",
+      { name: "butter", aliases: ["salted butter", "unsalted butter"] },
       "duck eggs",
       "egg whites",
       "egg yolks",
@@ -562,8 +562,6 @@ const GROUPS: { category: Category; items: Entry[] }[] = [
       "ghee",
       "margarine",
       "quail eggs",
-      "salted butter",
-      "unsalted butter",
       { name: "vegan butter", aliases: ["plant-based butter"] },
 
       // Cheese

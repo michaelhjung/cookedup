@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Plus, Trash2, X } from "lucide-react";
+import { Check, PackagePlus, Plus, Trash2, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import ConfirmDialog from "@components/MealPlan/ConfirmDialog";
@@ -18,6 +18,8 @@ interface PantrySettingsProps {
   onPantryCreated: (_pantry: Pantry) => void;
   onPantryDeleted: (_pantryId: string) => void;
   onSwitch: (_pantryId: string) => void;
+  /** Opens the starter-list picker; absent for viewers, who can't add. */
+  onAddBasics?: () => void;
   onClose: () => void;
 }
 
@@ -35,6 +37,7 @@ const PantrySettings: React.FC<PantrySettingsProps> = ({
   onPantryCreated,
   onPantryDeleted,
   onSwitch,
+  onAddBasics,
   onClose,
 }) => {
   const [name, setName] = useState(pantry.name);
@@ -249,6 +252,19 @@ const PantrySettings: React.FC<PantrySettingsProps> = ({
               </button>
             }
           </div>
+
+          {onAddBasics && (
+            <div className="border-t border-line pt-4">
+              <button
+                type="button"
+                onClick={onAddBasics}
+                className="flex h-9 items-center gap-1.5 rounded-md px-2 text-xs text-ink-muted transition-colors hover:text-ink"
+              >
+                <PackagePlus className="size-3.5" />
+                Add the basics
+              </button>
+            </div>
+          )}
 
           {canManage && (
             <div className="border-t border-line pt-4">
