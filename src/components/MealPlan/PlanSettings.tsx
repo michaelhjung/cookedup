@@ -443,11 +443,13 @@ const PlanSettings: React.FC<PlanSettingsProps> = ({
                       </a>
                     </div>
                     <p className="text-[11px] leading-snug text-ink-muted">
-                      Calendar apps refresh subscribed feeds on their own
-                      schedule — Google often takes several hours, so changes
-                      here won&rsquo;t appear there right away. Turning sharing
-                      off and on again issues a new link and breaks every old
-                      one.
+                      Calendar apps pull subscribed feeds on their own schedule,
+                      so changes here won&rsquo;t appear there right away. To
+                      refresh sooner: Apple Calendar &mdash; View &rsaquo;
+                      Refresh Calendars (or pull down on iPhone); Outlook
+                      &mdash; Send/Receive; Google Calendar has no refresh and
+                      can take up to a day. Turning sharing off and on again
+                      issues a new link and breaks every old one.
                     </p>
                   </div>
                 : <p className="text-[11px] text-ink-muted">

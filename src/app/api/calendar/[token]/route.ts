@@ -98,9 +98,11 @@ export async function GET(
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": `inline; filename="${plan.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics"`,
-      // Clients poll on their own schedule regardless; this just keeps a
-      // burst of requests from re-querying the database each time.
-      "Cache-Control": "public, max-age=3600",
+      // Never cached at the edge: subscribers can't be pushed to, so the
+      // one thing we control is that a fetch — scheduled or a manual
+      // refresh in the calendar app — always sees the current plan. The
+      // RPC is one cheap query, so there's nothing worth caching.
+      "Cache-Control": "private, no-cache",
     },
   });
 }

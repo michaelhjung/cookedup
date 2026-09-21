@@ -124,9 +124,11 @@ export const buildCalendar = ({
     `X-WR-CALNAME:${escapeText(name)}`,
     // Both spellings: REFRESH-INTERVAL is the standard (RFC 7986),
     // X-PUBLISHED-TTL is what several clients actually read. Neither is
-    // binding — Google in particular refreshes on its own schedule.
-    "REFRESH-INTERVAL;VALUE=DURATION:PT1H",
-    "X-PUBLISHED-TTL:PT1H",
+    // binding — Apple and Outlook roughly honour it, Google ignores it
+    // and polls on its own (roughly daily) schedule — so this is set as
+    // short as is useful rather than as short as possible.
+    "REFRESH-INTERVAL;VALUE=DURATION:PT15M",
+    "X-PUBLISHED-TTL:PT15M",
   ];
 
   for (const event of events) {
