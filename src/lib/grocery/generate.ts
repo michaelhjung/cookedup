@@ -4,9 +4,10 @@
 // covers, and which ingredients a plan's meals need that the pantry
 // doesn't already have.
 
+import { guessCategory } from "@lib/ingredients";
 import { addDays, parseISODate, toISODate } from "@lib/mealPlan/dates";
 import { MealPlanEntry } from "@lib/mealPlan/types";
-import { guessCategory, normalizeItemName } from "@lib/pantry/items";
+import { normalizeItemName } from "@lib/pantry/items";
 import { Category, PantryItem } from "@lib/pantry/types";
 
 import { NewLine, RangeUnit } from "./types";

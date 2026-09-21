@@ -12,9 +12,9 @@ import React, {
 
 import Tooltip from "@components/Tooltip";
 import { useAuth } from "@context/AuthContext";
-import ingredientsList from "@data/ingredients.json";
 import { buildSearchParams } from "@data/randomRecipeFilters";
 import { Hit, RecipeData } from "@interfaces/edamam";
+import { Ingredient, searchIngredients } from "@lib/ingredients";
 import { debounce } from "@utils/index";
 
 import FilterCategories from "./FilterCategories";
@@ -22,10 +22,7 @@ import IngredientsList from "./IngredientsList";
 import SearchInput from "./SearchInput";
 import SelectedIngredients from "./SelectedIngredients";
 
-const DEFAULT_INGREDIENTS_LIST = {
-  all: ingredientsList,
-  filtered: ingredientsList,
-};
+const ALL_INGREDIENTS = searchIngredients("");
 
 // How long the "Surprise me" highlight stays on a card before fading.
 const HIGHLIGHT_DURATION_MS = 2500;
@@ -77,10 +74,8 @@ const Search: React.FC<SearchProps> = ({
   autoSearchToken,
 }) => {
   const { openAuthModal } = useAuth();
-  const [ingredients, setIngredients] = useState<{
-    all: string[] | [];
-    filtered: string[] | [];
-  }>(DEFAULT_INGREDIENTS_LIST);
+  const [filteredIngredients, setFilteredIngredients] =
+    useState<Ingredient[]>(ALL_INGREDIENTS);
   const [showIngredientsList, setShowIngredientsList] = useState(false);
   const [selectedFilterKeys, setSelectedFilterKeys] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState("");
@@ -97,21 +92,10 @@ const Search: React.FC<SearchProps> = ({
     null,
   );
 
-  const filterIngredients = useCallback(
-    (searchValue: string) => {
-      const formattedSearchValue = searchValue.trim().toUpperCase();
-      const filteredIngredientsList = ingredients.all.filter((ingredient) =>
-        ingredient.toUpperCase().includes(formattedSearchValue),
-      );
-      setIngredients((prev) => ({
-        ...prev,
-        filtered: filteredIngredientsList,
-      }));
-
-      setIsLoadingIngredientsList(false);
-    },
-    [ingredients.all],
-  );
+  const filterIngredients = useCallback((searchValue: string) => {
+    setFilteredIngredients(searchIngredients(searchValue));
+    setIsLoadingIngredientsList(false);
+  }, []);
 
   const debouncedFilter = useMemo(
     () => debounce(filterIngredients, 300),
@@ -141,7 +125,7 @@ const Search: React.FC<SearchProps> = ({
       setIsLoadingIngredientsList(true);
       debouncedFilter(searchInput);
     } else {
-      setIngredients(DEFAULT_INGREDIENTS_LIST);
+      setFilteredIngredients(ALL_INGREDIENTS);
       setIsLoadingIngredientsList(false);
     }
 
@@ -345,7 +329,7 @@ const Search: React.FC<SearchProps> = ({
           className="relative w-full"
         >
           <SearchInput
-            ingredients={ingredients}
+            ingredients={filteredIngredients}
             showIngredientsList={showIngredientsList}
             setShowIngredientsList={setShowIngredientsList}
             searchInput={searchInput}
@@ -360,7 +344,7 @@ const Search: React.FC<SearchProps> = ({
 
           {showIngredientsList && (
             <IngredientsList
-              ingredients={ingredients}
+              ingredients={filteredIngredients}
               setShowIngredientsList={setShowIngredientsList}
               selectedIngredients={selectedIngredients}
               isLoadingIngredientsList={isLoadingIngredientsList}

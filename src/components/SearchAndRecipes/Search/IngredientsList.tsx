@@ -1,10 +1,8 @@
 import EllipsisLoader from "@components/loaders/Ellipsis";
+import { Ingredient } from "@lib/ingredients";
 
 interface IngredientsListProps {
-  ingredients: {
-    all: string[];
-    filtered: string[];
-  };
+  ingredients: Ingredient[];
   setShowIngredientsList: React.Dispatch<React.SetStateAction<boolean>>;
   selectedIngredients: string[];
   isLoadingIngredientsList: boolean;
@@ -35,7 +33,7 @@ const IngredientsList: React.FC<IngredientsListProps> = ({
       case "ArrowLeft":
         setFocusedIngredientIndex((prevIndex: number) => {
           const nextIndex =
-            prevIndex === 0 ? ingredients.filtered.length - 1 : prevIndex - 1;
+            prevIndex === 0 ? ingredients.length - 1 : prevIndex - 1;
           ingredientRefs.current[nextIndex]?.focus();
           return nextIndex;
         });
@@ -44,7 +42,7 @@ const IngredientsList: React.FC<IngredientsListProps> = ({
       case "ArrowRight":
         setFocusedIngredientIndex((prevIndex: number) => {
           const nextIndex =
-            prevIndex + 1 === ingredients.filtered.length ? 0 : prevIndex + 1;
+            prevIndex + 1 === ingredients.length ? 0 : prevIndex + 1;
           ingredientRefs.current[nextIndex]?.focus();
           return nextIndex;
         });
@@ -74,7 +72,7 @@ const IngredientsList: React.FC<IngredientsListProps> = ({
         Pick from the list, or type your own and press Enter.
       </p>
 
-      {ingredients.filtered.length === 0 && (
+      {ingredients.length === 0 && (
         <div className="p-2 text-ink-muted">
           No matching ingredients found. Press enter to add this custom
           ingredient to your list.
@@ -84,24 +82,27 @@ const IngredientsList: React.FC<IngredientsListProps> = ({
       {isLoadingIngredientsList && <EllipsisLoader />}
 
       {!isLoadingIngredientsList &&
-        ingredients.filtered.length > 0 &&
-        ingredients.filtered.map((ingredient, index) => (
+        ingredients.length > 0 &&
+        ingredients.map(({ name, category }, index) => (
           <div
-            key={index}
+            key={name}
             ref={(el) => {
               ingredientRefs.current[index] = el;
             }}
             role="button"
-            className={`rounded-sm px-2 py-1.5 lowercase outline-none ${
-              selectedIngredients.some((ingred) => ingred === ingredient) ?
+            className={`flex items-center justify-between gap-3 rounded-sm px-2 py-1.5 outline-none ${
+              selectedIngredients.some((ingred) => ingred === name) ?
                 "cursor-default italic text-ink-muted/60"
               : "cursor-pointer hover:bg-well focus:bg-well"
             }`}
-            onClick={() => handleSelectIngredient(ingredient)}
-            onKeyDown={(e) => handleIngredientsListKeyDown(e, ingredient)}
+            onClick={() => handleSelectIngredient(name)}
+            onKeyDown={(e) => handleIngredientsListKeyDown(e, name)}
             tabIndex={0}
           >
-            {ingredient}
+            <span className="truncate lowercase">{name}</span>
+            {/* Same aisle label the pantry's add bar shows, so the two
+                pickers read as one list. */}
+            <span className="shrink-0 text-xs text-ink-muted">{category}</span>
           </div>
         ))}
     </div>

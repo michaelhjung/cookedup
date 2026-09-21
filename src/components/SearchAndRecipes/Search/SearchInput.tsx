@@ -1,10 +1,9 @@
 import { SearchIcon } from "lucide-react";
 
+import { Ingredient } from "@lib/ingredients";
+
 interface SearchInputProps {
-  ingredients: {
-    all: string[];
-    filtered: string[];
-  };
+  ingredients: Ingredient[];
   showIngredientsList: boolean;
   setShowIngredientsList: React.Dispatch<React.SetStateAction<boolean>>;
   searchInput: string;
@@ -68,7 +67,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
       }
       case "ArrowUp":
       case "ArrowLeft": {
-        const lastIndexInList = ingredients.filtered.length - 1;
+        const lastIndexInList = ingredients.length - 1;
 
         setFocusedIngredientIndex(lastIndexInList);
         ingredientRefs?.current[lastIndexInList]?.focus();

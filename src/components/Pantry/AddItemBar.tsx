@@ -3,18 +3,9 @@
 import { ChevronDown, Plus } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import ingredientNames from "@data/ingredients.json";
-import {
-  buildSuggestionIndex,
-  guessCategory,
-  normalizeItemName,
-  suggestItems,
-  tidyItemName,
-} from "@lib/pantry/items";
+import { guessCategory, suggestItems } from "@lib/ingredients";
+import { normalizeItemName, tidyItemName } from "@lib/pantry/items";
 import { CATEGORIES, Category } from "@lib/pantry/types";
-
-// Built once for the module: ~650 names, normalized.
-const SUGGESTION_INDEX = buildSuggestionIndex(ingredientNames as string[]);
 
 interface AddItemBarProps {
   /** Keys of what's already there, to keep out of suggestions. */
@@ -47,7 +38,7 @@ const AddItemBar: React.FC<AddItemBarProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const suggestions = useMemo(
-    () => suggestItems(SUGGESTION_INDEX, text, existingKeys),
+    () => suggestItems(text, existingKeys),
     [text, existingKeys],
   );
 
@@ -185,7 +176,7 @@ const AddItemBar: React.FC<AddItemBarProps> = ({
 
             return (
               <li
-                key={suggestion.key}
+                key={suggestion.name}
                 id={`${listId}-${index}`}
                 role="option"
                 aria-selected={isHighlighted}
@@ -208,9 +199,7 @@ const AddItemBar: React.FC<AddItemBarProps> = ({
                   : suggestion.name}
                 </span>
                 <span className="shrink-0 text-xs text-ink-muted">
-                  {category === "auto" ?
-                    guessCategory(suggestion.name)
-                  : resolvedCategory}
+                  {category === "auto" ? suggestion.category : resolvedCategory}
                 </span>
               </li>
             );

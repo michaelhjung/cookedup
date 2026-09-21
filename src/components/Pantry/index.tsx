@@ -18,8 +18,8 @@ import PantryItemRow from "@components/Pantry/PantryItemRow";
 import PantrySettings from "@components/Pantry/PantrySettings";
 import { useAuth } from "@context/AuthContext";
 import { useToast } from "@context/ToastContext";
-import ingredientNames from "@data/ingredients.json";
 import { useHousehold } from "@lib/household/useHousehold";
+import { pickSearchableItems } from "@lib/ingredients";
 import {
   DuplicateItemError,
   addItem,
@@ -29,12 +29,7 @@ import {
   removeItem,
   updateItem,
 } from "@lib/pantry/client";
-import {
-  buildSuggestionIndex,
-  groupByCategory,
-  pickRestockItems,
-  pickSearchableItems,
-} from "@lib/pantry/items";
+import { groupByCategory, pickRestockItems } from "@lib/pantry/items";
 import {
   Category,
   Pantry,
@@ -46,7 +41,6 @@ import { fetchPeople, getDisplayName } from "@lib/sharing/client";
 import { useIsDesktop } from "@lib/useIsDesktop";
 
 const PANTRY_STORAGE_KEY = "cookedup:pantry";
-const SUGGESTION_INDEX = buildSuggestionIndex(ingredientNames as string[]);
 
 type Filter = "all" | PantryStatus;
 
@@ -214,10 +208,7 @@ const PantryPage: React.FC = () => {
     () => new Set(items.map((item) => item.nameKey)),
     [items],
   );
-  const searchable = useMemo(
-    () => pickSearchableItems(items, SUGGESTION_INDEX),
-    [items],
-  );
+  const searchable = useMemo(() => pickSearchableItems(items), [items]);
 
   const flashExisting = (nameKey: string) => {
     const existing = items.find((item) => item.nameKey === nameKey);
