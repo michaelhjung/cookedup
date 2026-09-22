@@ -25,6 +25,7 @@ import {
   getEntryLabel,
   getEntryTime,
 } from "@lib/mealPlan/types";
+import { isInternalRecipeUrl } from "@lib/recipes/urls";
 
 interface PlannedRecipeChipProps {
   entry: MealPlanEntry;
@@ -262,8 +263,10 @@ const PlannedRecipeChip: React.FC<PlannedRecipeChipProps> = ({
           {entry.recipe ?
             <a
               href={entry.recipe.recipe.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(!isInternalRecipeUrl(entry.recipe.recipe.url) && {
+                target: "_blank",
+                rel: "noopener noreferrer",
+              })}
               className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
             >
               <ExternalLink className="size-3.5" />

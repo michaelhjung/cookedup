@@ -47,7 +47,7 @@ export const DEMO_RECIPES: Record<DemoRecipeKey, DemoRecipe> = {
     yield: 4,
     calories: 2140,
     totalTime: 75,
-    dietLabels: ["Low-Carb"],
+    dietLabels: ["low-carb"],
     healthLabels: ["Gluten-Free", "Dairy-Free", "Paleo"],
     cuisineType: ["mediterranean"],
     mealType: ["lunch/dinner"],
@@ -167,7 +167,7 @@ export const DEMO_RECIPES: Record<DemoRecipeKey, DemoRecipe> = {
     calories: 740,
     totalTime: 15,
     dietLabels: ["Balanced", "High-Fiber"],
-    healthLabels: ["Vegetarian", "Gluten-Free"],
+    healthLabels: ["vegetarian", "gluten-free"],
     cuisineType: ["greek"],
     mealType: ["lunch/dinner"],
     dishType: ["salad"],
@@ -191,8 +191,8 @@ export const DEMO_RECIPES: Record<DemoRecipeKey, DemoRecipe> = {
     yield: 2,
     calories: 560,
     totalTime: 35,
-    dietLabels: ["Low-Carb"],
-    healthLabels: ["Vegetarian", "Gluten-Free"],
+    dietLabels: ["low-carb"],
+    healthLabels: ["vegetarian", "gluten-free"],
     cuisineType: ["middle eastern"],
     mealType: ["breakfast", "brunch"],
     dishType: ["main course"],
@@ -394,4 +394,145 @@ export const DEMO_PANTRY: {
   { name: "Frozen peas", category: "Frozen" },
   { name: "Coffee", category: "Beverages" },
   { name: "Dish soap", category: "Household", status: "low", hoursAgo: 120 },
+];
+
+// ---------------------------------------------------------------------
+// Recipes the demo accounts wrote themselves
+// ---------------------------------------------------------------------
+
+export interface DemoUserRecipe {
+  /** Which account wrote it. */
+  author: "owner" | "friend";
+  /** The seed image to use as its photo, or null for the placeholder. */
+  imageSlug: string | null;
+  visibility: "private" | "public";
+  /** Visible to the household as well. */
+  inHousehold: boolean;
+  title: string;
+  description: string | null;
+  servings: number;
+  prepMinutes: number | null;
+  cookMinutes: number | null;
+  ingredients: ({ text: string; food: string | null } | { heading: string })[];
+  instructions: string[];
+  cuisineTypes: string[];
+  mealTypes: string[];
+  dishTypes: string[];
+  dietLabels: string[];
+  healthLabels: string[];
+  caloriesPerServing: number | null;
+  sourceName: string | null;
+  notes: string | null;
+}
+
+export const DEMO_USER_RECIPES: DemoUserRecipe[] = [
+  {
+    author: "owner",
+    imageSlug: "tomato-basil-pasta",
+    visibility: "public",
+    inHousehold: true,
+    title: "Weeknight tomato pasta",
+    description:
+      "The pasta I make when there's nothing in the house but a can of tomatoes. Twenty minutes, one pot for the sauce, and it's better than it has any right to be.",
+    servings: 4,
+    prepMinutes: 5,
+    cookMinutes: 20,
+    ingredients: [
+      { heading: "Sauce" },
+      { text: "2 tbsp olive oil", food: "olive oil" },
+      { text: "3 cloves garlic, thinly sliced", food: "garlic" },
+      { text: "1 can (400 g) whole peeled tomatoes", food: "canned tomatoes" },
+      { text: "1/2 tsp chili flakes", food: "red pepper flakes" },
+      { text: "Salt, to taste", food: "salt" },
+      { heading: "To finish" },
+      { text: "400 g spaghetti", food: "spaghetti" },
+      { text: "A handful of basil leaves", food: "basil" },
+      { text: "Parmesan, for grating", food: "parmesan cheese" },
+    ],
+    instructions: [
+      "Bring a big pot of salted water to the boil and cook the spaghetti a minute short of the packet time.",
+      "Meanwhile warm the oil in a wide pan over medium heat. Add the garlic and chili flakes and cook until the garlic just turns golden, about a minute.",
+      "Crush the tomatoes in with your hands, add a good pinch of salt, and simmer while the pasta cooks, stirring now and then.",
+      "Drain the pasta, keeping a mug of the water. Toss the pasta through the sauce with a splash of the water until it clings.",
+      "Tear in the basil, grate over parmesan, and serve at once.",
+    ],
+    cuisineTypes: ["Italian"],
+    mealTypes: ["Dinner"],
+    dishTypes: ["Main course"],
+    dietLabels: [],
+    healthLabels: ["vegetarian"],
+    caloriesPerServing: 520,
+    sourceName: null,
+    notes:
+      "A spoon of butter in the sauce at the end makes it silkier. Any long pasta works.",
+  },
+  {
+    author: "owner",
+    imageSlug: null,
+    visibility: "private",
+    inHousehold: true,
+    title: "Mom's chicken soup",
+    description: "Written down from a phone call. Not to be shared.",
+    servings: 6,
+    prepMinutes: 15,
+    cookMinutes: 90,
+    ingredients: [
+      { text: "1 whole chicken, about 1.5 kg", food: "whole chicken" },
+      { text: "2 onions, halved", food: "onions" },
+      { text: "3 carrots, cut into chunks", food: "carrots" },
+      { text: "3 stalks celery", food: "celery" },
+      { text: "1 bunch dill", food: "dill" },
+      { text: "Salt and pepper", food: "salt" },
+      { text: "Egg noodles, to serve", food: "egg noodles" },
+    ],
+    instructions: [
+      "Put the chicken in a large pot and cover with cold water by a few centimetres. Bring to a boil and skim.",
+      "Add the onions, carrots, celery and half the dill. Simmer very gently, uncovered, for an hour and a half.",
+      "Lift out the chicken. Strain the broth, season well, and pick the meat off the bones.",
+      "Cook noodles separately and ladle the soup over them with some chicken and the rest of the dill, chopped.",
+    ],
+    cuisineTypes: ["Eastern Europe"],
+    mealTypes: ["Dinner"],
+    dishTypes: ["Soup"],
+    dietLabels: [],
+    healthLabels: [],
+    caloriesPerServing: null,
+    sourceName: "Mom",
+    notes: null,
+  },
+  {
+    author: "friend",
+    imageSlug: "greek-salad",
+    visibility: "public",
+    inHousehold: false,
+    title: "Chopped salad with feta",
+    description:
+      "Everything cut small so you get a bit of it all in each bite.",
+    servings: 2,
+    prepMinutes: 15,
+    cookMinutes: null,
+    ingredients: [
+      { text: "1 cucumber", food: "cucumbers" },
+      { text: "2 tomatoes", food: "tomatoes" },
+      { text: "1/2 red onion", food: "red onions" },
+      { text: "100 g feta", food: "feta cheese" },
+      { text: "A handful of olives", food: "olives" },
+      { text: "3 tbsp olive oil", food: "olive oil" },
+      { text: "1 tbsp red wine vinegar", food: "red wine vinegar" },
+      { text: "1 tsp dried oregano", food: "oregano" },
+    ],
+    instructions: [
+      "Dice the cucumber, tomatoes and onion into small, even pieces and put them in a bowl.",
+      "Crumble in the feta and add the olives.",
+      "Whisk the oil, vinegar and oregano with a pinch of salt, pour over, and toss.",
+    ],
+    cuisineTypes: ["Greek", "Mediterranean"],
+    mealTypes: ["Lunch"],
+    dishTypes: ["Salad"],
+    dietLabels: ["low-carb"],
+    healthLabels: ["vegetarian", "gluten-free"],
+    caloriesPerServing: 380,
+    sourceName: null,
+    notes: null,
+  },
 ];

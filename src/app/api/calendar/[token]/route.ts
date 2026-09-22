@@ -93,6 +93,7 @@ export async function GET(
       { slots: parseSlots(plan.slots) },
       entries,
       `${origin}/plan/shared/${shareToken}`,
+      origin,
     ),
   });
 

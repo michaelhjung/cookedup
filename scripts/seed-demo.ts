@@ -29,8 +29,10 @@ import {
   buildDemoHit,
   DEMO_PANTRY,
   DEMO_RECIPES,
+  DEMO_USER_RECIPES,
   DEMO_WEEK,
   type DemoRecipeKey,
+  type DemoUserRecipe,
 } from "./demo-data.ts";
 
 config({ path: ".env.local" });
@@ -162,6 +164,66 @@ const seedRecipe = async (
       .select("id")
       .single<{ id: string }>(),
   );
+
+  return row.id;
+};
+
+/**
+ * Writes a recipe the way the editor does: the row first (the database
+ * builds its Edamam-shaped `hit`), then the photo under
+ * `{user}/authored/{recipe}.jpg` with the row pointed at it.
+ */
+const seedUserRecipe = async (
+  client: SupabaseClient,
+  userId: string,
+  householdId: string,
+  recipe: DemoUserRecipe,
+): Promise<string> => {
+  const row = unwrap(
+    `insert user recipe ${recipe.title}`,
+    await client
+      .from("user_recipes")
+      .insert({
+        user_id: userId,
+        household_id: recipe.inHousehold ? householdId : null,
+        title: recipe.title,
+        description: recipe.description,
+        servings: recipe.servings,
+        prep_minutes: recipe.prepMinutes,
+        cook_minutes: recipe.cookMinutes,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+        cuisine_types: recipe.cuisineTypes,
+        meal_types: recipe.mealTypes,
+        dish_types: recipe.dishTypes,
+        diet_labels: recipe.dietLabels,
+        health_labels: recipe.healthLabels,
+        calories_per_serving: recipe.caloriesPerServing,
+        source_name: recipe.sourceName,
+        notes: recipe.notes,
+        visibility: recipe.visibility,
+      })
+      .select("id")
+      .single<{ id: string }>(),
+  );
+
+  if (!recipe.imageSlug) return row.id;
+
+  const file = await readFile(new URL(`${recipe.imageSlug}.jpg`, IMAGES_DIR));
+  const path = `${userId}/authored/${row.id}.jpg`;
+  const { error: uploadError } = await client.storage
+    .from(RECIPE_IMAGES_BUCKET)
+    .upload(path, file, { contentType: "image/jpeg", upsert: true });
+  fail(`upload photo for ${recipe.title}`, uploadError);
+
+  const {
+    data: { publicUrl },
+  } = client.storage.from(RECIPE_IMAGES_BUCKET).getPublicUrl(path);
+  const { error: imageError } = await client
+    .from("user_recipes")
+    .update({ image_url: `${publicUrl}?v=${Date.now()}` })
+    .eq("id", row.id);
+  fail(`set photo for ${recipe.title}`, imageError);
 
   return row.id;
 };
@@ -480,6 +542,49 @@ export const seedDemo = async ({
   say(
     `made lists "Costco" (household) and "Farmers market" (shared read-only)`,
   );
+
+  // Recipes the two accounts wrote themselves. Bylines come from
+  // profiles, made first the way the editor does before a first save.
+  for (const [client, userId, name] of [
+    [owner, ownerUser.id, "Demo"],
+    [friend, friendUser.id, "Sam"],
+  ] as const) {
+    const { error: profileError } = await client
+      .from("profiles")
+      .upsert({ user_id: userId, display_name: name });
+    fail(`profile for ${name}`, profileError);
+  }
+
+  const userRecipeIds: string[] = [];
+  for (const recipe of DEMO_USER_RECIPES) {
+    const isOwner = recipe.author === "owner";
+    userRecipeIds.push(
+      await seedUserRecipe(
+        isOwner ? owner : friend,
+        isOwner ? ownerUser.id : friendUser.id,
+        householdId,
+        recipe,
+      ),
+    );
+  }
+
+  // The owner has starred the friend's public recipe, so a user recipe
+  // sits in the library and on a card like any Edamam one.
+  const friendsRecipe = unwrap(
+    "read friend's recipe",
+    await owner
+      .from("user_recipes")
+      .select("hit")
+      .eq("id", userRecipeIds[userRecipeIds.length - 1])
+      .single<{ hit: unknown }>(),
+  );
+  const { error: starError } = await owner.from("recipes").insert({
+    user_id: ownerUser.id,
+    data: friendsRecipe.hit,
+    is_starred: true,
+  });
+  fail("star friend's recipe", starError);
+  say(`wrote ${DEMO_USER_RECIPES.length} recipes and starred one`);
 
   say(`\nSign in as ${DEMO.owner} / ${DEMO.password}`);
 };

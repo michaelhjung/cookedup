@@ -28,9 +28,19 @@ interface SharingSectionProps {
   isOwner: boolean;
   /** Owners and household admins may invite and remove people. */
   canManage: boolean;
+  /**
+   * Which roles an invite may carry. Recipes are author-only, so they
+   * offer viewer alone and the role picker disappears.
+   */
+  roles?: ShareRole[];
   onVisibilityChange: (_householdId: string | null) => Promise<void>;
   onError: (_message: string) => void;
 }
+
+const ROLE_LABELS: Record<ShareRole, string> = {
+  editor: "Can edit",
+  viewer: "Can view",
+};
 
 /**
  * The two ways to share one thing: with the whole household, or with
@@ -45,11 +55,13 @@ const SharingSection: React.FC<SharingSectionProps> = ({
   household,
   isOwner,
   canManage,
+  roles = ["editor", "viewer"],
   onVisibilityChange,
   onError,
 }) => {
   const [shares, setShares] = useState<Share[]>([]);
-  const [inviteRole, setInviteRole] = useState<ShareRole>("editor");
+  const [inviteRole, setInviteRole] = useState<ShareRole>(roles[0]);
+  const canHouseholdEdit = roles.includes("editor");
   const [inviteUrl, setInviteUrl] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const origin = typeof window === "undefined" ? "" : window.location.origin;
@@ -134,7 +146,10 @@ const SharingSection: React.FC<SharingSectionProps> = ({
           </div>
           <p className="mt-1.5 text-[11px] leading-snug text-ink-muted">
             {householdId ?
-              `Everyone in your household sees and edits this ${noun}. It stays yours to rename or delete.`
+              canHouseholdEdit ?
+                `Everyone in your household sees and edits this ${noun}. It stays yours to rename or delete.`
+              : `Everyone in your household can see this ${noun}. Only you can change it.`
+
             : "Only you and the people you invite below can see it."}
           </p>
         </div>
@@ -145,17 +160,25 @@ const SharingSection: React.FC<SharingSectionProps> = ({
           <p className="mb-2 text-xs font-semibold">People</p>
 
           <div className="mb-3 flex gap-1.5">
-            <select
-              value={inviteRole}
-              onChange={(event) =>
-                setInviteRole(event.target.value as ShareRole)
-              }
-              aria-label="Invite role"
-              className="rounded-md border border-line bg-surface-raised px-2 py-1.5 text-xs"
-            >
-              <option value="editor">Can edit</option>
-              <option value="viewer">Can view</option>
-            </select>
+            {roles.length > 1 && (
+              <select
+                value={inviteRole}
+                onChange={(event) =>
+                  setInviteRole(event.target.value as ShareRole)
+                }
+                aria-label="Invite role"
+                className="rounded-md border border-line bg-surface-raised px-2 py-1.5 text-xs"
+              >
+                {roles.map((role) => (
+                  <option
+                    key={role}
+                    value={role}
+                  >
+                    {ROLE_LABELS[role]}
+                  </option>
+                ))}
+              </select>
+            )}
             <button
               type="button"
               onClick={generateInvite}

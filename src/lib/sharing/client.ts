@@ -8,7 +8,11 @@
 
 import { supabase } from "@utils/supabase";
 
-export type ResourceKind = "meal_plan" | "pantry" | "grocery_list";
+export type ResourceKind =
+  | "meal_plan"
+  | "pantry"
+  | "grocery_list"
+  | "user_recipe";
 export type ShareRole = "viewer" | "editor";
 
 export interface Share {
@@ -138,6 +142,8 @@ export const getInviteDestination = (accepted: AcceptedInvite): string => {
       return "/pantry";
     case "grocery_list":
       return `/grocery/${accepted.id}`;
+    case "user_recipe":
+      return `/recipes/${accepted.id}`;
     default:
       return "/plan";
   }

@@ -299,3 +299,41 @@ describe("formatSlotTime", () => {
     expect(formatSlotTime("not a time", "en-US")).toBe("not a time");
   });
 });
+
+describe("user-authored recipes in the feed", () => {
+  const internal = (): MealPlanEntry =>
+    entry({
+      recipe: hit({ url: "/recipes/8f3a1b2c-0000-4000-8000-000000000000" }),
+    });
+
+  it("makes the recipe link absolute when the origin is known", () => {
+    const [built] = buildPlanEvents(
+      plan,
+      [internal()],
+      undefined,
+      "https://cookedup.app",
+    );
+    expect(built.url).toBe(
+      "https://cookedup.app/recipes/8f3a1b2c-0000-4000-8000-000000000000",
+    );
+    expect(built.description).toContain(
+      "Recipe: https://cookedup.app/recipes/",
+    );
+  });
+
+  it("leaves the link out rather than emit a relative one", () => {
+    const [built] = buildPlanEvents(plan, [internal()]);
+    expect(built.url).toBeUndefined();
+    expect(built.description).not.toContain("Recipe:");
+  });
+
+  it("does not touch external recipe links", () => {
+    const [built] = buildPlanEvents(
+      plan,
+      [entry()],
+      undefined,
+      "https://cookedup.app",
+    );
+    expect(built.url).toBe("https://example.com/salmon");
+  });
+});

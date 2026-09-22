@@ -16,6 +16,7 @@ import {
   getEntryLabel,
   getEntryTime,
 } from "@lib/mealPlan/types";
+import { isInternalRecipeUrl, toAbsoluteRecipeUrl } from "@lib/recipes/urls";
 
 export interface PlanEvent {
   /** Stable across regenerations so edits update rather than duplicate. */
@@ -40,9 +41,21 @@ export interface PlanEvent {
  */
 const EVENT_DURATION_MINUTES = 60;
 
+// A relative (in-app) recipe url is only useful outside the app once
+// it's absolute; an external one is used as is.
+const resolveRecipeUrl = (
+  url: string,
+  origin: string | undefined,
+): string | undefined => {
+  if (!url) return undefined;
+  if (!isInternalRecipeUrl(url)) return url;
+  return origin ? toAbsoluteRecipeUrl(url, origin) : undefined;
+};
+
 const describeEntry = (
   entry: MealPlanEntry,
   planUrl: string | undefined,
+  recipeUrl: string | undefined,
 ): string => {
   // A custom meal has nothing to say beyond its title, which is already
   // the event's summary.
@@ -66,7 +79,7 @@ const describeEntry = (
     lines.push(...recipe.ingredientLines.map((line) => `• ${line}`));
   }
 
-  if (recipe.url) lines.push("", `Recipe: ${recipe.url}`);
+  if (recipeUrl) lines.push("", `Recipe: ${recipeUrl}`);
   if (planUrl) lines.push(`Meal plan: ${planUrl}`);
 
   return lines.join("\n");
@@ -76,15 +89,22 @@ const describeEntry = (
  * `planUrl`, when given, is linked from every event's description so a
  * calendar entry can lead back to the plan it came from. It's optional
  * because the caller (a route handler) is the only thing that knows the
- * app's public origin.
+ * app's public origin. `origin` is that same origin, for turning a
+ * user-authored recipe's app-relative url into one a calendar app can
+ * open; without it such a recipe gets no link.
  */
 export const buildPlanEvents = (
   plan: Pick<MealPlan, "slots">,
   entries: MealPlanEntry[],
   planUrl?: string,
+  origin?: string,
 ): PlanEvent[] =>
   entries.flatMap((entry) => {
     const slot = findSlot(plan.slots, entry.slot);
+    const recipeUrl =
+      entry.recipe ?
+        resolveRecipeUrl(entry.recipe.recipe.url, origin)
+      : undefined;
 
     // An entry whose slot no longer exists has no time to be scheduled
     // at, so it can't become an event. Removing a slot deletes its
@@ -95,8 +115,8 @@ export const buildPlanEvents = (
       {
         uid: `${entry.id}@cookedup.app`,
         title: `${slot.label}: ${getEntryLabel(entry)}`,
-        description: describeEntry(entry, planUrl),
-        ...(entry.recipe && { url: entry.recipe.recipe.url }),
+        description: describeEntry(entry, planUrl, recipeUrl),
+        ...(recipeUrl && { url: recipeUrl }),
         date: entry.date,
         startTime: getEntryTime(entry, slot),
         durationMinutes: EVENT_DURATION_MINUTES,

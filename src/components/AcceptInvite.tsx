@@ -11,8 +11,9 @@ import { acceptInvite, getInviteDestination } from "@lib/sharing/client";
 type Status = "pending" | "accepting" | "accepted" | "invalid" | "error";
 
 /**
- * Redeems an invite link — to a meal plan, a pantry, a grocery list or a
- * household — and sends the person to whatever they just joined.
+ * Redeems an invite link — to a meal plan, a pantry, a grocery list, a
+ * recipe or a household — and sends the person to whatever they just
+ * joined.
  * Accepting requires an account, so a logged-out visitor is asked to
  * sign in first: the token stays in the URL, and the magic-link redirect
  * brings them straight back here with a session, at which point the

@@ -1,11 +1,13 @@
 import { User } from "@supabase/supabase-js";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useEffect, useRef } from "react";
 
 import AddToPlanButton from "@components/MealPlan/AddToPlanButton";
 import { Hit } from "@interfaces/edamam";
 import { countPantryMatches } from "@lib/ingredients";
+import { isInternalRecipeUrl } from "@lib/recipes/urls";
 
 import StarIcon from "./StarIcon";
 
@@ -22,7 +24,9 @@ interface RecipeCardProps {
 /**
  * One bordered box: image, title, a single line of facts, and the two
  * actions. The whole card is the link to the recipe; the action buttons
- * stop the click from following it.
+ * stop the click from following it. An Edamam recipe opens its source
+ * site in a new tab; a recipe written in the app opens its own page
+ * here.
  *
  * Below `sm` the card is a list row (thumbnail on the left, actions in
  * a column on the right) so several recipes fit in the short results
@@ -60,11 +64,13 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [isHighlighted]);
 
-  // Edamam reports 0 minutes when it doesn't know; say nothing rather
-  // than "0 min".
+  const isInternal = isInternalRecipeUrl(url);
+
+  // Edamam reports 0 minutes when it doesn't know, and a user recipe
+  // may give no calories at all; say nothing rather than "0 min".
   const facts = [
     totalTime > 0 ? `${totalTime} min` : null,
-    `${Math.round(calories).toLocaleString()} kcal`,
+    calories > 0 ? `${Math.round(calories).toLocaleString()} kcal` : null,
     `${ingredientLines.length} ingredients`,
   ].filter(Boolean);
 
@@ -79,11 +85,10 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
     : 0;
 
   return (
-    <a
+    <Link
       ref={cardRef}
       href={url}
-      target="_blank"
-      rel="noopener noreferrer"
+      {...(!isInternal && { target: "_blank", rel: "noopener noreferrer" })}
       className={`
         group flex flex-row sm:flex-col
         rounded-lg border border-line bg-surface-raised
@@ -148,11 +153,19 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           user={user}
         />
         <span className="ml-auto hidden items-center gap-1 text-xs text-ink-muted opacity-0 transition-opacity group-hover:opacity-100 sm:flex">
-          Open
-          <ArrowUpRight className="size-3.5" />
+          {isInternal ?
+            <>
+              View
+              <ArrowRight className="size-3.5" />
+            </>
+          : <>
+              Open
+              <ArrowUpRight className="size-3.5" />
+            </>
+          }
         </span>
       </div>
-    </a>
+    </Link>
   );
 };
 
