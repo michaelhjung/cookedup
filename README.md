@@ -102,6 +102,7 @@ You tell it what's in the fridge; it tells you what to cook. No account needed t
 - **A proper editor**: photo, servings, prep and cook time, ingredients (paste a whole list and it splits into lines; each line links itself to a pantry food so the pantry match works), numbered steps, tags from the same vocabulary as the filters, optional nutrition, source and notes.
 - **A page of its own** at `/recipes/<id>`, with tick-off ingredients, "N of M in your pantry", and share previews when the link is posted somewhere.
 - **Private, household, shared or public.** A recipe starts private. Share it with your household, invite someone by link, or publish it to the Community tab for everyone.
+- **Reviewed before it goes public.** A published recipe waits for an admin, who approves it or sends it back with a note; editing an approved recipe puts it back in the queue. Readers can report a live recipe, and every recipe shows how many people have starred it. The rules live at `/recipes/guidelines`.
 - **First-class everywhere else.** Star it, plan it, put it in the calendar feed: an authored recipe behaves exactly like a found one.
 
 <p align="center">

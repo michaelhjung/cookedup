@@ -1,5 +1,5 @@
 import { User } from "@supabase/supabase-js";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useRef } from "react";
@@ -19,6 +19,8 @@ interface RecipeCardProps {
   isHighlighted?: boolean;
   /** Match keys for what's stocked in the pantry; empty when signed out. */
   stockedKeys?: Set<string>;
+  /** How many people starred it; only user recipes have one. */
+  starCount?: number;
 }
 
 /**
@@ -40,6 +42,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   setSavedRecipes,
   isHighlighted = false,
   stockedKeys,
+  starCount = 0,
 }) => {
   const {
     recipe: {
@@ -130,6 +133,18 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           ))}
           {pantryMatches > 0 && (
             <span className="text-ink">{pantryMatches} in your pantry</span>
+          )}
+          {starCount > 0 && (
+            <span
+              className="flex items-center gap-0.5"
+              aria-label={`${starCount} ${starCount === 1 ? "star" : "stars"}`}
+            >
+              <Star
+                className="size-3 fill-current"
+                aria-hidden
+              />
+              {starCount}
+            </span>
           )}
         </p>
         <p className="truncate text-xs text-ink-muted">{source}</p>

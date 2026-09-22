@@ -1,6 +1,6 @@
 "use client";
 
-import { Link as LinkIcon, Pencil, Share2, Trash2 } from "lucide-react";
+import { Flag, Link as LinkIcon, Pencil, Share2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -8,12 +8,17 @@ import React, { useEffect, useState } from "react";
 import AddToPlanButton from "@components/MealPlan/AddToPlanButton";
 import ConfirmDialog from "@components/MealPlan/ConfirmDialog";
 import RecipeSharingSheet from "@components/RecipeDetail/RecipeSharingSheet";
+import ReportRecipeSheet from "@components/RecipeDetail/ReportRecipeSheet";
 import StarIcon from "@components/SearchAndRecipes/Recipes/StarIcon";
 import { useAuth } from "@context/AuthContext";
 import { useToast } from "@context/ToastContext";
 import { Hit } from "@interfaces/edamam";
-import { deleteRecipe, removeRecipeImageObject } from "@lib/userRecipes/client";
-import { UserRecipe } from "@lib/userRecipes/types";
+import {
+  deleteRecipe,
+  hasReportedRecipe,
+  removeRecipeImageObject,
+} from "@lib/userRecipes/client";
+import { UserRecipe, isRecipeLive } from "@lib/userRecipes/types";
 import { supabase } from "@utils/supabase";
 
 interface RecipeActionsProps {
@@ -26,8 +31,9 @@ const TEXT_BUTTON_CLASS =
 
 /**
  * The row under the title: star and plan (the same controls as a
- * recipe card, fed the same hit), copy the link, and for the author
- * edit, sharing and delete.
+ * recipe card, fed the same hit), copy the link, for the author edit,
+ * sharing and delete, and for anyone else signed in a way to report a
+ * live recipe.
  */
 const RecipeActions: React.FC<RecipeActionsProps> = ({ recipe, isAuthor }) => {
   const { user } = useAuth();
@@ -37,6 +43,27 @@ const RecipeActions: React.FC<RecipeActionsProps> = ({ recipe, isAuthor }) => {
   const [isSharingOpen, setIsSharingOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
+
+  const canReport = Boolean(user) && !isAuthor && isRecipeLive(recipe);
+
+  // Whether this viewer already reported it; the button then says so.
+  useEffect(() => {
+    if (!user || !canReport) {
+      setHasReported(false);
+      return;
+    }
+    let cancelled = false;
+    hasReportedRecipe(recipe.id, user.id)
+      .then((value) => {
+        if (!cancelled) setHasReported(value);
+      })
+      .catch((caught) => console.error("Failed to check report:", caught));
+    return () => {
+      cancelled = true;
+    };
+  }, [user, canReport, recipe.id]);
 
   // Whether this one recipe is starred; StarIcon reads it as a list.
   useEffect(() => {
@@ -135,6 +162,26 @@ const RecipeActions: React.FC<RecipeActionsProps> = ({ recipe, isAuthor }) => {
             Delete
           </button>
         </>
+      )}
+
+      {canReport && (
+        <button
+          type="button"
+          onClick={() => setIsReporting(true)}
+          disabled={hasReported}
+          className={`${TEXT_BUTTON_CLASS} text-ink-muted disabled:opacity-60`}
+        >
+          <Flag className="size-3.5" />
+          {hasReported ? "Reported" : "Report"}
+        </button>
+      )}
+
+      {isReporting && (
+        <ReportRecipeSheet
+          recipeId={recipe.id}
+          onReported={() => setHasReported(true)}
+          onClose={() => setIsReporting(false)}
+        />
       )}
 
       {isSharingOpen && (

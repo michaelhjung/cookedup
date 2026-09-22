@@ -262,6 +262,14 @@ export const seedDemo = async ({
   } = await owner.auth.getUser();
   if (!ownerUser) throw new Error("owner sign-in returned no user");
 
+  // The owner moderates: the same service-role insert a real admin is
+  // granted with in the dashboard.
+  const { error: roleError } = await admin
+    .from("app_roles")
+    .insert({ user_id: ownerUser.id, role: "admin" });
+  fail("grant admin", roleError);
+  say(`made ${DEMO.owner} an admin`);
+
   // The household first, so the week's plan can belong to it from the
   // start. The friend joins through an invite link, as anyone would.
   const { data: householdId, error: householdError } = await owner.rpc(
@@ -568,14 +576,32 @@ export const seedDemo = async ({
     );
   }
 
-  // The owner has starred the friend's public recipe, so a user recipe
+  // A public recipe waits for an admin. The owner approves the ones
+  // meant to be live and leaves the rest in the queue.
+  let approvedCount = 0;
+  for (const [index, recipe] of DEMO_USER_RECIPES.entries()) {
+    if (recipe.visibility !== "public" || recipe.isAwaitingReview) continue;
+    const { error: approveError } = await owner.rpc("approve_recipe", {
+      p_recipe_id: userRecipeIds[index],
+    });
+    fail(`approve ${recipe.title}`, approveError);
+    approvedCount += 1;
+  }
+
+  // The owner has starred the friend's live recipe, so a user recipe
   // sits in the library and on a card like any Edamam one.
+  const friendsRecipeIndex = DEMO_USER_RECIPES.findIndex(
+    (recipe) =>
+      recipe.author === "friend" &&
+      recipe.visibility === "public" &&
+      !recipe.isAwaitingReview,
+  );
   const friendsRecipe = unwrap(
     "read friend's recipe",
     await owner
       .from("user_recipes")
       .select("hit")
-      .eq("id", userRecipeIds[userRecipeIds.length - 1])
+      .eq("id", userRecipeIds[friendsRecipeIndex])
       .single<{ hit: unknown }>(),
   );
   const { error: starError } = await owner.from("recipes").insert({
@@ -584,7 +610,24 @@ export const seedDemo = async ({
     is_starred: true,
   });
   fail("star friend's recipe", starError);
-  say(`wrote ${DEMO_USER_RECIPES.length} recipes and starred one`);
+
+  // And the friend has reported the owner's live recipe, so the Reports
+  // tab has a row too.
+  const ownersRecipeIndex = DEMO_USER_RECIPES.findIndex(
+    (recipe) =>
+      recipe.author === "owner" &&
+      recipe.visibility === "public" &&
+      !recipe.isAwaitingReview,
+  );
+  const { error: reportError } = await friend.from("recipe_reports").insert({
+    recipe_id: userRecipeIds[ownersRecipeIndex],
+    reason: "copyright",
+    details: "Pretty sure this is word for word from a cookbook I have.",
+  });
+  fail("report owner's recipe", reportError);
+  say(
+    `wrote ${DEMO_USER_RECIPES.length} recipes, approved ${approvedCount}, starred one and reported one`,
+  );
 
   say(`\nSign in as ${DEMO.owner} / ${DEMO.password}`);
 };

@@ -5,11 +5,14 @@ import {
   CalendarDays,
   Package,
   Search,
+  ShieldCheck,
   ShoppingCart,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+
+import { useAuth } from "@context/AuthContext";
 
 const LINKS = [
   { href: "/", label: "Search", shortLabel: "Search", Icon: Search },
@@ -29,12 +32,21 @@ const LINKS = [
   },
 ] as const;
 
+/** Admins only; the page 404s for anyone else regardless. */
+const ADMIN_LINK = {
+  href: "/admin",
+  label: "Admin",
+  shortLabel: "Admin",
+  Icon: ShieldCheck,
+} as const;
+
 interface NavProps {
   className?: string;
 }
 
 /**
- * Five destinations, marked by an underline on the current one. The
+ * Five destinations (six for an admin), marked by an underline on the
+ * current one. The
  * links are as tall as the header so the underline lands on the bar's
  * own hairline rather than floating above it. On phones the nav has a
  * row to itself, so each link takes a fifth of it with the icon
@@ -42,11 +54,13 @@ interface NavProps {
  */
 const Nav = ({ className = "" }: NavProps) => {
   const pathname = usePathname();
+  const { isAdmin } = useAuth();
+  const links = isAdmin ? [...LINKS, ADMIN_LINK] : LINKS;
 
   return (
     <nav className={`pointer-events-none flex items-center ${className}`}>
       <div className="pointer-events-auto flex w-full items-stretch sm:w-auto sm:items-center sm:gap-6">
-        {LINKS.map(({ href, label, shortLabel, Icon }) => {
+        {links.map(({ href, label, shortLabel, Icon }) => {
           const isActive =
             href === "/" ? pathname === "/" : pathname.startsWith(href);
 

@@ -414,10 +414,28 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({ recipe }) => {
         </div>
         <p className="-mt-2 text-[11px] leading-snug text-ink-muted">
           {draft.visibility === "public" ?
-            "Anyone can find it under Community and open its link, signed in or not. Your name is shown as the author."
+            <>
+              Anyone can find it under Community and open its link, signed in or
+              not, once an admin has approved it. Editing an approved recipe
+              puts it back in review. By publishing you agree to the{" "}
+              <Link
+                href="/recipes/guidelines"
+                target="_blank"
+                className="font-medium text-ink underline underline-offset-2 hover:text-accent"
+              >
+                community guidelines
+              </Link>
+              .
+            </>
           : "Only you can see it, plus anyone you invite from the recipe's page."
           }
         </p>
+        {recipe?.reviewStatus === "rejected" && recipe.reviewNote && (
+          <p className="-mt-1 rounded-md bg-danger-tint px-3 py-2 text-xs leading-snug text-danger">
+            <span className="font-semibold">Not approved:</span>{" "}
+            {recipe.reviewNote} Set it to Public again to resubmit.
+          </p>
+        )}
         {household && (
           <label className="flex cursor-pointer items-start gap-2.5 text-sm">
             <input

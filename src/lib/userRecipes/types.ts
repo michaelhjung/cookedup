@@ -10,6 +10,20 @@ import type { Hit } from "@interfaces/edamam";
 
 export type RecipeVisibility = "private" | "public";
 
+/**
+ * Where a public recipe stands with the admin. Only meaningful while
+ * public, except `rejected`, which an unpublished recipe keeps (with
+ * its note) until the author resubmits.
+ */
+export type ReviewStatus = "pending" | "approved" | "rejected";
+
+/** Public and approved: in Community, readable signed out. */
+export const isRecipeLive = (recipe: {
+  visibility: RecipeVisibility;
+  reviewStatus: ReviewStatus;
+}): boolean =>
+  recipe.visibility === "public" && recipe.reviewStatus === "approved";
+
 /** One ingredient line, or a heading that groups the lines after it. */
 export type StoredIngredient =
   | { text: string; food: string | null }
@@ -56,6 +70,11 @@ export interface UserRecipe {
   notes: string | null;
   imageUrl: string | null;
   visibility: RecipeVisibility;
+  reviewStatus: ReviewStatus;
+  /** The admin's reason for a rejection, for the author. */
+  reviewNote: string | null;
+  /** How many people have this in their library, starred. */
+  starCount: number;
   hit: Hit;
   createdAt: string;
   updatedAt: string;
@@ -64,7 +83,15 @@ export interface UserRecipe {
 /** What the editor writes: everything the author decides. */
 export type UserRecipeInput = Omit<
   UserRecipe,
-  "id" | "userId" | "hit" | "createdAt" | "updatedAt" | "imageUrl"
+  | "id"
+  | "userId"
+  | "hit"
+  | "createdAt"
+  | "updatedAt"
+  | "imageUrl"
+  | "reviewStatus"
+  | "reviewNote"
+  | "starCount"
 >;
 
 export interface Profile {

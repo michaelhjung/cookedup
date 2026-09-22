@@ -8,6 +8,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { RECIPE_IMAGES_BUCKET } from "@lib/recipes/persistImage";
 import { getDisplayName } from "@lib/sharing/client";
+import { REPORT_DETAILS_MAX, ReportReason } from "@lib/userRecipes/reports";
 import {
   USER_RECIPE_COLUMNS,
   UserRecipeRow,
@@ -70,7 +71,7 @@ export const fetchSharedRecipes = async (
 };
 
 /**
- * Public recipes, newest first, a page at a time. `before` is the
+ * Live public recipes, newest first, a page at a time. `before` is the
  * `createdAt` of the last recipe already shown; keyset rather than
  * offset so a recipe published mid-scroll doesn't shift the pages.
  */
@@ -81,6 +82,7 @@ export const fetchCommunityRecipes = async (
     .from("user_recipes")
     .select(USER_RECIPE_COLUMNS)
     .eq("visibility", "public")
+    .eq("review_status", "approved")
     .order("created_at", { ascending: false })
     .limit(COMMUNITY_PAGE_SIZE + 1);
   if (before) query = query.lt("created_at", before);
@@ -267,4 +269,46 @@ export const ensureProfile = async (user: User): Promise<Profile> => {
     user.id,
     getDisplayName(user.email).slice(0, DISPLAY_NAME_MAX),
   );
+};
+
+// ---------------------------------------------------------------------
+// Review and reports
+// ---------------------------------------------------------------------
+
+/**
+ * Puts a rejected (or withdrawn) recipe back in the queue. Just a
+ * visibility write: the database turns "public" into "pending".
+ */
+export const resubmitRecipe = async (id: string): Promise<void> =>
+  updateRecipeVisibility(id, { visibility: "public" });
+
+/** Whether the user has already reported this recipe. */
+export const hasReportedRecipe = async (
+  recipeId: string,
+  userId: string,
+): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from("recipe_reports")
+    .select("id")
+    .eq("recipe_id", recipeId)
+    .eq("reporter_id", userId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data !== null;
+};
+
+export const reportRecipe = async (
+  recipeId: string,
+  reason: ReportReason,
+  details: string,
+): Promise<void> => {
+  const trimmed = details.trim().slice(0, REPORT_DETAILS_MAX);
+  const { error } = await supabase.from("recipe_reports").insert({
+    recipe_id: recipeId,
+    reason,
+    details: trimmed.length > 0 ? trimmed : null,
+  });
+
+  if (error) throw new Error(error.message);
 };

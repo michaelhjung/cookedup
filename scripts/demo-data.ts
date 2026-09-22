@@ -406,6 +406,11 @@ export interface DemoUserRecipe {
   /** The seed image to use as its photo, or null for the placeholder. */
   imageSlug: string | null;
   visibility: "private" | "public";
+  /**
+   * A public recipe the seed leaves in the review queue rather than
+   * approving as the demo admin, so /admin has something to decide.
+   */
+  isAwaitingReview?: boolean;
   /** Visible to the household as well. */
   inHousehold: boolean;
   title: string;
@@ -532,6 +537,38 @@ export const DEMO_USER_RECIPES: DemoUserRecipe[] = [
     dietLabels: ["low-carb"],
     healthLabels: ["vegetarian", "gluten-free"],
     caloriesPerServing: 380,
+    sourceName: null,
+    notes: null,
+  },
+  {
+    author: "friend",
+    imageSlug: null,
+    visibility: "public",
+    isAwaitingReview: true,
+    inHousehold: false,
+    title: "Garlic butter noodles",
+    description: "Late-night noodles from three things that are always in.",
+    servings: 1,
+    prepMinutes: 2,
+    cookMinutes: 8,
+    ingredients: [
+      { text: "100 g dried noodles", food: "noodles" },
+      { text: "2 tbsp butter", food: "butter" },
+      { text: "2 cloves garlic, minced", food: "garlic" },
+      { text: "1 tbsp soy sauce", food: "soy sauce" },
+      { text: "Sliced scallions, to finish", food: "scallions" },
+    ],
+    instructions: [
+      "Cook the noodles as the packet says and drain.",
+      "Melt the butter in the same pot, add the garlic and cook for thirty seconds until it smells good.",
+      "Toss the noodles back in with the soy sauce, top with scallions, and eat straight from the pot.",
+    ],
+    cuisineTypes: ["Asian"],
+    mealTypes: ["Dinner"],
+    dishTypes: ["Main course"],
+    dietLabels: [],
+    healthLabels: ["vegetarian"],
+    caloriesPerServing: 610,
     sourceName: null,
     notes: null,
   },

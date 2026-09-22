@@ -19,6 +19,7 @@ import {
   fetchSharedRecipes,
   saveProfile,
 } from "@lib/userRecipes/client";
+import { describeRecipeStatus } from "@lib/userRecipes/reports";
 import { Profile, UserRecipe } from "@lib/userRecipes/types";
 import { supabase } from "@utils/supabase";
 
@@ -29,12 +30,6 @@ const TAB_LABELS: Record<Tab, string> = {
   shared: "Shared with you",
   community: "Community",
 };
-
-/** The badge on the author's own cards: who can see this one. */
-const describeVisibility = (recipe: UserRecipe): string =>
-  recipe.visibility === "public" ? "Public"
-  : recipe.householdId ? "Household"
-  : "Private";
 
 const UserRecipesPage: React.FC = () => {
   const { user, loading: authLoading, openAuthModal } = useAuth();
@@ -214,10 +209,17 @@ const UserRecipesPage: React.FC = () => {
                 savedRecipes={savedRecipes}
                 setSavedRecipes={setSavedRecipes}
                 stockedKeys={stockedKeys}
+                starCount={recipe.starCount}
               />
               {activeTab === "mine" && (
-                <span className="pointer-events-none absolute top-2 left-2 hidden rounded-sm bg-surface-raised/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-muted backdrop-blur-sm sm:inline">
-                  {describeVisibility(recipe)}
+                <span
+                  className={`pointer-events-none absolute top-2 left-2 hidden rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] backdrop-blur-sm sm:inline ${
+                    recipe.reviewStatus === "rejected" ?
+                      "bg-danger-tint/90 text-danger"
+                    : "bg-surface-raised/90 text-ink-muted"
+                  }`}
+                >
+                  {describeRecipeStatus(recipe)}
                 </span>
               )}
             </div>
@@ -257,14 +259,22 @@ const UserRecipesPage: React.FC = () => {
           }
         </div>
         {isSignedIn ?
-          <Link
-            href="/recipes/new"
-            className="flex h-10 shrink-0 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover active:translate-y-px"
-          >
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">New recipe</span>
-            <span className="sm:hidden">New</span>
-          </Link>
+          <div className="flex shrink-0 items-center gap-3">
+            <Link
+              href="/recipes/guidelines"
+              className="text-xs font-medium text-ink-muted transition-colors hover:text-ink hover:underline"
+            >
+              Guidelines
+            </Link>
+            <Link
+              href="/recipes/new"
+              className="flex h-10 shrink-0 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover active:translate-y-px"
+            >
+              <Plus className="size-4" />
+              <span className="hidden sm:inline">New recipe</span>
+              <span className="sm:hidden">New</span>
+            </Link>
+          </div>
         : <button
             type="button"
             onClick={openAuthModal}

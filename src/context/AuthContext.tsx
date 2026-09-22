@@ -11,6 +11,7 @@ import React, {
   ReactNode,
 } from "react";
 
+import { fetchIsAdmin } from "@lib/admin/client";
 import { supabase } from "@utils/supabase";
 
 interface AuthContextType {
@@ -29,6 +30,12 @@ interface AuthContextType {
    * carried here, so the decision never depends on a public env var.
    */
   isDemoLoginEnabled: boolean;
+  /**
+   * Whether the signed-in user has the admin role: the nav shows the
+   * Admin link. One `app_roles` read per sign-in; the page itself
+   * checks again on the server, so this is a hint, not a gate.
+   */
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,6 +47,25 @@ export const AuthProvider: React.FC<{
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    fetchIsAdmin(user.id)
+      .then((value) => {
+        if (!cancelled) setIsAdmin(value);
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -81,6 +107,7 @@ export const AuthProvider: React.FC<{
       openAuthModal,
       closeAuthModal,
       isDemoLoginEnabled,
+      isAdmin,
     }),
     [
       user,
@@ -89,6 +116,7 @@ export const AuthProvider: React.FC<{
       openAuthModal,
       closeAuthModal,
       isDemoLoginEnabled,
+      isAdmin,
     ],
   );
 

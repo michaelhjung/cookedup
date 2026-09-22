@@ -4,7 +4,12 @@ import React from "react";
 import IngredientList from "@components/RecipeDetail/IngredientList";
 import PantryMatch from "@components/RecipeDetail/PantryMatch";
 import RecipeActions from "@components/RecipeDetail/RecipeActions";
+import ReviewBanner from "@components/RecipeDetail/ReviewBanner";
 import { RANDOM_RECIPE_FILTER_CATEGORIES } from "@data/randomRecipeFilters";
+import {
+  describeRecipeStatus,
+  formatStarCount,
+} from "@lib/userRecipes/reports";
 import { UserRecipe, isIngredientHeading } from "@lib/userRecipes/types";
 
 interface RecipeDetailProps {
@@ -19,11 +24,6 @@ const formatMinutes = (minutes: number): string => {
   return rest === 0 ? `${hours} hr` : `${hours} hr ${rest} min`;
 };
 
-const describeVisibility = (recipe: UserRecipe): string =>
-  recipe.visibility === "public" ? "Public"
-  : recipe.householdId ? "Household"
-  : "Private";
-
 /**
  * A recipe's own page. Rendered on the server so a shared link carries
  * a title and picture; the interactive bits (actions, pantry count,
@@ -31,6 +31,7 @@ const describeVisibility = (recipe: UserRecipe): string =>
  */
 const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipe, viewerId }) => {
   const isAuthor = viewerId !== null && viewerId === recipe.userId;
+  const starCount = formatStarCount(recipe.starCount);
   const totalMinutes = (recipe.prepMinutes ?? 0) + (recipe.cookMinutes ?? 0);
   const { nutrition } = recipe;
   const foods = recipe.ingredients.flatMap((ingredient) =>
@@ -84,13 +85,23 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipe, viewerId }) => {
           </h1>
           <p className="mt-1.5 flex flex-wrap items-center gap-x-2 text-sm text-ink-muted">
             <span>by {recipe.hit.recipe.source}</span>
+            {starCount && <span aria-hidden>·</span>}
+            {starCount && <span>{starCount}</span>}
             {isAuthor && (
-              <span className="rounded-sm bg-well px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em]">
-                {describeVisibility(recipe)}
+              <span
+                className={`rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] ${
+                  recipe.reviewStatus === "rejected" ?
+                    "bg-danger-tint text-danger"
+                  : "bg-well"
+                }`}
+              >
+                {describeRecipeStatus(recipe)}
               </span>
             )}
           </p>
         </div>
+
+        {isAuthor && <ReviewBanner recipe={recipe} />}
 
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted tabular-nums">
           {facts.map((fact) => (

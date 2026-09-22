@@ -8,6 +8,7 @@ import type { Hit } from "@interfaces/edamam";
 import {
   EMPTY_TAGS,
   RecipeVisibility,
+  ReviewStatus,
   StoredIngredient,
   UserRecipe,
   UserRecipeInput,
@@ -38,6 +39,9 @@ export interface UserRecipeRow {
   notes: string | null;
   image_url: string | null;
   visibility: RecipeVisibility;
+  review_status: ReviewStatus;
+  review_note: string | null;
+  star_count: number;
   hit: Hit;
   created_at: string;
   updated_at: string;
@@ -83,6 +87,9 @@ export const toUserRecipe = (row: UserRecipeRow): UserRecipe => ({
   notes: row.notes,
   imageUrl: row.image_url,
   visibility: row.visibility,
+  reviewStatus: row.review_status,
+  reviewNote: row.review_note,
+  starCount: row.star_count ?? 0,
   hit: row.hit,
   createdAt: row.created_at,
   updatedAt: row.updated_at,

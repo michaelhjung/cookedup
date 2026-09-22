@@ -11,6 +11,7 @@ import Footer from "@components/Footer";
 import Header from "@components/Header";
 import RecipeDetail from "@components/RecipeDetail";
 import { loadRecipeForViewer } from "@lib/userRecipes/server";
+import { isRecipeLive } from "@lib/userRecipes/types";
 
 interface RecipePageProps {
   params: Promise<{ id: string }>;
@@ -32,9 +33,10 @@ export const generateMetadata = async (
   return {
     title: `${recipe.title} | Cooked Up!`,
     description,
-    // Private and household recipes render for their people, but a
-    // crawler should never index a page that was only briefly public.
-    robots: recipe.visibility === "public" ? undefined : { index: false },
+    // Private, household and not-yet-approved recipes render for their
+    // people, but a crawler should never index a page that was only
+    // briefly public.
+    robots: isRecipeLive(recipe) ? undefined : { index: false },
     openGraph: {
       title: recipe.title,
       description,
