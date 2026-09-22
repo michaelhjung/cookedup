@@ -6,6 +6,7 @@
 // (creating, leaving) go through database functions; the rest is plain
 // RLS-guarded writes.
 
+import { fetchDisplayNames, resolveDisplayName } from "@lib/profiles/client";
 import { supabase } from "@utils/supabase";
 
 export type HouseholdRole = "admin" | "member";
@@ -13,6 +14,8 @@ export type HouseholdRole = "admin" | "member";
 export interface HouseholdMember {
   userId: string;
   email: string | null;
+  /** The profile name, or the email's local part until they set one. */
+  displayName: string;
   role: HouseholdRole;
   joinedAt: string;
 }
@@ -53,6 +56,8 @@ export const fetchMyHousehold = async (
   const self = rows.find((row) => row.user_id === userId);
   if (!self?.households) return null;
 
+  const names = await fetchDisplayNames(rows.map((row) => row.user_id));
+
   return {
     id: self.households.id,
     name: self.households.name,
@@ -60,6 +65,7 @@ export const fetchMyHousehold = async (
     members: rows.map((row) => ({
       userId: row.user_id,
       email: row.email,
+      displayName: resolveDisplayName(names.get(row.user_id), row.email),
       role: row.role,
       joinedAt: row.joined_at,
     })),

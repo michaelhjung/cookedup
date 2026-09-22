@@ -42,7 +42,7 @@ import {
   PantryStatus,
   STATUS_LABELS,
 } from "@lib/pantry/types";
-import { fetchPeople, getDisplayName } from "@lib/sharing/client";
+import { fetchPeople } from "@lib/sharing/client";
 import { useIsDesktop } from "@lib/useIsDesktop";
 
 type Filter = "all" | PantryStatus;
@@ -65,7 +65,7 @@ const PantryPage: React.FC = () => {
   const [pantries, setPantries] = useState<Pantry[]>([]);
   const [activePantryId, setActivePantryId] = useState<string | null>(null);
   const [items, setItems] = useState<PantryItem[]>([]);
-  const [people, setPeople] = useState<Map<string, string | null>>(new Map());
+  const [people, setPeople] = useState<Map<string, string>>(new Map());
   const [filter, setFilter] = useState<Filter>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
@@ -336,8 +336,7 @@ const PantryPage: React.FC = () => {
 
   const markedByFor = (item: PantryItem): string | null => {
     if (!item.updatedBy || item.updatedBy === user?.id) return null;
-    const email = people.get(item.updatedBy);
-    return email ? getDisplayName(email) : null;
+    return people.get(item.updatedBy) ?? null;
   };
 
   // ------------------------------------------------------------------

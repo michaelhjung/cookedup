@@ -17,10 +17,10 @@ import TagPicker from "@components/RecipeEditor/TagPicker";
 import { useAuth } from "@context/AuthContext";
 import { useToast } from "@context/ToastContext";
 import { useHousehold } from "@lib/household/useHousehold";
+import { ensureProfile } from "@lib/profiles/client";
 import {
   clearRecipeImage,
   createRecipe,
-  ensureProfile,
   saveRecipeImage,
   updateRecipe,
 } from "@lib/userRecipes/client";

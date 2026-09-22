@@ -5,6 +5,7 @@ import Link from "next/link";
 import React, { useState, useRef, useEffect } from "react";
 
 import DemoSignIn from "@components/DemoSignIn";
+import DisplayNameEditor from "@components/DisplayNameEditor";
 import GoogleSignInButton, {
   googleSignInEnabled,
 } from "@components/GoogleSignInButton";
@@ -157,6 +158,8 @@ const AuthButton = () => {
                   Signed in as{" "}
                   <strong className="text-ink">{user.email}</strong>
                 </p>
+                <DisplayNameEditor />
+                <span className="h-px bg-line" />
                 <Link
                   href="/household"
                   onClick={closeAuthModal}

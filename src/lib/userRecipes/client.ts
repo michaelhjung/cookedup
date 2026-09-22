@@ -4,10 +4,7 @@
 // RLS like the pantry and planner. The database builds each recipe's
 // Edamam-shaped `hit`, so there is no API route in the way of a save.
 
-import type { User } from "@supabase/supabase-js";
-
 import { RECIPE_IMAGES_BUCKET } from "@lib/recipes/persistImage";
-import { getDisplayName } from "@lib/sharing/client";
 import { REPORT_DETAILS_MAX, ReportReason } from "@lib/userRecipes/reports";
 import {
   USER_RECIPE_COLUMNS,
@@ -15,7 +12,7 @@ import {
   toUserRecipe,
   toUserRecipeRow,
 } from "@lib/userRecipes/rows";
-import { Profile, UserRecipe, UserRecipeInput } from "@lib/userRecipes/types";
+import { UserRecipe, UserRecipeInput } from "@lib/userRecipes/types";
 import { supabase } from "@utils/supabase";
 
 export const COMMUNITY_PAGE_SIZE = 24;
@@ -224,51 +221,6 @@ export const removeRecipeImageObject = async (
     .from(RECIPE_IMAGES_BUCKET)
     .remove([imagePath(userId, recipeId)]);
   if (error) console.error("Failed to remove recipe image:", error);
-};
-
-// ---------------------------------------------------------------------
-// Profiles (the public byline)
-// ---------------------------------------------------------------------
-
-export const DISPLAY_NAME_MAX = 40;
-
-export const fetchProfile = async (userId: string): Promise<Profile | null> => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("user_id, display_name")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (error) throw new Error(error.message);
-  return data ? { userId: data.user_id, displayName: data.display_name } : null;
-};
-
-export const saveProfile = async (
-  userId: string,
-  displayName: string,
-): Promise<Profile> => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .upsert({ user_id: userId, display_name: displayName.trim() })
-    .select("user_id, display_name")
-    .single();
-
-  if (error) throw new Error(error.message);
-  return { userId: data.user_id, displayName: data.display_name };
-};
-
-/**
- * The profile, made on the spot from the email's local part if this is
- * the user's first recipe. Bylines are built from it in the database,
- * so it has to exist before the first save.
- */
-export const ensureProfile = async (user: User): Promise<Profile> => {
-  const existing = await fetchProfile(user.id);
-  if (existing) return existing;
-  return saveProfile(
-    user.id,
-    getDisplayName(user.email).slice(0, DISPLAY_NAME_MAX),
-  );
 };
 
 // ---------------------------------------------------------------------

@@ -2,25 +2,22 @@
 
 import { BookOpenText, Plus } from "lucide-react";
 import Link from "next/link";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import Bowl from "@components/loaders/Bowl";
 import RecipeCard from "@components/SearchAndRecipes/Recipes/RecipeCard";
-import DisplayNameEditor from "@components/UserRecipes/DisplayNameEditor";
 import { useAuth } from "@context/AuthContext";
 import { useToast } from "@context/ToastContext";
 import { Hit } from "@interfaces/edamam";
 import { useHousehold } from "@lib/household/useHousehold";
 import { useStockedKeys } from "@lib/pantry/useStockedKeys";
 import {
-  ensureProfile,
   fetchCommunityRecipes,
   fetchMyRecipes,
   fetchSharedRecipes,
-  saveProfile,
 } from "@lib/userRecipes/client";
 import { describeRecipeStatus } from "@lib/userRecipes/reports";
-import { Profile, UserRecipe } from "@lib/userRecipes/types";
+import { UserRecipe } from "@lib/userRecipes/types";
 import { supabase } from "@utils/supabase";
 
 type Tab = "mine" | "shared" | "community";
@@ -32,13 +29,12 @@ const TAB_LABELS: Record<Tab, string> = {
 };
 
 const UserRecipesPage: React.FC = () => {
-  const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { user, loading: authLoading, displayName, openAuthModal } = useAuth();
   const { household, isLoading: isHouseholdLoading } = useHousehold();
   const { showToast } = useToast();
   const stockedKeys = useStockedKeys();
 
   const [tab, setTab] = useState<Tab>("mine");
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [mine, setMine] = useState<UserRecipe[] | null>(null);
   const [shared, setShared] = useState<UserRecipe[] | null>(null);
   const [community, setCommunity] = useState<UserRecipe[] | null>(null);
@@ -62,7 +58,6 @@ const UserRecipesPage: React.FC = () => {
     let cancelled = false;
 
     Promise.all([
-      ensureProfile(user),
       fetchMyRecipes(user.id),
       fetchSharedRecipes(user.id, household?.id ?? null),
       supabase
@@ -71,9 +66,8 @@ const UserRecipesPage: React.FC = () => {
         .eq("user_id", user.id)
         .eq("is_starred", true),
     ])
-      .then(([loadedProfile, loadedMine, loadedShared, saved]) => {
+      .then(([loadedMine, loadedShared, saved]) => {
         if (cancelled) return;
-        setProfile(loadedProfile);
         setMine(loadedMine);
         setShared(loadedShared);
         setSavedRecipes((saved.data ?? []).map((row) => row.data as Hit));
@@ -87,6 +81,18 @@ const UserRecipesPage: React.FC = () => {
       cancelled = true;
     };
   }, [user, authLoading, isHouseholdLoading, household, showToast]);
+
+  // Bylines are rebuilt in the database when the name changes; re-read
+  // so the cards agree. The name also settles once on load (email
+  // fallback, then the profile), which is why this is a change check
+  // rather than a dependency of the load above.
+  const lastDisplayName = useRef(displayName);
+  useEffect(() => {
+    if (lastDisplayName.current === displayName) return;
+    lastDisplayName.current = displayName;
+    if (!user || mine === null) return;
+    fetchMyRecipes(user.id).then(setMine).catch(console.error);
+  }, [displayName, user, mine]);
 
   // Community is public, so it loads regardless of sign-in.
   useEffect(() => {
@@ -122,20 +128,6 @@ const UserRecipesPage: React.FC = () => {
       setIsLoadingMore(false);
     }
   }, [community, showToast]);
-
-  const handleSaveDisplayName = async (displayName: string) => {
-    if (!user) return;
-    try {
-      const saved = await saveProfile(user.id, displayName);
-      setProfile(saved);
-      // Bylines are rebuilt in the database; re-read so the cards agree.
-      fetchMyRecipes(user.id).then(setMine).catch(console.error);
-    } catch (caught) {
-      console.error("Failed to save display name:", caught);
-      showToast("Couldn't change your name.");
-      throw caught;
-    }
-  };
 
   // ------------------------------------------------------------------
 
@@ -247,12 +239,18 @@ const UserRecipesPage: React.FC = () => {
             Recipes
           </h2>
           {isSignedIn ?
-            profile && (
-              <DisplayNameEditor
-                displayName={profile.displayName}
-                onSave={handleSaveDisplayName}
-              />
-            )
+            <p className="text-xs text-ink-muted">
+              Publishing as{" "}
+              <span className="font-medium text-ink">{displayName}</span>
+              <span aria-hidden> · </span>
+              <button
+                type="button"
+                onClick={openAuthModal}
+                className="font-medium text-accent hover:underline"
+              >
+                change
+              </button>
+            </p>
           : <p className="text-xs text-ink-muted">
               Recipes people have written and published here.
             </p>

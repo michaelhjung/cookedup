@@ -63,7 +63,7 @@ import { fetchItems, fetchPantries } from "@lib/pantry/client";
 import { groupByCategory } from "@lib/pantry/items";
 import { formatRelativeTime } from "@lib/pantry/time";
 import { CATEGORIES, Category, Pantry, PantryItem } from "@lib/pantry/types";
-import { fetchPeople, getDisplayName } from "@lib/sharing/client";
+import { fetchPeople } from "@lib/sharing/client";
 
 const UNDO_MS = 6000;
 
@@ -101,7 +101,7 @@ const ListView: React.FC<ListViewProps> = ({ listId }) => {
   const [settings, setSettings] = useState<PantrySettings>(
     DEFAULT_PANTRY_SETTINGS,
   );
-  const [people, setPeople] = useState<Map<string, string | null>>(new Map());
+  const [people, setPeople] = useState<Map<string, string>>(new Map());
   const [presentUserIds, setPresentUserIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMissing, setIsMissing] = useState(false);
@@ -292,8 +292,7 @@ const ListView: React.FC<ListViewProps> = ({ listId }) => {
 
   const nameFor = (userId: string | null): string | null => {
     if (!userId || userId === user?.id) return null;
-    const email = people.get(userId);
-    return email ? getDisplayName(email) : null;
+    return people.get(userId) ?? null;
   };
 
   // ------------------------------------------------------------------

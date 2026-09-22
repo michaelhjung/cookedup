@@ -93,8 +93,3 @@ export type UserRecipeInput = Omit<
   | "reviewNote"
   | "starCount"
 >;
-
-export interface Profile {
-  userId: string;
-  displayName: string;
-}

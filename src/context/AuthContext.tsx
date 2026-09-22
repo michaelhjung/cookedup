@@ -12,6 +12,12 @@ import React, {
 } from "react";
 
 import { fetchIsAdmin } from "@lib/admin/client";
+import {
+  Profile,
+  fetchProfile,
+  resolveDisplayName,
+  saveProfile,
+} from "@lib/profiles/client";
 import { supabase } from "@utils/supabase";
 
 interface AuthContextType {
@@ -36,6 +42,14 @@ interface AuthContextType {
    * checks again on the server, so this is a hint, not a gate.
    */
   isAdmin: boolean;
+  /**
+   * What the signed-in user is called across the app: their profile
+   * name, or the email's local part until they set one. Empty when
+   * signed out.
+   */
+  displayName: string;
+  /** Sets the profile name, making the profile row if it doesn't exist. */
+  saveDisplayName: (_displayName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,10 +62,12 @@ export const AuthProvider: React.FC<{
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
+      setProfile(null);
       return;
     }
     let cancelled = false;
@@ -62,10 +78,28 @@ export const AuthProvider: React.FC<{
       .catch(() => {
         if (!cancelled) setIsAdmin(false);
       });
+    fetchProfile(user.id)
+      .then((value) => {
+        if (!cancelled) setProfile(value);
+      })
+      .catch((caught) => {
+        console.error("Failed to load profile:", caught);
+      });
     return () => {
       cancelled = true;
     };
   }, [user]);
+
+  const displayName =
+    user ? resolveDisplayName(profile?.displayName, user.email) : "";
+
+  const saveDisplayName = useCallback(
+    async (next: string) => {
+      if (!user) return;
+      setProfile(await saveProfile(user.id, next));
+    },
+    [user],
+  );
 
   useEffect(() => {
     const getSession = async () => {
@@ -108,6 +142,8 @@ export const AuthProvider: React.FC<{
       closeAuthModal,
       isDemoLoginEnabled,
       isAdmin,
+      displayName,
+      saveDisplayName,
     }),
     [
       user,
@@ -117,6 +153,8 @@ export const AuthProvider: React.FC<{
       closeAuthModal,
       isDemoLoginEnabled,
       isAdmin,
+      displayName,
+      saveDisplayName,
     ],
   );
 

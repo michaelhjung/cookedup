@@ -33,7 +33,7 @@ import {
   setMemberRole,
 } from "@lib/household/client";
 import { useHousehold } from "@lib/household/useHousehold";
-import { createInvite, getDisplayName } from "@lib/sharing/client";
+import { createInvite } from "@lib/sharing/client";
 
 const INVITE_TOKEN_PATTERN =
   /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
@@ -218,7 +218,7 @@ const MemberRow: React.FC<MemberRowProps> = ({
 }) => {
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const name = getDisplayName(member.email);
+  const name = member.displayName;
 
   return (
     <li className="flex min-h-14 items-center gap-3 py-2">
@@ -620,7 +620,7 @@ const HouseholdView: React.FC<HouseholdViewProps> = ({
 
       {pending?.kind === "remove" && (
         <ConfirmDialog
-          title={`Remove ${getDisplayName(pending.member.email)}?`}
+          title={`Remove ${pending.member.displayName}?`}
           body="They'll stop seeing the household's plans, pantries and lists. Anything they created and shared to the household stays here."
           confirmLabel="Remove"
           busyLabel="Removing..."

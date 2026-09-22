@@ -11,7 +11,6 @@ import {
   ShareRole,
   createInvite,
   fetchShares,
-  getDisplayName,
   removeShare,
 } from "@lib/sharing/client";
 
@@ -209,8 +208,11 @@ const SharingSection: React.FC<SharingSectionProps> = ({
                   key={share.userId}
                   className="flex items-center justify-between gap-2 rounded-sm bg-well px-2 py-1.5"
                 >
-                  <span className="min-w-0 flex-1 truncate text-xs">
-                    {share.email ?? getDisplayName(null)}
+                  <span
+                    className="min-w-0 flex-1 truncate text-xs"
+                    title={share.email ?? undefined}
+                  >
+                    {share.displayName}
                     <span className="ml-1.5 text-[11px] text-ink-muted">
                       {share.role === "editor" ? "can edit" : "can view"}
                     </span>

@@ -6,6 +6,7 @@
 // this module is the only one that knows how a share or an invite is
 // stored.
 
+import { fetchDisplayNames, resolveDisplayName } from "@lib/profiles/client";
 import { supabase } from "@utils/supabase";
 
 export type ResourceKind =
@@ -18,6 +19,8 @@ export type ShareRole = "viewer" | "editor";
 export interface Share {
   userId: string;
   email: string | null;
+  /** The profile name, or the email's local part until they set one. */
+  displayName: string;
   role: ShareRole;
 }
 
@@ -39,9 +42,13 @@ export const fetchShares = async (
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((share) => ({
+  const rows = data ?? [];
+  const names = await fetchDisplayNames(rows.map((share) => share.user_id));
+
+  return rows.map((share) => ({
     userId: share.user_id,
     email: share.email,
+    displayName: resolveDisplayName(names.get(share.user_id), share.email),
     role: share.role,
   }));
 };
@@ -102,15 +109,15 @@ export const acceptInvite = async (
 
 /**
  * Who's who around one object, for "marked low · sam" and "sam is also
- * on this list": emails of everyone it's shared with, plus the
- * household's members if it's in one. The owner of a one-off shared
- * object isn't in either and shows no name.
+ * on this list": display names of everyone it's shared with, plus the
+ * household's members if it's in one, keyed by user id. The owner of a
+ * one-off shared object isn't in either and shows no name.
  */
 export const fetchPeople = async (
   kind: ResourceKind,
   resourceId: string,
   householdId: string | null,
-): Promise<Map<string, string | null>> => {
+): Promise<Map<string, string>> => {
   const [{ data: shares }, { data: members }] = await Promise.all([
     supabase
       .from("shares")
@@ -127,9 +134,15 @@ export const fetchPeople = async (
       }),
   ]);
 
-  const people = new Map<string, string | null>();
-  for (const row of [...(members ?? []), ...(shares ?? [])])
-    people.set(row.user_id, row.email);
+  const rows = [...(members ?? []), ...(shares ?? [])];
+  const names = await fetchDisplayNames(rows.map((row) => row.user_id));
+
+  const people = new Map<string, string>();
+  for (const row of rows)
+    people.set(
+      row.user_id,
+      resolveDisplayName(names.get(row.user_id), row.email),
+    );
   return people;
 };
 
@@ -147,15 +160,4 @@ export const getInviteDestination = (accepted: AcceptedInvite): string => {
     default:
       return "/plan";
   }
-};
-
-/**
- * What to call someone when all we have is their email: the part before
- * the @. There's no profiles table, and "sam" beats "sam@example.com" in
- * a member list or a "marked low by" subline.
- */
-export const getDisplayName = (email: string | null | undefined): string => {
-  if (!email) return "Someone";
-  const local = email.split("@")[0];
-  return local || email;
 };
